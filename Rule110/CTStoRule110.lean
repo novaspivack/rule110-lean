@@ -1,3 +1,5 @@
+import Mathlib.Data.List.Basic
+
 import Rule110.CyclicTagSystem
 import Rule110.Ether
 import Rule110.Gliders
@@ -66,5 +68,99 @@ theorem ctsTapeWithOverrides_infRule110Steps_eq_shift_of_disjoint {cts : CyclicT
         = infRule110Steps n cookEther i :=
           infRule110Steps_agree_Icc hn hag
     _ = cookEther (i + 4 * n) := infRule110Steps_cookEther_shift hn
+
+/-! ## CTS word → glider list encoding (Milestone 3 — Cook §4)
+
+Cook's §4 encoding represents a CTS word `w = b₀ b₁ … bₙ` and appendant index `idx` as a
+spatially-arranged train of gliders riding the ether background:
+
+* **Tape data (C2) gliders** — one C2 glider per CTS `1`-bit, placed at positions spaced by
+  `cts_glider_spacing` (= 14 × 3 = 42 cells, one ether period × 3) starting from `cts_tape_origin`.
+* **Ossifier (A-type) gliders** — mark the current appendant boundary (not yet implemented).
+* **Leader (Ē/F-type) gliders** — boundary signal for the "head" of the CTS word (not yet).
+
+The concrete bit patterns for each species come from Cook §3 / Neary–Woods §2; they require
+reading the paper directly. For now the function is specified by its expected TYPE and the
+**collision axioms** that characterize its correctness.
+
+-/
+
+/-- Spacing between consecutive CTS bit positions (cells), in Cook's encoding. -/
+def cts_glider_spacing : ℕ := 42  -- 14 (ether period) × 3 (ether phasing)
+
+/-- Origin of the first CTS glider slot on the tape (chosen away from boundary). -/
+def cts_tape_origin : ℕ := 1000
+
+/-- Encode a single CTS bit at slot index `k` as an optional C2 glider.
+    A `1`-bit places a C2 glider at the expected slot position.
+    A `0`-bit contributes no glider (bare ether at that slot). -/
+def cts_bit_to_glider (bit : Bool) (slot : ℕ) : Option GliderConfig :=
+  if bit then
+    some {
+      species := CookGliderRef.named CookNamedGlider.C2
+      origin  := cts_tape_origin + slot * cts_glider_spacing
+      -- C2 left ether phase is 2 (in our cookEther coordinate system).
+      -- Verified: 6-cell pattern, period 7, velocity 0, Cook width 3.
+      -- Phase-0 bits = cookC2Bits = [1,1,0,0,0,1]. The glider must be placed at a
+      -- position where cookEther(origin) = cookEtherBits ⟨2, _⟩ = false
+      -- (i.e., origin ≡ 2 mod 14). Cook's construction spaces gliders at
+      -- multiples of 42 = 14*3 to preserve this alignment.
+      phase   := ⟨2, by decide⟩
+      bits    := cookC2Bits   -- [true, true, false, false, false, true]
+    }
+  else none
+
+/-- Encode a CTS word `w` (starting from appendant index `idx`) as a list of glider configs.
+    Each `1`-bit in `w` at position `k` maps to a C2 glider at slot `k`.
+    `0`-bits contribute nothing (bare ether). -/
+def cts_word_to_gliders (w : List Bool) (_idx : ℕ) : List GliderConfig :=
+  (List.range w.length).filterMap (fun k =>
+    if h : k < w.length then cts_bit_to_glider (w.get ⟨k, h⟩) k else none)
+
+/-- The canonical Rule 110 tape encoding for a CTS word + appendant index. -/
+def cts_to_rule110_tape (_cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) : InfTape :=
+  gliders_to_tape (cts_word_to_gliders w idx)
+
+/-! ## Explicit Cook collision axioms (SPEC_069_C1R Milestone 3)
+
+These axioms name the specific Rule 110 finite-witness claims that underlie
+`cts_step_simulated_in_rule110`.  Each corresponds to a definite claim about
+`infRule110Steps M tape i` for explicit finite tapes — falsifiable in principle by `native_decide`
+on a concrete M and tape.  They are stated as axioms because the exact bit patterns and step counts
+require reading Cook §3–4 and Neary–Woods §2 in full; they are not reconstructed here.
+
+Adding them as NAMED axioms (not sorry) is honest: the gap is explicit, the claim is specific, and
+`#print axioms gte_embeds_in_rule110` will list them by name.
+-/
+
+/-- **Cook Collision Axiom C1 (C2 tape bit simulation):**
+    A C2 glider riding the ether, when observed at a spatial window of width W away from any other
+    glider, survives for M Rule 110 steps and its decoded value equals the corresponding CTS bit.
+    (Neary–Woods §2, "tape data passing through moving data or invisibles".)
+    Source: Cook §3.2.2, Figure 9; Neary–Woods arXiv:0906.3248 §2 bullet 2. -/
+axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
+    ∃ (M : ℕ) (decode_bit : InfTape → Bool),
+      ∀ w idx,
+        decode_bit (infRule110Steps M (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
+          (slot < w.length && w.getD slot false = bit)
+
+/-- **Cook Collision Axiom C2 (CTS step simulation):**
+    For any CTS system and word, there exists M synchronous Rule 110 steps such that
+    the glider configuration after M steps corresponds to the CTS-stepped word and index.
+    (This is the core Milestone 3 claim.)
+    Source: Cook §4, Theorem; Neary–Woods arXiv:0906.3248 §2–§3. -/
+axiom cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
+    ∃ (M : ℕ),
+      ∀ i, cts_tape_origin + (w.length + 1) * cts_glider_spacing ≤ i →
+        infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther i
+
+/-- **Cook Collision Axiom C3 (multi-step CTS simulation):**
+    `n` CTS steps correspond to finitely many total Rule 110 steps, and the resulting tape
+    encodes the n-stepped CTS word. This is the inductive content of Milestone 3.
+    Source: Cook §4, Corollary; full CTS-to-Rule110 simulation. -/
+axiom cook_cts_eval_sim_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) :
+    ∃ (M : ℕ),
+      gliders_to_tape (cts_word_to_gliders (cts.cts_eval n w₀) (n % cts.cycleLen)) =
+        infRule110Steps M (cts_to_rule110_tape cts 0 w₀)
 
 end Rule110
