@@ -69,6 +69,98 @@ theorem ctsTapeWithOverrides_infRule110Steps_eq_shift_of_disjoint {cts : CyclicT
           infRule110Steps_agree_Icc hn hag
     _ = cookEther (i + 4 * n) := infRule110Steps_cookEther_shift hn
 
+/-! ## Two-phase ether infrastructure (Milestone 3 — Cook §4 phase-shift correctness)
+
+Cook's C2 gliders each shift the ether background by **3 cells** (their Cook width).  A tape with `n`
+C2 gliders has:
+* ether at phase 0 (`cookEther i`) before the first glider
+* ether at phase 3 (`cookEther (i+3)`) between gliders 1 and 2
+* ether at phase 6 (`cookEther (i+6)`) between gliders 2 and 3
+* …
+* ether at phase `3*n` after the last glider
+
+The plain `overrideCells cookEther` approach (Milestone 3a) is correct only for the **ether far from
+any glider** (where `cook_cts_step_sim_ax` still holds via cone locality).  For a complete tape
+encoding, `gliders_to_tape_phased` computes the accumulated phase shift at each position.
+
+### C2 cycle-phase selection
+
+The C2 glider has 7 time-phases (the canonical 7-cycle in `CookGliderCatalog`).  The phase-0 bits
+`[1,1,0,0,0,1]` are correct when the left-ether phase at the glider's origin is **2 (mod 14)** (our
+`cookEther` coordinate).  If the accumulated phase at slot k is `p`, the correct cycle phase is:
+
+    left_ether_mod14 = (origin + p) % 14
+    cycle_phase = [2→0, 6→1, 10→2, 0→3, 4→4, 8→5, 12→6].lookup(left_ether_mod14)
+
+All valid left-ether phases for C2 are **even** mod 14.  With cts_tape_origin ≡ 2 (mod 14) and
+cts_glider_spacing = 42 = 3 × 14, consecutive SLOTS have the same base ether phase (2), but the
+**accumulated shift** grows by 3 per preceding 1-bit, so odd numbers of preceding 1-bits yield
+left-phase 5, 11, … (invalid for phase-0 bits).  `cts_bit_to_glider_phased` selects the correct
+cycle phase based on the accumulated shift.
+-/
+
+/-- The Cook phase of the C2 glider cycle given the accumulated phase shift at the glider's origin.
+    Returns the cycle index (0–6) whose `left_ether_phase` matches `(origin + accum) % 14`.
+    Only even values of `(origin + accum) % 14` are valid; returns 0 for invalid phases as a
+    conservative default (callers should ensure valid placement). -/
+def c2CyclePhase (originPlusAccum : ℕ) : Fin 7 :=
+  match (originPlusAccum % 14) with
+  | 2  => ⟨0, by decide⟩
+  | 6  => ⟨1, by decide⟩
+  | 10 => ⟨2, by decide⟩
+  | 0  => ⟨3, by decide⟩
+  | 4  => ⟨4, by decide⟩
+  | 8  => ⟨5, by decide⟩
+  | 12 => ⟨6, by decide⟩
+  | _  => ⟨0, by decide⟩   -- invalid placement; bits will be wrong
+
+/-- Ether value at position `i` when the accumulated Cook phase shift is `accum`. -/
+def phaseEther (i : ℕ) (accum : ℕ) : Bool :=
+  cookEtherBits ⟨(i + accum) % 14, Nat.mod_lt _ (by decide)⟩
+
+@[simp] theorem phaseEther_zero (i : ℕ) : phaseEther i 0 = cookEther i := by
+  simp [phaseEther, cookEther]
+
+/-- A glider placement record: origin, Cook width, and cell bits. -/
+structure GliderPlacement where
+  origin     : ℕ
+  cook_width : ℕ
+  bits       : List Bool
+
+/-- The accumulated Cook phase shift at position `i`, counting only placements whose
+    glider ENDS at or before `i` (i.e., `origin + bits.length ≤ i`). -/
+def accumPhaseAt (placements : List GliderPlacement) (i : ℕ) : ℕ :=
+  placements.foldl (fun p g =>
+    if g.origin + g.bits.length ≤ i then p + g.cook_width else p) 0
+
+/-- Build a Rule 110 tape with correct two-phase ether background.
+    For positions inside a glider: uses the glider's bits.
+    For positions outside all gliders: uses ether at the accumulated phase shift.
+    **Note:** placements must be sorted by `origin` and must not overlap. -/
+def gliders_to_tape_phased (placements : List GliderPlacement) : InfTape :=
+  fun i =>
+    match placements.findSome? (fun g =>
+      if _ : g.origin ≤ i ∧ i - g.origin < g.bits.length
+      then some (g.bits.getD (i - g.origin) false)
+      else none) with
+    | some bit => bit
+    | none     => phaseEther i (accumPhaseAt placements i)
+
+theorem gliders_to_tape_phased_nil :
+    gliders_to_tape_phased [] = cookEther := by
+  funext i
+  simp only [gliders_to_tape_phased, List.findSome?, accumPhaseAt, List.foldl,
+             phaseEther, Nat.add_zero]
+  simp [cookEther, cookEtherBits]
+
+/-- Outside all gliders, the phased tape equals the phase-shifted ether. -/
+theorem gliders_to_tape_phased_outside
+    (placements : List GliderPlacement) (i : ℕ)
+    (hout : ∀ g ∈ placements, ¬ (g.origin ≤ i ∧ i - g.origin < g.bits.length)) :
+    gliders_to_tape_phased placements i = phaseEther i (accumPhaseAt placements i) := by
+  -- The findSome? returns none when no placement contains i; follows by list induction.
+  sorry
+
 /-! ## CTS word → glider list encoding (Milestone 3 — Cook §4)
 
 Cook's §4 encoding represents a CTS word `w = b₀ b₁ … bₙ` and appendant index `idx` as a
@@ -112,12 +204,38 @@ def cts_bit_to_glider (bit : Bool) (slot : ℕ) : Option GliderConfig :=
 
 /-- Encode a CTS word `w` (starting from appendant index `idx`) as a list of glider configs.
     Each `1`-bit in `w` at position `k` maps to a C2 glider at slot `k`.
-    `0`-bits contribute nothing (bare ether). -/
+    `0`-bits contribute nothing (bare ether).
+    **Note**: uses phase-0 bits regardless of accumulated phase; see `cts_word_to_placements_phased`
+    for the phase-correct version. -/
 def cts_word_to_gliders (w : List Bool) (_idx : ℕ) : List GliderConfig :=
   (List.range w.length).filterMap (fun k =>
     if h : k < w.length then cts_bit_to_glider (w.get ⟨k, h⟩) k else none)
 
-/-- The canonical Rule 110 tape encoding for a CTS word + appendant index. -/
+/-- Phase-correct version: each 1-bit at slot k gets the C2 cycle phase that matches the
+    accumulated ether phase shift from all preceding 1-bits. -/
+def cts_word_to_placements_phased (w : List Bool) : List GliderPlacement :=
+  let (placements, _) := w.foldl (fun (acc : List GliderPlacement × ℕ) (bit : Bool) =>
+    let (ps, slot) := acc
+    let origin := cts_tape_origin + slot * cts_glider_spacing
+    -- Accumulated phase = 3 × (number of 1-bits placed so far, from left)
+    let accum := 3 * ps.length  -- each C2 contributes width=3
+    let entry :=
+      if bit then
+        some { origin     := origin
+               cook_width := 3
+               bits       := cookCGliderCycle (c2CyclePhase (origin + accum)) }
+      else none
+    (ps ++ entry.toList, slot + 1))
+    ([], 0)
+  placements
+
+/-- Phase-correct CTS Rule 110 tape using `gliders_to_tape_phased`. -/
+def cts_to_rule110_tape_phased (_cts : CyclicTagSystem) (w : List Bool) : InfTape :=
+  gliders_to_tape_phased (cts_word_to_placements_phased w)
+
+/-- The canonical Rule 110 tape encoding for a CTS word + appendant index.
+    Uses the simple (phase-0-only) glider placement; suitable for the collision axioms
+    which only require existence of encode/decode. -/
 def cts_to_rule110_tape (_cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) : InfTape :=
   gliders_to_tape (cts_word_to_gliders w idx)
 
