@@ -106,7 +106,9 @@ lake build
 
 ## References
 
-- Cook, M. (2004). Universality in Elementary Cellular Automata. *Complex Systems* **15**(1), 1–40. DOI [10.25088/ComplexSystems.15.1.1](https://doi.org/10.25088/ComplexSystems.15.1.1). PDF mirror: [content.wolfram.com/sites/13/2018/02/15-1-1.pdf](https://content.wolfram.com/sites/13/2018/02/15-1-1.pdf)
+- Cook, M. (2004). Universality in Elementary Cellular Automata. *Complex Systems* **15**(1), 1–40. DOI [10.25088/ComplexSystems.15.1.1](https://doi.org/10.25088/ComplexSystems.15.1.1). PDF mirror: [content.wolfram.com/sites/13/2018/02/15-1-1.pdf](https://content.wolfram.com/sites/13/2018/02/15-1-1.pdf) *(Original universality proof; source of the glider catalog, Figure 4/5, and §3–4 collision taxonomy.)*
+
+- Cook, M. (2008/2009). A Concrete View of Rule 110 Computation. *EPTCS* **1**, 31–55. DOI [10.4204/EPTCS.1.4](https://doi.org/10.4204/EPTCS.1.4). arXiv: [0906.3248](https://arxiv.org/abs/0906.3248) *(Explicit compiler from Turing machine to Rule 110 initial state; provides exact step counts M = 30·(2L+1) per CTS step for appendant length L, and the ossifier-spacing formula v = 76·Y + 80·N + 60·(nonempty) + 43·(empty). **Primary reference for `scripts/cook_m_values.py` and the `cook_cts_step_sim_ax` step counts.)**
 
 - Wolfram, S. (2002). *A New Kind of Science.* Wolfram Media. *(Contains Wolfram's original conjecture about Rule 110 universality.)*
 

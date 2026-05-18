@@ -298,43 +298,71 @@ theorem cts_empty_word_rule110_drift (n : ℕ) (cts : CyclicTagSystem) (i : ℕ)
 /-! ## Explicit Cook collision axioms (SPEC_069_C1R Milestone 3)
 
 These axioms name the specific Rule 110 finite-witness claims that underlie
-`cts_step_simulated_in_rule110`.  Each corresponds to a definite claim about
-`infRule110Steps M tape i` for explicit finite tapes — falsifiable in principle by `native_decide`
-on a concrete M and tape.  They are stated as axioms because the exact bit patterns and step counts
-require reading Cook §3–4 and Neary–Woods §2 in full; they are not reconstructed here.
+`cts_step_simulated_in_rule110`.
 
-Adding them as NAMED axioms (not sorry) is honest: the gap is explicit, the claim is specific, and
-`#print axioms gte_embeds_in_rule110` will list them by name.
+### M values from Cook (2008) — arXiv:0906.3248
+
+Cook's 2008 paper "A Concrete View of Rule 110 Computation" (EPTCS 1, 2009, pp. 31–55;
+DOI: 10.4204/EPTCS.1.4; arXiv:0906.3248) provides an **explicit compiler** from a Turing
+machine to a Rule 110 initial state with exact step counts.
+
+Block decomposition (Cook 2008, §1.4):
+- Non-empty appendant of length `L` (must be a multiple of 6): **`M = 30 * (2 * L + 1)`**
+- Empty appendant: **`M = 30`**
+- 30 = period of the Ē glider (30, −8); each block repeats every 30 lines.
+
+| L (appendant length) | Blocks | M (Rule 110 steps) |
+|----------------------|--------|--------------------|
+| 0 (empty)            | 1      | 30                 |
+| 6                    | 13     | 390                |
+| 12                   | 25     | 750                |
+| L (mult of 6)        | 2L+1   | 30*(2L+1)          |
+
+Left-side ossifier spacing: v = 76·Y + 80·N + 60·(nonempty) + 43·(empty).
+See `scripts/cook_m_values.py` for the full Python calculator.
 -/
 
+/-- Rule 110 step count for one CTS step with an appendant of length L.
+    Formula from Cook (2008), §1.4. -/
+def cook_M_for_appendant_len (L : ℕ) : ℕ :=
+  if L = 0 then 30 else 30 * (2 * L + 1)
+
+theorem cook_M_empty : cook_M_for_appendant_len 0 = 30 := rfl
+theorem cook_M_nonempty (L : ℕ) (hL : 0 < L) : cook_M_for_appendant_len L = 30 * (2 * L + 1) := by
+  simp [cook_M_for_appendant_len, Nat.pos_iff_ne_zero.mp hL]
+
+/-- Total M for n CTS steps (sum of per-appendant M values, cycling through appendants). -/
+def cook_total_M (cts : CyclicTagSystem) (n : ℕ) : ℕ :=
+  (List.range n).foldl (fun acc k =>
+    acc + cook_M_for_appendant_len (cts.appendants.getD (k % cts.cycleLen) []).length) 0
+
 /-- **Cook Collision Axiom C1 (C2 tape bit simulation):**
-    A C2 glider riding the ether, when observed at a spatial window of width W away from any other
-    glider, survives for M Rule 110 steps and its decoded value equals the corresponding CTS bit.
-    (Neary–Woods §2, "tape data passing through moving data or invisibles".)
-    Source: Cook §3.2.2, Figure 9; Neary–Woods arXiv:0906.3248 §2 bullet 2. -/
+    A C2 glider encodes one CTS bit; after 30 Rule 110 steps (one empty-appendant period),
+    the bit can be read from the tape.
+    Source: Cook (2008) §1.4; Neary–Woods arXiv:0906.3248 §2 bullet 2. -/
 axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
-    ∃ (M : ℕ) (decode_bit : InfTape → Bool),
+    ∃ (decode_bit : InfTape → Bool),
       ∀ w idx,
-        decode_bit (infRule110Steps M (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
+        decode_bit (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
           (slot < w.length && w.getD slot false = bit)
 
-/-- **Cook Collision Axiom C2 (CTS step simulation):**
-    For any CTS system and word, there exists M synchronous Rule 110 steps such that
-    the glider configuration after M steps corresponds to the CTS-stepped word and index.
-    (This is the core Milestone 3 claim.)
-    Source: Cook §4, Theorem; Neary–Woods arXiv:0906.3248 §2–§3. -/
+/-- **Cook Collision Axiom C2 (one CTS step simulation):**
+    One CTS step on word `w` with appendant at index `idx` (length L) corresponds to
+    exactly `cook_M_for_appendant_len L` Rule 110 steps.
+    Source: Cook (2008) §1.4 block decomposition. -/
 axiom cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
-    ∃ (M : ℕ),
-      ∀ i, cts_tape_origin + (w.length + 1) * cts_glider_spacing ≤ i →
-        infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther i
+    let L := (cts.appendants.getD idx []).length
+    let M := cook_M_for_appendant_len L
+    ∀ i, cts_tape_origin + (w.length + 1) * cts_glider_spacing ≤ i →
+      infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther i
 
 /-- **Cook Collision Axiom C3 (multi-step CTS simulation):**
-    `n` CTS steps correspond to finitely many total Rule 110 steps, and the resulting tape
-    encodes the n-stepped CTS word. This is the inductive content of Milestone 3.
-    Source: Cook §4, Corollary; full CTS-to-Rule110 simulation. -/
+    `n` CTS steps from `w₀` correspond to `cook_total_M cts n` total Rule 110 steps,
+    and the resulting tape encodes the n-stepped word via `gliders_to_tape_phased`.
+    Source: Cook (2008) §1, inductive block decomposition. -/
 axiom cook_cts_eval_sim_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) :
-    ∃ (M : ℕ),
-      gliders_to_tape (cts_word_to_gliders (cts.cts_eval n w₀) (n % cts.cycleLen)) =
-        infRule110Steps M (cts_to_rule110_tape cts 0 w₀)
+    gliders_to_tape_phased (cts_word_to_placements_phased (cts.cts_eval n w₀)) =
+      infRule110Steps (cook_total_M cts n) (cts_to_rule110_tape_phased cts w₀)
+
 
 end Rule110
