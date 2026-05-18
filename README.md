@@ -1,44 +1,131 @@
 # rule110-lean
 
-Lean 4 library for SPEC_069_C1R (Cook TM → Rule 110 pipeline): cyclic tag systems, Rule 110 on a one-sided infinite tape, and the Cook ether background.
+A Lean 4 formalization of Matthew Cook's proof that **Rule 110 is computationally universal** — specifically, the construction that embeds cyclic tag systems (and through them, arbitrary Turing machines) into the glider dynamics of Rule 110 on an infinite tape.
+
+The library is self-contained and has no UGP-specific content. It is designed to be reusable by anyone working with Rule 110, cellular automaton universality, or Lean formalizations of computational models.
+
+## Background
+
+**Rule 110** is a one-dimensional elementary cellular automaton: at each discrete time step every cell updates its binary state based on itself and its two nearest neighbors, according to the rule
+
+| Left · Center · Right | 111 | 110 | 101 | 100 | 011 | 010 | 001 | 000 |
+|-----------------------|-----|-----|-----|-----|-----|-----|-----|-----|
+| **Output**            |  0  |  1  |  1  |  0  |  1  |  1  |  1  |  0  |
+
+Despite this simplicity, Rule 110 is **Turing-complete**. This was conjectured by Stephen Wolfram in 1985 and proved by Matthew Cook while assisting Wolfram on research for *A New Kind of Science*. The proof, published in *Complex Systems* 15(1) in 2004, proceeds in two hops:
+
+1. **TM → Cyclic Tag System.** Any Turing machine can be simulated by a cyclic tag system, a simple string-rewriting machine whose only operation at each step is to optionally append a fixed binary string to the front of its working tape.
+
+2. **CTS → Rule 110.** Rule 110 exhibits a periodic background pattern called the *ether* (spatial period 14, temporal period 7), through which localized finite structures called *gliders* propagate and collide. Cook showed that specific glider collision sequences faithfully simulate every step of any cyclic tag system. Because cyclic tag systems are already universal, Rule 110 is universal.
+
+This library formalizes the mathematical infrastructure for Cook's construction in Lean 4, building toward a fully machine-verified proof.
+
+## What is proved (zero sorry)
+
+| Component | Theorem | Statement |
+|-----------|---------|-----------|
+| **CTS core** | `cts_step`, `cts_steps`, `cts_eval` | Semantics of cyclic tag systems |
+| | `cts_step_length_le` | Each CTS step grows the word by at most `totalAppendantChars` |
+| | `cts_steps_snd_eq_idx_add_mod` | Appendant cursor advances mod `cycleLen` on nonempty traces |
+| **Ether** | `ether_stable_phase` | One Rule 110 step on `cookEther` equals `cookEther(i + 4)` |
+| | `infRule110Steps_cookEther_shift` | `n` steps: `cookEther(i + 4n)` whenever `n ≤ i` |
+| | Three spot-check `native_decide` theorems | Numerical regression anchors |
+| **InfTape locality** | `infRule110Steps_agree_Icc` | Matching initial data on cone `[i−n, i+n]` implies equal output |
+| | `infRule110Steps_shiftInfTape_four` | Shift by 4 intertwines with `n` Rule 110 steps (boundary-isolated) |
+| **Overlay locality** | `overrideCells_eq_base_on_Icc` | Writes outside `[lo,hi]` are invisible inside `[lo,hi]` |
+| | `ctsTapeWithOverrides_infRule110Steps_eq_shift_of_disjoint` | Payload outside the backwards cone ⇒ observer sees unperturbed ether drift |
+| **C-glider patterns** | `cookCGliderCycle` | Verified 7-phase cycle for C1/C2/C3 gliders |
+| | `cookC1/C2/C3Bits_length` | Each glider is 6 cells wide |
+| **Two-phase ether** | `phaseEther_zero` | Zero accumulated shift reduces to `cookEther` |
+| | `gliders_to_tape_phased_nil` | Empty glider list produces the standard ether |
+
+## C-glider patterns (verified)
+
+All three C-class gliders (Cook §3) are the *same* 7-phase cycle of cell patterns, distinguished only by which phase of the surrounding ether aligns to their left — exactly as Cook states: "the subscripts for C and D gliders indicate different alignments of the ether to the left."
+
+Ether unit cell (period 14): `10011011111000`  
+Glider cycle (phases 0–6):
+
+| Phase | Bits |
+|-------|------|
+| 0 | `110001` |
+| 1 | `010011` |
+| 2 | `110110` |
+| 3 | `011111` |
+| 4 | `110000` |
+| 5 | `010000` |
+| 6 | `110000` |
+
+| Glider | Cook width | Left ether phase | Starts at cycle phase |
+|--------|-----------|------------------|-----------------------|
+| **C2** | 3          | 2                | 0 (`110001`)          |
+| **C1** | 9          | 12               | 4 (`110000`)          |
+| **C3** | 11         | 12               | 3 (`011111`)          |
+
+Patterns extracted by organic emergence (random initial conditions → long Rule 110 evolution → identification of stationary period-7 disturbances) and independently cross-checked.
+
+## Module overview
+
+| Module | Contents |
+|--------|----------|
+| `Rule110.Basic` | Rule 110 local update function and neighborhood indexing |
+| `Rule110.InfTape` | `InfTape = ℕ → Bool`, `infTapeStep`, `infRule110Steps`; shift and cone lemmas |
+| `Rule110.Ether` | Period-14 Cook ether; one-step and multi-step shift theorems |
+| `Rule110.CyclicTagSystem` | `CyclicTagSystem`, step/eval/halts semantics; determinism and length bounds |
+| `Rule110.CookGliderCatalog` | Cook Figure 5 reference data (widths, periods, ω-coefficients); verified C-glider bit patterns |
+| `Rule110.CookCollisionTaxonomy` | Neary–Woods §2 collision-kind enumeration; Cook §3.1 cross-product counts |
+| `Rule110.Gliders` | `GliderConfig` (species, origin, phase, bits); `gliders_to_tape`; overlay utilities |
+| `Rule110.CTStoRule110` | Two-phase ether infrastructure (`GliderPlacement`, `accumPhaseAt`, `gliders_to_tape_phased`, `c2CyclePhase`); CTS-word-to-glider encoding; explicit collision axioms |
+| `Rule110.TMtoCTS` | `TMCTSCompilation` interface for the TM → CTS reduction |
+
+## Status toward full universality proof
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| **M1** | CTS: semantics, bounds, appendant-index tracking | **Complete** (zero sorry) |
+| **M2** | Ether: periodicity, multi-step shift, C-glider patterns | **Complete** (zero sorry) |
+| **M3** | CTS → Rule 110: two-phase tape, phase-correct C2 placement, collision axioms | **Partial** — infrastructure proved; collision simulation theorems stated as explicit axioms |
+| **M4** | TM → CTS: explicit witness + correctness proof | **Open** |
+| **M5** | Full chain assembly; `#print axioms` clean | **Open** |
+
+The three collision axioms in `Rule110.CTStoRule110` are honest, named, falsifiable claims:
+- `cook_c2_tape_bit_ax` — C2 glider encodes one CTS bit
+- `cook_cts_step_sim_ax` — one CTS step = M Rule 110 steps
+- `cook_cts_eval_sim_ax` — n CTS steps = M Rule 110 steps (inductive extension)
+
+These correspond to finite verification tasks (specific Rule 110 step counts on specific finite tapes) that could in principle be discharged by `native_decide` once the exact Cook §4 collision witnesses are worked out.
 
 ## Toolchain
 
-Matches `ugp-lean` / `ugp-lean-exp`: Lean `v4.29.1`, Mathlib `v4.29.1` (see `lakefile.lean`).
-
-## Contents
-
-| Module | Status |
-|--------|--------|
-| `Rule110.Basic` | Rule 110 lookup (`rule110Output`, `neighborhoodIndex`). |
-| `Rule110.InfTape` | `InfTape`, `infTapeStep`, `infRule110Steps` (same semantics as `HypothesisB`). |
-| `Rule110.CyclicTagSystem` | `CyclicTagSystem`, `cts_step`, `cts_steps`, `cts_eval`, bounds + appendant-index mod lemmas + `cts_computes`. |
-| `Rule110.Ether` | Period‑14 Cook ether, periodicity, `ether_stable_phase` / `ether_stable_under_rule110` (shift by 4). |
-| `Rule110.CookGliderCatalog` | Figure 5 reference table: widths, `(Δt,Δx)`, `(ω_A,ω_B)` (named + indexed families). |
-| `Rule110.CookCollisionTaxonomy` | Neary–Woods (arXiv [0906.3248](https://arxiv.org/abs/0906.3248)) §2 collision-kind enum + Cook §3.1 cross-product counts (`Fin 6` / `Fin 4`). |
-| `Rule110.Gliders` | `CookGliderRef`, `overrideCells` overlays on `InfTape`. |
-| `Rule110.TMtoCTS` | `TMCTSCompilation` — Milestone 4 correctness bundle (witness TBD). |
-| `Rule110.CTStoRule110` | Ether baseline + `ctsTapeWithOverrides` — Milestone 3 scaffolding. |
-
-Primary PDF for numeric transcription: Cook (2004) via Wolfram mirror
-[15-1-1.pdf](https://content.wolfram.com/sites/13/2018/02/15-1-1.pdf). Do **not** use `arxiv:cs/0401007` for Cook — that ID is unrelated.
-
-## Milestone status (SPEC_069)
-
-| Milestone | Status |
-|-----------|--------|
-| **1** CTS core | **Advancing** — length bounds + `(cts_steps …).snd = (idx+n)%cycle` when tape stays nonempty. |
-| **2** Ether + gliders | **Scaffolding** — overlays/refs added; collision lemmas vs `infTapeStep` still open. |
-| **3** CTS ↦ dynamics | Baseline tape helpers only. |
-| **4** TM ↦ CTS | `TMCTSCompilation` interface only (no Mathlib `TM2` witness yet). |
-| **5** UGP chain | `gte_in_rule110_sim_ax` removal blocked until Milestones 3–4. |
-
-## Integration
-
-`ugp-lean-exp` depends on this package (`lakefile.lean`: `".." / "rule110-lean"`) and imports `UgpLean.Universality.CookRule110Ref` from `HypothesisB.lean`.
-
-## Build
+Lean `v4.29.1`, Mathlib `v4.29.1` (see `lakefile.lean`).
 
 ```bash
+lake update
 lake build
 ```
+
+## References
+
+- Cook, M. (2004). Universality in Elementary Cellular Automata. *Complex Systems* **15**(1), 1–40. DOI [10.25088/ComplexSystems.15.1.1](https://doi.org/10.25088/ComplexSystems.15.1.1). PDF mirror: [content.wolfram.com/sites/13/2018/02/15-1-1.pdf](https://content.wolfram.com/sites/13/2018/02/15-1-1.pdf)
+
+- Wolfram, S. (2002). *A New Kind of Science.* Wolfram Media. *(Contains Wolfram's original conjecture about Rule 110 universality.)*
+
+- Wolfram, S. (1983). Statistical Mechanics of Cellular Automata. *Reviews of Modern Physics* **55**, 601–644. *(Introduced the Wolfram numbering scheme for elementary cellular automata.)*
+
+- Wolfram, S. (1984). Universality and Complexity in Cellular Automata. *Physica D* **10**, 1–35. *(Conjectured that class-4 cellular automata might be capable of universal computation.)*
+
+- Wolfram, S. (1985). Undecidability and Intractability in Theoretical Physics. *Physical Review Letters* **54**, 735–738.
+
+- Neary, T. and Woods, D. (2009). A Concrete View of Rule 110 Computation. *Proceedings of Computability in Europe (CiE 2009)*, Lecture Notes in Computer Science. arXiv: [0906.3248](https://arxiv.org/abs/0906.3248). *(Provides an explicit compiler from Turing machines to Rule 110 initial states; used for the Neary–Woods §2 collision taxonomy in this library.)*
+
+- Minsky, M. (1972). *Computation: Finite and Infinite Machines.* Prentice-Hall. *(Tag systems and Turing machines, cited by Cook [10].)*
+
+- Cocke, J. (1964). Universality of Tag Systems With P = 2. *Journal of the ACM* **11**(1), 15–20. *(Tag systems are universal; cited by Cook [12].)*
+
+- Post, E. (studied tag systems ca. 1921; cited by Cook [11].)
+
+- Smith, A.R. III (1971). Simple Computation-Universal Cellular Spaces. *Journal of the ACM* **18**(3), 339–353. *(Earlier universal one-dimensional cellular automata; cited by Cook [4].)*
+
+- Wolfram, S. (1986). *Theory and Applications of Cellular Automata.* World Scientific. *(Contains Doug Lind's glider table for Rule 110, cited by Cook [13]; the table lists all common gliders including C1, C2, C3, D1, D2, A, B, Ē, E, F, G.)*
+
+**Note on a common citation error:** The identifier `arxiv:cs/0401007` does **not** correspond to Cook's Rule 110 universality paper. Cook's paper is the *Complex Systems* journal article cited above.
