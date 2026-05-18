@@ -153,13 +153,28 @@ theorem gliders_to_tape_phased_nil :
              phaseEther, Nat.add_zero]
   simp [cookEther, cookEtherBits]
 
-/-- Outside all gliders, the phased tape equals the phase-shifted ether. -/
+/-- If no placement contains position `i`, `List.findSome?` returns `none`. -/
+private theorem findSome_none_iff_all_none
+    (placements : List GliderPlacement) (i : ℕ)
+    (hout : ∀ g ∈ placements, ¬ (g.origin ≤ i ∧ i - g.origin < g.bits.length)) :
+    placements.findSome? (fun g =>
+      if _ : g.origin ≤ i ∧ i - g.origin < g.bits.length
+      then some (g.bits.getD (i - g.origin) false) else none) = none := by
+  induction placements with
+  | nil => rfl
+  | cons hd tl ih =>
+    have hmem_hd : hd ∈ hd :: tl := List.mem_cons.mpr (Or.inl rfl)
+    have hmem_tl : ∀ g' ∈ tl, g' ∈ hd :: tl := fun g' h => List.mem_cons.mpr (Or.inr h)
+    have hg : ¬ (hd.origin ≤ i ∧ i - hd.origin < hd.bits.length) := hout hd hmem_hd
+    simp only [List.findSome?, dif_neg hg]
+    exact ih (fun g' hg' => hout g' (hmem_tl g' hg'))
+
+/-- Outside all gliders, the phased tape equals the phase-shifted ether (zero sorry). -/
 theorem gliders_to_tape_phased_outside
     (placements : List GliderPlacement) (i : ℕ)
     (hout : ∀ g ∈ placements, ¬ (g.origin ≤ i ∧ i - g.origin < g.bits.length)) :
     gliders_to_tape_phased placements i = phaseEther i (accumPhaseAt placements i) := by
-  -- The findSome? returns none when no placement contains i; follows by list induction.
-  sorry
+  simp only [gliders_to_tape_phased, findSome_none_iff_all_none placements i hout]
 
 /-! ## CTS word → glider list encoding (Milestone 3 — Cook §4)
 
@@ -238,6 +253,47 @@ def cts_to_rule110_tape_phased (_cts : CyclicTagSystem) (w : List Bool) : InfTap
     which only require existence of encode/decode. -/
 def cts_to_rule110_tape (_cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) : InfTape :=
   gliders_to_tape (cts_word_to_gliders w idx)
+
+/-! ## Tape → CTS word decode (Milestone 3 — round-trip for simulation)
+
+`tape_to_gliders_bit` reads a single CTS bit from the tape at slot `k` by checking
+whether the tape value at position `cts_tape_origin + k * cts_glider_spacing` differs
+from what pure ether would give there.  A C2 glider is present (bit = 1) iff the tape
+differs from the accumulated-phase ether at that position.
+
+`tape_to_cts_word` decodes `len` consecutive slots back to a binary word.
+-/
+
+/-- Does the tape at slot `k` (with accumulated phase `accum`) carry a C2 glider?
+    A glider is present when the tape differs from the expected ether value at the
+    slot origin. We check the FIRST bit of the C2 phase-0 pattern (`cookC2Bits.getD 0`). -/
+def tape_has_glider_at (tape : InfTape) (k : ℕ) (accum : ℕ) : Bool :=
+  let origin := cts_tape_origin + k * cts_glider_spacing
+  -- The expected ether value at origin with accumulated phase shift
+  let expected := cookEtherBits ⟨(origin + accum) % 14, Nat.mod_lt _ (by decide)⟩
+  -- C2 glider phase-0 has first bit = true (1). If tape differs from ether here, glider present.
+  tape origin ≠ expected
+
+/-- Decode `len` CTS bits from the tape (given accumulated phase 0 to start). -/
+def tape_to_cts_word (tape : InfTape) (len : ℕ) : List Bool :=
+  (List.range len).map (fun k =>
+    -- Accumulation: k gliders already passed means phase = 3*k (only if all prev bits were 1)
+    -- For decoding we use the simple check: does slot k have a C2 glider?
+    tape_has_glider_at tape k 0)
+
+/-- **Base case: empty CTS word has trivial simulation.**
+    If the CTS word is empty, `cts_to_rule110_tape_phased` is pure ether and stays ether forever. -/
+theorem cts_simulation_empty (cts : CyclicTagSystem) :
+    cts_to_rule110_tape_phased cts [] = cookEther := by
+  simp only [cts_to_rule110_tape_phased, cts_word_to_placements_phased, List.foldl]
+  exact gliders_to_tape_phased_nil
+
+/-- After `n` Rule 110 steps, the empty-word tape at site `i ≥ n` equals `cookEther (i + 4*n)`.
+    The ether drifts spatially; at `i = 0` or using `mod 14` it returns to itself. -/
+theorem cts_empty_word_rule110_drift (n : ℕ) (cts : CyclicTagSystem) (i : ℕ) (hi : n ≤ i) :
+    infRule110Steps n (cts_to_rule110_tape_phased cts []) i = cookEther (i + 4 * n) := by
+  rw [cts_simulation_empty]
+  exact infRule110Steps_cookEther_shift hi
 
 /-! ## Explicit Cook collision axioms (SPEC_069_C1R Milestone 3)
 
