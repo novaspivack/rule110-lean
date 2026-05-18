@@ -128,4 +128,3 @@ lake build
 
 - Wolfram, S. (1986). *Theory and Applications of Cellular Automata.* World Scientific. *(Contains Doug Lind's glider table for Rule 110, cited by Cook [13]; the table lists all common gliders including C1, C2, C3, D1, D2, A, B, Ē, E, F, G.)*
 
-**Note on a common citation error:** The identifier `arxiv:cs/0401007` does **not** correspond to Cook's Rule 110 universality paper. Cook's paper is the *Complex Systems* journal article cited above.
