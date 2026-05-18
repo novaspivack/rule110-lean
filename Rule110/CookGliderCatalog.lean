@@ -130,24 +130,36 @@ Cross-reference: Cook (2004) §3, Figure 4; Neary–Woods arXiv:0906.3248 §2.
 
 /-- The canonical 7-phase C-glider cycle (phase-0 through phase-6).
     Each entry is the 6-cell bit pattern at that time step.
-    `false` = 0, `true` = 1. -/
-def cookCGliderCycle : Fin 7 → List Bool
-  | ⟨0, _⟩ => [true,  true,  false, false, false, true]   -- 110001
-  | ⟨1, _⟩ => [false, true,  false, false, true,  true]   -- 010011
-  | ⟨2, _⟩ => [true,  true,  false, true,  true,  false]  -- 110110
-  | ⟨3, _⟩ => [false, true,  true,  true,  true,  true]   -- 011111
-  | ⟨4, _⟩ => [true,  true,  false, false, false, false]  -- 110000
-  | ⟨5, _⟩ => [false, true,  false, false, false, false]  -- 010000
-  | ⟨6, _⟩ => [true,  true,  false, false, false, false]  -- 110000
+    `false` = 0, `true` = 1.
 
-/-- C2 phase-0 bits (Cook width 3, left ether phase 2 in our `cookEther` coordinate). -/
+    **Coordinate system:** `cookEther` with `OUR_ETHER = 10011011111000` (period 14).
+    At time t=0, the left ether phase (in our `cookEtherBits ((i+p)%14)` convention) is 11,
+    right ether phase is 0 (Cook width = (0-11) mod 14 = 3).
+
+    The cycle was extracted by organic emergence: random Rule 110 initial conditions
+    evolve for 2000+ steps, then stationary period-7 structures are identified and
+    their phase sequences recorded. Verified by: `CookGliderVerification.c2_glider_phaseN_period7`.
+
+    Cross-reference: Cook (2004) Figure 4; also matches the patterns in Cook (2009)
+    block PNGs (`blocks/C.png`). -/
+def cookCGliderCycle : Fin 7 → List Bool
+  | ⟨0, _⟩ => [true,  true,  false, false, false, true]   -- 110001  (lp=11)
+  | ⟨1, _⟩ => [false, true,  false, false, true,  true]   -- 010011  (lp=1)
+  | ⟨2, _⟩ => [true,  true,  false, true,  true,  false]  -- 110110  (lp=5)
+  | ⟨3, _⟩ => [false, true,  true,  true,  true,  true]   -- 011111  (lp=9)
+  | ⟨4, _⟩ => [true,  true,  false, false, false, false]  -- 110000  (lp=13)
+  | ⟨5, _⟩ => [true,  true,  false, false, false, false]  -- 110000  (lp=3)
+  | ⟨6, _⟩ => [false, true,  false, false, false, false]  -- 010000  (lp=7)
+
+/-- C2 phase-0 bits (Cook width 3, left ether phase 11 in our `cookEther` coordinate,
+    at gpos where `gpos % 14 = 0`). -/
 def cookC2Bits : List Bool := cookCGliderCycle ⟨0, by decide⟩
 
-/-- C1 phase-0 bits (Cook width 9, left ether phase 12 in our `cookEther` coordinate). -/
-def cookC1Bits : List Bool := cookCGliderCycle ⟨4, by decide⟩
+/-- C1 phase-0 bits (Cook width 9, left ether phase 4 in our `cookEther` coordinate). -/
+def cookC1Bits : List Bool := cookCGliderCycle ⟨5, by decide⟩
 
-/-- C3 phase-0 bits (Cook width 11, left ether phase 12 in our `cookEther` coordinate). -/
-def cookC3Bits : List Bool := cookCGliderCycle ⟨3, by decide⟩
+/-- C3 phase-0 bits (Cook width 11, left ether phase 3 in our `cookEther` coordinate). -/
+def cookC3Bits : List Bool := cookCGliderCycle ⟨0, by decide⟩
 
 theorem cookC2Bits_length : cookC2Bits.length = 6 := by decide
 theorem cookC1Bits_length : cookC1Bits.length = 6 := by decide
