@@ -108,7 +108,18 @@ lake build
 
 - Cook, M. (2004). Universality in Elementary Cellular Automata. *Complex Systems* **15**(1), 1–40. DOI [10.25088/ComplexSystems.15.1.1](https://doi.org/10.25088/ComplexSystems.15.1.1). PDF mirror: [content.wolfram.com/sites/13/2018/02/15-1-1.pdf](https://content.wolfram.com/sites/13/2018/02/15-1-1.pdf) *(Original universality proof; source of the glider catalog, Figure 4/5, and §3–4 collision taxonomy.)*
 
-- Cook, M. (2008/2009). A Concrete View of Rule 110 Computation. *EPTCS* **1**, 31–55. DOI [10.4204/EPTCS.1.4](https://doi.org/10.4204/EPTCS.1.4). arXiv: [0906.3248](https://arxiv.org/abs/0906.3248) *(Explicit compiler from Turing machine to Rule 110 initial state; provides exact step counts M = 30·(2L+1) per CTS step for appendant length L, and the ossifier-spacing formula v = 76·Y + 80·N + 60·(nonempty) + 43·(empty). **Primary reference for `scripts/cook_m_values.py` and the `cook_cts_step_sim_ax` step counts.)**
+- Cook, M. (2008/2009). A Concrete View of Rule 110 Computation. *EPTCS* **1**, 31–55. DOI [10.4204/EPTCS.1.4](https://doi.org/10.4204/EPTCS.1.4). arXiv: [0906.3248](https://arxiv.org/abs/0906.3248) *(Explicit compiler from Turing machine to Rule 110 initial state; provides exact step counts M = 30·(2L+1) per CTS step for appendant length L, and the ossifier-spacing formula v = 76·Y + 80·N + 60·(nonempty) + 43·(empty). **Primary reference for `scripts/cook_m_values.py` and the `cook_cts_step_sim_ax` step counts.)*
+
+## Third-party assets
+
+The block PNG images in `blocks/` (files `A.png` through `L.png`) and the block-extraction approach in `scripts/extract_blocks.py` are derived from the open-source repository:
+
+> **inexxt/rule_110** — *From arbitrary Turing Machines to Rule 110 in Python*  
+> https://github.com/inexxt/rule_110 (MIT-style; no explicit license file)
+
+That repository implements Cook's 2004/2009 construction in Python and provides PNG images of the 12 block diagrams (Figures 1 and 2 of Cook 2009), extracted from Cook's paper. The images are reproduced here for use in Lean formalization work. If the original images are subject to copyright from Cook's paper, that claim belongs to the original authors; these assets are used here under fair use for academic research purposes.
+
+The `symbols_to_bits.py` phase-propagation logic in that repository informed the implementation of `scripts/extract_blocks.py`.
 
 - Wolfram, S. (2002). *A New Kind of Science.* Wolfram Media. *(Contains Wolfram's original conjecture about Rule 110 universality.)*
 
