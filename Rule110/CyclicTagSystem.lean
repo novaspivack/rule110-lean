@@ -96,6 +96,44 @@ theorem cts_eval_with_idx_succ (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bo
       cts.cts_eval_with_idx n w₁ idx₁ := by
   simp only [cts_eval_with_idx, cts_steps_succ]
 
+@[simp] theorem cts_step_empty (cts : CyclicTagSystem) (idx : ℕ) :
+    cts.cts_step idx [] = ([], idx) := by
+  simp [cts_step]
+
+/-- Empty CTS word stays empty under `cts_eval_with_idx` (appendant index may advance). -/
+theorem cts_eval_with_idx_empty (cts : CyclicTagSystem) (n : ℕ) (idx₀ : ℕ) :
+    (cts.cts_eval_with_idx n [] idx₀).1 = [] := by
+  induction n with
+  | zero => simp [cts_eval_with_idx_zero]
+  | succ n ih =>
+    rw [cts_eval_with_idx_succ]
+    simp only [cts_step_empty]
+    exact ih
+
+private theorem cts_steps_fst (cts : CyclicTagSystem) (n : ℕ) (w : List Bool) (idx : ℕ) :
+    (cts_steps cts n w idx).1 = (cts.cts_eval_with_idx n w idx).1 := rfl
+
+theorem cts_steps_add (cts : CyclicTagSystem) (m n : ℕ) (w : List Bool) (idx : ℕ) :
+    cts_steps cts (m + n) w idx =
+      let (w', idx') := cts_steps cts m w idx
+      cts_steps cts n w' idx' := by
+  induction m generalizing n w idx with
+  | zero => simp [cts_steps]
+  | succ m ih =>
+    rw [Nat.succ_add, cts_steps_succ]
+    rcases hstep : cts.cts_step idx w with ⟨w₁, idx₁⟩
+    simp only [hstep]
+    rw [ih n w₁ idx₁]
+    cases hm : cts.cts_steps m w₁ idx₁ with
+    | mk w' idx' =>
+      simp [hm, cts_steps_succ, hstep]
+
+theorem cts_eval_with_idx_add (cts : CyclicTagSystem) (m n : ℕ) (w : List Bool) (idx : ℕ) :
+    cts.cts_eval_with_idx (m + n) w idx =
+      let (w', idx') := cts.cts_eval_with_idx m w idx
+      cts.cts_eval_with_idx n w' idx' := by
+  simp only [cts_eval_with_idx, cts_steps_add]
+
 @[simp] theorem cts_eval_zero (cts : CyclicTagSystem) (w₀ : List Bool) :
     cts.cts_eval 0 w₀ = w₀ := by
   simp [cts_eval]

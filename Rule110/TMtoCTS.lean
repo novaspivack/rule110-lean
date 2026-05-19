@@ -69,4 +69,12 @@ theorem TMCTSCompilation.eval_word_succ {Cfg : Type} {tmStep : Cfg → Option Cf
     (comp : TMCTSCompilation tmStep) (c : Cfg) (m : ℕ) :
     comp.eval_word c (m + 1) = (comp.eval_with_idx c (m + 1)).1 := rfl
 
+/-- Multi-step CTS evaluation composes (`m + n` microsteps). -/
+theorem TMCTSCompilation.eval_with_idx_add {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) (m n : ℕ) :
+    comp.eval_with_idx c (m + n) =
+      let (w', idx') := comp.eval_with_idx c m
+      comp.sys.cts_eval_with_idx n w' idx' := by
+  simp [TMCTSCompilation.eval_with_idx, cts_eval_with_idx_add]
+
 end Rule110

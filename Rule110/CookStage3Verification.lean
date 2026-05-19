@@ -218,6 +218,25 @@ theorem cook_cts_eval_sim_at_data_cones_zero_witness (cts : CyclicTagSystem) (w�
     CookCtsEvalSimAtDataCones cts 0 w₀ idx₀ :=
   cook_cts_eval_sim_at_data_cones_zero cts w₀ idx₀
 
+theorem cook_cts_eval_sim_at_data_cones_empty_input_witness (cts : CyclicTagSystem) (n : ℕ)
+    (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataCones cts n [] idx₀ :=
+  cook_cts_eval_sim_at_data_cones_empty_input cts n idx₀
+
+theorem cook_standard_empty_cts_data_cones_witness (n : ℕ) :
+    CookCtsEvalSimAtDataCones cook_standard_empty_cts n [] 0 :=
+  cook_standard_empty_cts_data_cones n
+
+theorem cook_cts_eval_sim_at_data_cones_universal (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataCones cts n w₀ idx₀ :=
+  cook_cts_eval_sim_at_data_cones cts n w₀ idx₀
+
+theorem CyclicTagSystem.cts_eval_with_idx_empty_witness (cts : CyclicTagSystem) (n : ℕ)
+    (idx₀ : ℕ) :
+    (cts.cts_eval_with_idx n [] idx₀).1 = [] :=
+  CyclicTagSystem.cts_eval_with_idx_empty cts n idx₀
+
 theorem CookCtsEvalSimAt_implies_data_cones_witness (cts : CyclicTagSystem) (n : ℕ)
     (w₀ : List Bool) (idx₀ : ℕ) (h : CookCtsEvalSimAt cts n w₀ idx₀) :
     CookCtsEvalSimAtDataCones cts n w₀ idx₀ :=

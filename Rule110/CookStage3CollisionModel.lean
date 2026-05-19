@@ -54,15 +54,49 @@ def len6DataConesReadbackOk : Bool :=
 theorem len6_data_cones_readback_not_ok : len6DataConesReadbackOk = false :=
   len6_one_step_data_cones_not_ok
 
-/-- **Cook Collision Axiom C3′ (data-cone readback):** weaker Stage 3 target pending §4 certificates. -/
-axiom cook_cts_eval_sim_data_cones_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
+/-- **Vacuous discharge:** when the post-`n` CTS word is empty, no data slots require readback. -/
+theorem cook_cts_eval_sim_at_data_cones_of_empty_post_word (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ)
+    (hw : (cts.cts_eval_with_idx n w₀ idx₀).1 = []) :
+    CookCtsEvalSimAtDataCones cts n w₀ idx₀ := by
+  intro slot hslot d _hd
+  have hlen : (cts.cts_steps n w₀ idx₀).1.length = 0 := by
+    rw [← CyclicTagSystem.cts_eval_with_idx, hw, List.length_nil]
+  have hpos : slot < 0 := by
+    rw [hlen] at hslot
+    exact hslot
+  exact (Nat.not_lt_zero slot hpos).elim
+
+/-- **C3′ discharge (empty input word):** no axiom required — post-step word stays empty. -/
+theorem cook_cts_eval_sim_at_data_cones_empty_input (cts : CyclicTagSystem) (n : ℕ) (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataCones cts n [] idx₀ :=
+  cook_cts_eval_sim_at_data_cones_of_empty_post_word cts n [] idx₀
+    (CyclicTagSystem.cts_eval_with_idx_empty cts n idx₀)
+
+/-- **Cook Collision Axiom C3′ (data-cone readback):** required only when post-step word
+    has data slots (`w.length > 0`). Empty-word cases are discharged above. -/
+axiom cook_cts_eval_sim_data_cones_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ)
+    (hdata : 0 < (cts.cts_eval_with_idx n w₀ idx₀).1.length) :
     CookCtsEvalSimAtDataCones cts n w₀ idx₀
 
-/-- **Stage 3 induction scaffold (data cones, empty appendant):** from one-step C3′ at `[]`
-    and empty-word stability, all `n` follow (via `cook_cts_eval_sim_data_cones_ax`). -/
-theorem cook_cts_eval_sim_at_data_cones_empty_all (cts : CyclicTagSystem)
-    (hempty : ∀ n, cts.cts_eval n [] = []) :
-    ∀ n, CookCtsEvalSimAtDataCones cts n [] 0 :=
-  fun n => cook_cts_eval_sim_data_cones_ax cts n [] 0
+/-- Split C3′: empty post-word is a theorem; nonempty post-word uses the axiom. -/
+theorem cook_cts_eval_sim_at_data_cones (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataCones cts n w₀ idx₀ := by
+  by_cases hw : (cts.cts_eval_with_idx n w₀ idx₀).1 = []
+  · exact cook_cts_eval_sim_at_data_cones_of_empty_post_word cts n w₀ idx₀ hw
+  · have hpos : 0 < (cts.cts_eval_with_idx n w₀ idx₀).1.length := by
+      cases w : (cts.cts_eval_with_idx n w₀ idx₀).1 with
+      | nil => contradiction
+      | cons _ _ => simp
+    exact cook_cts_eval_sim_data_cones_ax cts n w₀ idx₀ hpos
+
+/-- **Stage 3 (data cones, empty appendant):** all `n` at `w₀ = []` without legacy C3. -/
+theorem cook_cts_eval_sim_at_data_cones_empty_all (cts : CyclicTagSystem) (n : ℕ) :
+    CookCtsEvalSimAtDataCones cts n [] 0 :=
+  cook_cts_eval_sim_at_data_cones_empty_input cts n 0
+
+theorem cook_standard_empty_cts_data_cones (n : ℕ) :
+    CookCtsEvalSimAtDataCones cook_standard_empty_cts n [] 0 :=
+  cook_cts_eval_sim_at_data_cones_empty_input cook_standard_empty_cts n 0
 
 end Rule110
