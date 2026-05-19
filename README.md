@@ -34,6 +34,8 @@ This library formalizes the mathematical infrastructure for Cook's construction 
 | | `infRule110Steps_shiftInfTape_four` | Shift by 4 intertwines with `n` Rule 110 steps (boundary-isolated) |
 | **Overlay locality** | `overrideCells_eq_base_on_Icc` | Writes outside `[lo,hi]` are invisible inside `[lo,hi]` |
 | | `ctsTapeWithOverrides_infRule110Steps_eq_shift_of_disjoint` | Payload outside the backwards cone ⇒ observer sees unperturbed ether drift |
+| **Stage 1 (partial)** | `cook_cts_step_sim_ax` | Far-field ether drift after M steps (theorem; was axiom) |
+| | `cook_c2_tape_bit_sim_witness` | Bounded C2 read slots 0–20 via `native_decide` |
 | **C-glider patterns** | `cookCGliderCycle` | Verified 7-phase cycle for C1/C2/C3 gliders |
 | | `cookC1/C2/C3Bits_length` | Each glider is 6 cells wide |
 | **Two-phase ether** | `phaseEther_zero` | Zero accumulated shift reduces to `cookEther` |
@@ -77,6 +79,9 @@ Patterns extracted by organic emergence (random initial conditions → long Rule
 | `Rule110.Gliders` | `GliderConfig` (species, origin, phase, bits); `gliders_to_tape`; overlay utilities |
 | `Rule110.CTStoRule110` | Two-phase ether infrastructure (`GliderPlacement`, `accumPhaseAt`, `gliders_to_tape_phased`, `c2CyclePhase`); CTS-word-to-glider encoding; explicit collision axioms |
 | `Rule110.TMtoCTS` | `TMCTSCompilation` interface for the TM → CTS reduction |
+| `Rule110.CookC2BoundedSim` | Bounded list simulator; C2 read witness slots 0–20 |
+| `Rule110.CookC2InfTapeBridge` | `listToInfTape`; decode alignment with `tape_has_glider_at` |
+| `Rule110.CookStage1Verification` | Stage 1 summary re-exports |
 
 ## Status toward full universality proof
 
@@ -89,9 +94,9 @@ Patterns extracted by organic emergence (random initial conditions → long Rule
 | **M5** | Full chain assembly; `#print axioms` clean | **Open** |
 
 The three collision axioms in `Rule110.CTStoRule110` are honest, named, falsifiable claims:
-- `cook_c2_tape_bit_ax` — C2 glider encodes one CTS bit
-- `cook_cts_step_sim_ax` — one CTS step = M Rule 110 steps
-- `cook_cts_eval_sim_ax` — n CTS steps = M Rule 110 steps (inductive extension)
+- `cook_c2_tape_bit_ax` — C2 glider encodes one CTS bit (**open**; bounded witness slots 0–20 in `CookC2BoundedSim`)
+- `cook_cts_step_sim_ax` — one CTS step = M Rule 110 steps (**discharged** as theorem, far-field)
+- `cook_cts_eval_sim_ax` — n CTS steps = M Rule 110 steps (inductive extension; **open**, Stage 3)
 
 These correspond to finite verification tasks (specific Rule 110 step counts on specific finite tapes) that could in principle be discharged by `native_decide` once the exact Cook §4 collision witnesses are worked out.
 
