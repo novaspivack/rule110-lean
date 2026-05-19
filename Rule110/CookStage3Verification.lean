@@ -12,6 +12,7 @@ import Rule110.CookC3PrimeDecodeSim
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
+import Rule110.CookStage3Len6Refinement
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -316,7 +317,12 @@ theorem cook_standard_empty_cts_data_cones_origin_witness (n : ℕ) :
 theorem cook_cts_eval_sim_at_data_cones_origin_universal (cts : CyclicTagSystem) (n : ℕ)
     (w₀ : List Bool) (idx₀ : ℕ) :
     CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀ :=
-  cook_cts_eval_sim_at_data_cones_origin cts n w₀ idx₀
+  cook_cts_eval_sim_at_data_cones_origin_refined cts n w₀ idx₀
+
+theorem cook_cts_phased_post_decode_universal (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsPhasedPostDecodeAt cts n w₀ idx₀ :=
+  cook_cts_phased_post_decode_refined cts n w₀ idx₀
 
 theorem CookCtsEvalSimAtDataCones_implies_origin_witness (cts : CyclicTagSystem) (n : ℕ)
     (w₀ : List Bool) (idx₀ : ℕ) (h : CookCtsEvalSimAtDataCones cts n w₀ idx₀) :
