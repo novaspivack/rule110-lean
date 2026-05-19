@@ -15,7 +15,7 @@ post-appendant phased encode. This module lifts that list witness to `InfTape`
 
 namespace Rule110
 
-private theorem len6OneStepOriginCellOk_get (slot : ℕ) (hslot : slot < 6) :
+theorem len6OneStepOriginCellOk_get (slot : ℕ) (hslot : slot < 6) :
     (c2SimRun 390 len6TruePhasedSupportInit).getD (c2SimOrigin slot) false =
       len6PostAppendantPhasedSupportInit.getD (c2SimOrigin slot) false := by
   have hall : ((List.range 6).all fun slot =>
@@ -25,7 +25,7 @@ private theorem len6OneStepOriginCellOk_get (slot : ℕ) (hslot : slot < 6) :
   have hdec := (List.all_eq_true.mp hall) slot (List.mem_range.mpr hslot)
   exact (decide_eq_true_iff).1 hdec
 
-private theorem len6_slot_origin_lt_bound (slot : ℕ) (hslot : slot < 6) :
+theorem len6_slot_origin_lt_bound (slot : ℕ) (hslot : slot < 6) :
     c2SimOrigin slot < 2500 := by
   simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing]
   omega

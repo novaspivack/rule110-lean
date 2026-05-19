@@ -99,4 +99,11 @@ theorem len6_origin_inf_steps_agree_init (slot : ℕ) (hslot : slot < 6) :
   · intro j hj_lo hj_hi
     exact len6True_phased_init_eq_list_on_origin_window slot hslot j hj_lo hj_hi
 
+theorem len6_origin_inf_eq_list_fin (slot : ℕ) (hslot : slot < 6) :
+    infRule110Steps 390
+        (cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word)
+        (c2SimOrigin slot) =
+      listToInfTape (c2SimRun 390 len6TruePhasedSupportInit) (c2SimOrigin slot) :=
+  (len6_origin_inf_steps_agree_init slot hslot).trans (len6True_run_eq_inf_390_at_slot slot hslot).symm
+
 end Rule110
