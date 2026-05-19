@@ -6,6 +6,8 @@ import Rule110.CookLen6AppendantSim
 import Rule110.CookLen6InfTapeBridge
 import Rule110.CookLen6StackSim
 import Rule110.CookStage3CollisionModel
+import Rule110.CookConstructionCollisionCerts
+import Rule110.CookLen6BlockStepSim
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -220,6 +222,18 @@ theorem CookCtsEvalSimAt_implies_data_cones_witness (cts : CyclicTagSystem) (n :
     (w₀ : List Bool) (idx₀ : ℕ) (h : CookCtsEvalSimAt cts n w₀ idx₀) :
     CookCtsEvalSimAtDataCones cts n w₀ idx₀ :=
   CookCtsEvalSimAt_implies_data_cones cts n w₀ idx₀ h
+
+theorem kind1_ossifier_c2_cone_negative :
+    collisionSimConeFixed kind1OssifierC2Init 30 0 = false :=
+  kind1_ossifier_c2_slot0_cone_not_fixed_30
+
+theorem kind2_true_support_cone_negative :
+    collisionSimConeFixed kind2TrueSupportInit 30 0 = false :=
+  kind2_true_support_slot0_cone_not_fixed_30
+
+theorem len6_dynamic_block_step_negative :
+    len6DynamicBlockStepDataConesOk cook_min_len6_true_word = false :=
+  len6_dynamic_block_step_data_cones_not_ok
 
 /-- List sim at slot origin after 390 steps matches InfTape stepping (L=6, idx encoding). -/
 theorem len6_true_origin_list_sim_eq_inf_390 :

@@ -25,5 +25,7 @@ import Rule110.CookLen6InfTapeBridge
 import Rule110.CookAppendantBlockStack
 import Rule110.CookLen6StackSim
 import Rule110.CookStage3CollisionModel
+import Rule110.CookConstructionCollisionCerts
+import Rule110.CookLen6BlockStepSim
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/
