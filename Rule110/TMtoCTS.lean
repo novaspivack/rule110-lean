@@ -77,4 +77,12 @@ theorem TMCTSCompilation.eval_with_idx_add {Cfg : Type} {tmStep : Cfg → Option
       comp.sys.cts_eval_with_idx n w' idx' := by
   simp [TMCTSCompilation.eval_with_idx, cts_eval_with_idx_add]
 
+/-- One microstep via `eval_with_idx_add` with `n = 1`. -/
+theorem TMCTSCompilation.eval_with_idx_one {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) :
+    comp.eval_with_idx c 1 =
+      let (w, idx) := comp.enc c
+      comp.sys.cts_eval_with_idx 1 w idx := by
+  simpa using comp.eval_with_idx_add c 0 1
+
 end Rule110
