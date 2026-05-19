@@ -28,4 +28,12 @@ theorem cook_total_M_succ_witness (cts : CyclicTagSystem) (n : ℕ) :
         cook_M_for_appendant_len (cts.appendants.getD (n % cts.cycleLen) []).length :=
   cook_total_M_succ cts n
 
+@[simp] theorem cts_eval_one_empty (cts : CyclicTagSystem) :
+    cts.cts_eval 1 [] = [] := by
+  simp [CyclicTagSystem.cts_eval_succ, CyclicTagSystem.cts_step]
+
+theorem cook_cts_eval_one_empty (cts : CyclicTagSystem) :
+    cts.cts_eval 1 [] = [] :=
+  cts_eval_one_empty cts
+
 end Rule110

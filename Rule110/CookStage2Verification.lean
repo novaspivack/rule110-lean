@@ -57,4 +57,16 @@ theorem cook_leader_placement_before_origin (i : ℕ) (hi : i < cts_leader_origi
     ¬ (cts_leader_placement.origin + cts_leader_placement.bits.length ≤ i) :=
   cts_leader_placement_ends_after i hi
 
+theorem cook_phased_support_outside_slot_cone_witness (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    ∀ g ∈ cts_support_placements,
+      ¬ (g.origin ≤ k ∧ k - g.origin < g.bits.length) :=
+  cts_phased_support_outside_slot_cone slot hslot k hk_lo hk_hi
+
+theorem cook_accumPhaseAt_phased_support_ossifier_offset (w : List Bool) (i : ℕ)
+    (hdata : cts_tape_origin ≤ i) (hleader : i < cts_leader_origin) :
+    accumPhaseAt (cts_word_to_placements_phased_with_support w) i =
+      6 + accumPhaseAt (cts_word_to_placements_phased w) i :=
+  accumPhaseAt_phased_with_support_ossifier_offset w i hdata hleader
+
 end Rule110

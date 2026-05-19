@@ -134,4 +134,54 @@ theorem cook_total_M_one (cts : CyclicTagSystem) :
       cook_M_for_appendant_len (cts.appendants.getD (0 % cts.cycleLen) []).length := by
   simp [cook_total_M]
 
+/-! ## Phased support spacing (Stage 3 scaffolding) -/
+
+theorem cts_ossifier_placement_end_le_tape_origin :
+    cts_ossifier_placement.origin + cts_ossifier_placement.bits.length ≤ cts_tape_origin := by
+  dsimp [cts_ossifier_placement, cts_ossifier_origin, cookOssifierPatchBits_length, cts_tape_origin]
+  decide
+
+theorem cts_tape_origin_lt_leader_origin : cts_tape_origin < cts_leader_origin := by
+  simp [cts_tape_origin, cts_leader_origin]
+
+theorem cts_leader_placement_origin_gt_slot_cone (slot : ℕ) (hslot : slot ≤ 20) :
+    cts_slot_origin slot + 30 < cts_leader_placement.origin := by
+  have hhi := cts_slot_cone_hi_le slot hslot
+  simp [cts_leader_placement, cts_leader_origin] at hhi ⊢
+  omega
+
+theorem cts_ossifier_placement_end_lt_slot_cone (slot : ℕ) (hslot : slot ≤ 20) :
+    cts_ossifier_placement.origin + cts_ossifier_placement.bits.length <
+      cts_slot_origin slot - 30 := by
+  have hlo := cts_slot_cone_lo_ge slot hslot
+  simp [cts_ossifier_placement, cts_ossifier_origin, cookOssifierPatchBits_length,
+    cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hlo ⊢
+  omega
+
+/-- Support placements are spatially disjoint from the 30-step read cone (slots ≤ 20). -/
+theorem cts_phased_support_outside_slot_cone (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    ∀ g ∈ cts_support_placements,
+      ¬ (g.origin ≤ k ∧ k - g.origin < g.bits.length) := by
+  intro g hg
+  rcases List.mem_cons.mp hg with h | hg
+  · subst h
+    intro ⟨_hk_origin, hk_in⟩
+    have h506 : cts_ossifier_origin + 6 ≤ k := by
+      have hend := cts_ossifier_placement_end_lt_slot_cone slot hslot
+      simp [cts_ossifier_placement, cts_ossifier_origin, cookOssifierPatchBits_length,
+        cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hend hk_lo ⊢
+      omega
+    have hk506 : k < cts_ossifier_origin + 6 := by
+      simp [cts_ossifier_placement, cts_ossifier_origin, cookOssifierPatchBits_length] at hk_in ⊢
+      omega
+    exact (Nat.not_lt.mpr h506) hk506
+  · simp [List.mem_singleton] at hg
+    subst hg
+    intro ⟨hk_origin, _⟩
+    have hhi := cts_slot_cone_hi_le slot hslot
+    simp [cts_leader_placement, cts_leader_origin, cts_slot_origin, cts_tape_origin,
+      cts_glider_spacing] at hk_origin hk_hi hhi ⊢
+    omega
+
 end Rule110

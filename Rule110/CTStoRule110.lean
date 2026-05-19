@@ -137,6 +137,14 @@ def accumPhaseAt (placements : List GliderPlacement) (i : ℕ) : ℕ :=
   placements.foldl (fun p g =>
     if g.origin + g.bits.length ≤ i then p + g.cook_width else p) 0
 
+theorem accumPhaseAt_nil (i : ℕ) : accumPhaseAt [] i = 0 := rfl
+
+theorem accumPhaseAt_skip_head (g : GliderPlacement) (gs : List GliderPlacement) (i : ℕ)
+    (hskip : ¬ (g.origin + g.bits.length ≤ i)) :
+    accumPhaseAt (g :: gs) i = accumPhaseAt gs i := by
+  unfold accumPhaseAt
+  simp [List.foldl_cons, hskip]
+
 /-- Build a Rule 110 tape with correct two-phase ether background.
     For positions inside a glider: uses the glider's bits.
     For positions outside all gliders: uses ether at the accumulated phase shift.
@@ -281,6 +289,52 @@ theorem cts_leader_placement_ends_after (i : ℕ) (hi : i < cts_leader_origin) :
     simpa [cookLBlockRow0_length] using hle
   simp [cts_leader_origin] at hi
   linarith
+
+private theorem accumPhaseAt_foldl_add_init (gs : List GliderPlacement) (i init : ℕ) :
+    gs.foldl (fun p g => if g.origin + g.bits.length ≤ i then p + g.cook_width else p) init =
+      init + gs.foldl (fun p g => if g.origin + g.bits.length ≤ i then p + g.cook_width else p) 0 := by
+  revert init
+  induction gs with
+  | nil =>
+    intro init
+    simp
+  | cons g gs ih =>
+    intro init
+    simp only [List.foldl_cons]
+    by_cases h : g.origin + g.bits.length ≤ i
+    · simp [h, Nat.zero_add]
+      rw [ih (init + g.cook_width), ih g.cook_width]
+      ac_rfl
+    · simp [h]
+      exact ih init
+
+/-- Below the leader origin, the leader placement does not contribute to accumulated phase. -/
+theorem accumPhaseAt_support_below_leader (w : List Bool) (i : ℕ) (hi : i < cts_leader_origin) :
+    accumPhaseAt (cts_word_to_placements_phased_with_support w) i =
+    accumPhaseAt (cts_ossifier_placement :: cts_word_to_placements_phased w) i := by
+  rw [cts_word_to_placements_phased_with_support, cts_support_placements]
+  have happend :
+      [cts_ossifier_placement, cts_leader_placement] ++ cts_word_to_placements_phased w =
+        cts_ossifier_placement :: cts_leader_placement :: cts_word_to_placements_phased w := by
+    simp
+  rw [happend]
+  unfold accumPhaseAt
+  simp only [List.foldl_cons]
+  rw [if_neg (cts_leader_placement_ends_after i hi)]
+
+/-- At data-region positions, ossifier phase (+6) is already accumulated. -/
+theorem accumPhaseAt_phased_with_support_ossifier_offset (w : List Bool) (i : ℕ)
+    (hdata : cts_tape_origin ≤ i) (hleader : i < cts_leader_origin) :
+    accumPhaseAt (cts_word_to_placements_phased_with_support w) i =
+      6 + accumPhaseAt (cts_word_to_placements_phased w) i := by
+  rw [accumPhaseAt_support_below_leader w i hleader]
+  unfold accumPhaseAt
+  simp only [List.foldl_cons, cts_ossifier_placement]
+  have h506 : 506 ≤ i := Nat.le_trans (by decide : 506 ≤ cts_tape_origin) hdata
+  have hoss : cts_ossifier_origin + cookOssifierPatchBits.length ≤ i := by
+    dsimp [cts_ossifier_origin, cookOssifierPatchBits_length]
+    exact h506
+  rw [if_pos hoss, accumPhaseAt_foldl_add_init (cts_word_to_placements_phased w) i 6]
 
 /-- The canonical Rule 110 tape encoding for a CTS word + appendant index.
     Uses the simple (phase-0-only) glider placement; suitable for the collision axioms
