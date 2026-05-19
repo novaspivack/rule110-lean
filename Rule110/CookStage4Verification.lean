@@ -1,4 +1,5 @@
 import Rule110.CookTMCompilation
+import Rule110.CookTM2Bridge
 import Rule110.TMtoCTS
 
 /-!
@@ -6,6 +7,8 @@ import Rule110.TMtoCTS
 -/
 
 namespace Rule110
+
+open Turing
 
 theorem tm_identity_step_witness (c : Unit) :
     tmIdentityStep c = some c :=
@@ -31,5 +34,16 @@ theorem trivial_identity_eval_with_idx_add_witness (c : Unit) (m n : ℕ) :
       let (w', idx') := trivialIdentityTMComp.eval_with_idx c m
       trivialIdentityTMComp.sys.cts_eval_with_idx n w' idx' :=
   trivialIdentityTMComp.eval_with_idx_add c m n
+
+theorem cook_fin_tm2_id_machine_witness : Nonempty Turing.FinTM2 :=
+  cook_fin_tm2_id_machine
+
+theorem cook_bool_identity_simulates_step_witness (b b' : Bool)
+    (h : tmBoolIdentityStep b = some b') :
+    ∃ m,
+      let (w, idx) := cookBoolIdentityTMComp.enc b
+      let (w', idx') := cookBoolIdentityTMComp.sys.cts_steps m w idx
+      cookBoolIdentityTMComp.dec (w', idx') = b' :=
+  cook_bool_identity_simulates_step b b' h
 
 end Rule110

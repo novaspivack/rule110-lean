@@ -4,6 +4,8 @@ import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
 import Rule110.CookStage3Len6Refinement
 import Rule110.CookTMCompilation
+import Rule110.CookTM2Bridge
+import Rule110.CookUniversalityChain
 import Rule110.CookMValuesVerification
 
 /-!
@@ -107,5 +109,9 @@ theorem cook_empty_cts_stage3_partial (n : ℕ) :
     CookCtsEvalSimAtDataCones cook_standard_empty_cts n [] 0 ∧
       CookCtsEvalSimAtDataConesOrigin cook_standard_empty_cts n [] 0 :=
   ⟨cook_standard_empty_cts_data_cones n, cook_standard_empty_cts_data_cones_origin n⟩
+
+/-- Documented partial discharge bundle (see `CookUniversalityChain`). -/
+theorem cook_universality_discharged_witness : CookUniversalityDischarged :=
+  cook_universality_discharged
 
 end Rule110
