@@ -102,4 +102,13 @@ theorem TMCTSCompilation.exists_eval_decodes_step {Cfg : Type} {tmStep : Cfg →
   rw [comp.eval_with_idx_eq_cts_steps c m]
   exact hm
 
+/-- Stage 4 target (Cook §2): every successful TM step has a CTS microstep horizon. -/
+def TMCompilesStep {Cfg : Type} (tmStep : Cfg → Option Cfg) (comp : TMCTSCompilation tmStep) :
+    Prop :=
+  ∀ {c c' : Cfg}, tmStep c = some c' → ∃ m, comp.dec (comp.eval_with_idx c m) = c'
+
+theorem TMCTSCompilation.tm_compiles_step {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) : TMCompilesStep tmStep comp :=
+  comp.exists_eval_decodes_step
+
 end Rule110

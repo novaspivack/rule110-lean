@@ -93,4 +93,16 @@ theorem cook_bool_identity_exists_eval_decodes_step (b b' : Bool)
     ∃ m, cookBoolIdentityTMComp.dec (cookBoolIdentityTMComp.eval_with_idx b m) = b' :=
   cookBoolIdentityTMComp.exists_eval_decodes_step h
 
+theorem cook_consume_head_tm_compiles_step_witness :
+    TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp :=
+  cook_consume_head_tm_compiles_step
+
+theorem trivial_identity_tm_compiles_step_witness :
+    TMCompilesStep tmIdentityStep trivialIdentityTMComp :=
+  trivial_identity_tm_compiles_step
+
+theorem cook_bool_identity_tm_compiles_step_witness :
+    TMCompilesStep tmBoolIdentityStep cookBoolIdentityTMComp :=
+  cook_bool_identity_tm_compiles_step
+
 end Rule110

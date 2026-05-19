@@ -95,6 +95,14 @@ theorem cook_consume_head_dec_after_one_step :
   rw [cook_consume_head_eval_with_idx_one]
   simp [cookConsumeHeadTMComp]
 
+theorem cook_consume_head_tm_compiles_step :
+    TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp :=
+  cookConsumeHeadTMComp.tm_compiles_step
+
+theorem trivial_identity_tm_compiles_step :
+    TMCompilesStep tmIdentityStep trivialIdentityTMComp :=
+  trivialIdentityTMComp.tm_compiles_step
+
 theorem trivial_identity_eval_with_idx_add (c : Unit) (m n : ℕ) :
     trivialIdentityTMComp.eval_with_idx c (m + n) =
       let (w', idx') := trivialIdentityTMComp.eval_with_idx c m
