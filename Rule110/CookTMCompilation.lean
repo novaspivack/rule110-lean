@@ -78,4 +78,16 @@ theorem cook_consume_head_eval_with_idx_one :
   simp [cookConsumeHeadTMComp, TMCTSCompilation.eval_with_idx_one,
     cook_standard_empty_cts_eval_with_idx_one_true]
 
+theorem cook_consume_head_eval_with_idx_add (m n : ℕ) :
+    cookConsumeHeadTMComp.eval_with_idx 0 (m + n) =
+      let (w', idx') := cookConsumeHeadTMComp.eval_with_idx 0 m
+      cookConsumeHeadTMComp.sys.cts_eval_with_idx n w' idx' :=
+  cookConsumeHeadTMComp.eval_with_idx_add 0 m n
+
+theorem trivial_identity_eval_with_idx_add (c : Unit) (m n : ℕ) :
+    trivialIdentityTMComp.eval_with_idx c (m + n) =
+      let (w', idx') := trivialIdentityTMComp.eval_with_idx c m
+      trivialIdentityTMComp.sys.cts_eval_with_idx n w' idx' :=
+  trivialIdentityTMComp.eval_with_idx_add c m n
+
 end Rule110

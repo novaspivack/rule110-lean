@@ -58,4 +58,10 @@ theorem cook_consume_head_eval_with_idx_one_witness :
     cookConsumeHeadTMComp.eval_with_idx 0 1 = ([], 0) :=
   cook_consume_head_eval_with_idx_one
 
+theorem cook_consume_head_eval_with_idx_add_witness (m n : ℕ) :
+    cookConsumeHeadTMComp.eval_with_idx 0 (m + n) =
+      let (w', idx') := cookConsumeHeadTMComp.eval_with_idx 0 m
+      cookConsumeHeadTMComp.sys.cts_eval_with_idx n w' idx' :=
+  cook_consume_head_eval_with_idx_add m n
+
 end Rule110

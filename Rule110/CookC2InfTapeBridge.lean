@@ -405,6 +405,21 @@ theorem cook_c2_tape_bit_list_upto6 (L slot n : ℕ) (hL : L ≤ 6) (hslot : slo
     subst hL6
     exact c2_len6_word_read_ok slot n hslot hn
 
+/-- **Stage 1b (list sim, L ≤ 7):** isolated L=7 cert extends the L ≤ 6 family. -/
+theorem cook_c2_tape_bit_list_upto7 (L slot n : ℕ) (hL : L ≤ 7) (hslot : slot < L) (hn : n < 2^L) :
+    c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false := by
+  by_cases h5 : L ≤ c2VerifyMaxLen
+  · exact cook_c2_tape_bit_list L slot n h5 hslot hn
+  · by_cases h6 : L ≤ 6
+    · have hL6 : L = 6 := by
+        simp [c2VerifyMaxLen] at h5 h6 hL ⊢; omega
+      subst hL6
+      exact c2_len6_word_read_ok slot n hslot hn
+    · have hL7 : L = 7 := by
+        simp [c2VerifyMaxLen] at h5 h6 hL ⊢; omega
+      subst hL7
+      exact c2_len7_word_read_ok slot n hslot hn
+
 /-! ### L=6 isolated init-cone cert (Stage 1b InfTape extension) -/
 
 def c2Len6InitReadConeOk (readSlot n : ℕ) : Bool :=

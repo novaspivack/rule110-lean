@@ -37,6 +37,11 @@ theorem cook_c2_tape_bit_list_upto6_witness (L slot n : ℕ) (hL : L ≤ 6) (hsl
     c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false :=
   cook_c2_tape_bit_list_upto6 L slot n hL hslot hn
 
+theorem cook_c2_tape_bit_list_upto7_witness (L slot n : ℕ) (hL : L ≤ 7) (hslot : slot < L)
+    (hn : n < 2^L) :
+    c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false :=
+  cook_c2_tape_bit_list_upto7 L slot n hL hslot hn
+
 theorem c2_init_read_cone_ok_witness (L readSlot n : ℕ)
     (hL : L ≤ c2VerifyMaxLen) (hslot : readSlot < L) (hn : n < 2^L) :
     c2InitReadConeOk L readSlot n = true :=

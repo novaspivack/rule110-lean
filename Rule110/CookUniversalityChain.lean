@@ -4,6 +4,7 @@ import Rule110.CookC2InfTapeBridge
 import Rule110.CookTM2Bridge
 import Rule110.CookMValuesVerification
 import Rule110.CookStage3EmptyAppendantChain
+import Rule110.CookStage3C3PrimeOperationalChain
 
 /-!
 # Cook universality pipeline chain (SPEC_070_08)
@@ -41,6 +42,7 @@ structure CookUniversalityDischarged where
         cook_cycle_M_sum cook_python_example_appendants = 840
   empty_appendant_c3prime : CookEmptyAppendantC3PrimeDischarged
   legacy_c3_empty_n1_blocked : CookLegacyC3EmptyN1Blocked
+  stage3_operational : CookStage3OperationalDischarged
 
 theorem cook_universality_discharged : CookUniversalityDischarged where
   stage1_far_field := fun cts idx w i L M hi =>
@@ -60,6 +62,7 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
     native_decide
   empty_appendant_c3prime := cook_empty_appendant_c3prime_discharged
   legacy_c3_empty_n1_blocked := cook_legacy_c3_empty_n1_blocked
+  stage3_operational := cook_stage3_operational_discharged
 
 /-- Named bridge axioms still required for **global** Cook certification. -/
 def cook_bridge_axioms_open : Prop :=
