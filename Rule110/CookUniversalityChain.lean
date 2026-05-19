@@ -7,6 +7,7 @@ import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookStage3C3PrimeOperationalChain
 import Rule110.CookC2VerifySupportLen7
 import Rule110.CookC2SupportBareEquiv
+import Rule110.CookC2GeneralC1
 
 /-!
 # Cook universality pipeline chain (SPEC_070_08)
@@ -30,6 +31,10 @@ structure CookUniversalityDischarged where
         (infRule110Steps 30
           (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
         (natToWord L n).getD slot false
+  stage1b_c2_general : ∀ slot w idx, slot ≤ 20 →
+      cook_c2_decode_at slot
+        (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
+        w.getD slot false
   stage1b_support_upto7 : ∀ slot n, slot < 7 → n < 2 ^ 7 →
       c2SimReadAtWithOssifier slot (natToWord 7 n) = (natToWord 7 n).getD slot false
   stage3_empty_c3prime : ∀ n, CookCtsEvalSimAtDataCones cook_standard_empty_cts n [] 0
@@ -54,6 +59,8 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
     cook_cts_step_sim_ax cts idx w i L M hi
   stage1b_c2_upto7 := fun L slot n idx hL hslot hn =>
     cook_c2_tape_bit_ax_partial_upto7 L slot n hL hslot hn idx
+  stage1b_c2_general := fun slot w idx hslot =>
+    cook_c2_tape_bit_ax slot hslot w idx
   stage1b_support_upto7 := fun slot n hslot hn =>
     c2_support_word_read_from_bare 7 slot n (by decide) hslot hn
   stage3_empty_c3prime := cook_standard_empty_cts_data_cones
@@ -72,13 +79,10 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
   legacy_c3_empty_n1_blocked := cook_legacy_c3_empty_n1_blocked
   stage3_operational := cook_stage3_operational_discharged
 
-/-- Named bridge axioms still required for **global** Cook certification. -/
+/-- Named bridge axioms still required for **global** Cook certification. C1 is discharged
+    for slots ≤ 20 (`CookC2GeneralC1.cook_c2_tape_bit_ax`). -/
 def cook_bridge_axioms_open : Prop :=
-  (∀ slot bit, ∃ decode_bit : InfTape → Bool,
-      ∀ w idx,
-        decode_bit (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
-          (slot < w.length && w.getD slot false = bit)) ∧
-    (∀ cts n w, n > 0 ∨ w ≠ [] → CookCtsEvalSim cts n w)
+  (∀ cts n w, n > 0 ∨ w ≠ [] → CookCtsEvalSim cts n w)
 
 /-- SPEC_070_08 top target: not yet proved (see `cook_bridge_axioms_open`). -/
 def rule110_turing_universal_from_cook_open : Prop :=

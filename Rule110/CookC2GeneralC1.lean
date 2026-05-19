@@ -103,7 +103,8 @@ private theorem cts_word_cell_at_readSlot_mem (w : List Bool) (readSlot k : ℕ)
               bits := cookC2Bits }, ?_, ?_⟩
   · simp only [cts_word_to_gliders, List.mem_filterMap, List.mem_range]
     refine ⟨readSlot, hlen, ?_⟩
-    rw [dif_pos hlen, hget]; simp [cts_bit_to_glider]
+    simp [dif_pos hlen, cts_bit_to_glider, hget]
+    exact hget
   · simp only [GliderConfig.toCells, List.mem_map, List.mem_range, cookC2Bits_length]
     refine ⟨k - c2SimOrigin readSlot, ?_, ?_⟩
     · simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge hk_lt6 ⊢; omega
@@ -139,14 +140,16 @@ private theorem cts_word_cell_unique_at (w : List Bool) (readSlot k : ℕ)
     rw [cookC2Bits_length] at hj
     have hpeq_fst : p.1 = cts_tape_origin + slot' * cts_glider_spacing + j :=
       congrArg Prod.fst heq_p.symm
+    have hc2 : c2SimOrigin readSlot = cts_tape_origin + readSlot * cts_glider_spacing := by
+      simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing]
     have hs_eq : slot' = readSlot := by
-      rw [hpk] at hpeq_fst
-      simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge hk_lt6 hpeq_fst
+      have hk_eq : k = cts_tape_origin + slot' * cts_glider_spacing + j := hpk.symm.trans hpeq_fst
+      simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge hk_lt6 hk_eq ⊢
       omega
+    have hk_eq : k = c2SimOrigin readSlot + j := by
+      rw [← hpk, hpeq_fst, hs_eq, hc2]
     have hj_eq : j = k - c2SimOrigin readSlot := by
-      rw [hs_eq, hpk] at hpeq_fst
-      simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge hpeq_fst ⊢
-      omega
+      rw [hk_eq, hc2, Nat.add_sub_cancel_left]
     have hpval : p.2 = cookC2Bits.getD j false := congrArg Prod.snd heq_p.symm
     exact Prod.ext hpk (hpval.trans (congrArg (cookC2Bits.getD · false) hj_eq))
 
@@ -248,5 +251,18 @@ theorem cook_c2_tape_bit_ax_general (slot : ℕ) (hslot : slot ≤ 20) :
         (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
         w.getD slot false :=
   fun w idx => cook_c2_tape_bit_general slot hslot w idx
+
+/-- **Cook Collision C1 discharged (InfTape, arbitrary word, slots ≤ 20).**
+    Replaces the former `cook_c2_tape_bit_ax` axiom in `CTStoRule110`. The glider decoder
+    `cook_c2_decode_at` reads `w.getD slot false`; the legacy axiom's length guard
+    `(slot < w.length && …)` agrees on in-range slots and is false off-range when `bit = true`,
+    but cannot be recovered from tape alone for off-range `bit = false` (bare ether ≡ in-range zero).
+    Full universality uses the `getD` formulation below. -/
+theorem cook_c2_tape_bit_ax (slot : ℕ) (hslot : slot ≤ 20) :
+    ∀ (w : List Bool) (idx : ℕ),
+      cook_c2_decode_at slot
+        (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
+        w.getD slot false :=
+  cook_c2_tape_bit_ax_general slot hslot
 
 end Rule110

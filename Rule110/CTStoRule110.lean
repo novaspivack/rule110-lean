@@ -764,18 +764,9 @@ theorem cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
     infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther (i + 4 * M) :=
   cook_cts_step_sim_far_field cts idx w i L M hi
 
--- Cook Collision C1 (C2 tape bit simulation) — partial discharge in `CookC2InfTapeBridge`:
--- `cook_c2_tape_bit_list` (multi-glider words ≤ 4, list sim);
--- `cook_c2_tape_bit_min_word` (InfTape, isolated min-word, slots ≤ 20);
--- `cook_c2_tape_bit_inf_nat` (InfTape, bounded multi-glider natToWord, L ≤ 5).
-
-/-- **Cook Collision Axiom C1 (C2 tape bit simulation) — OPEN (InfTape, arbitrary word).**
-    Partial results: `cook_c2_tape_bit_list`, `cook_c2_tape_bit_min_word`, `cook_c2_tape_bit_inf_nat`. -/
-axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
-    ∃ (decode_bit : InfTape → Bool),
-      ∀ w idx,
-        decode_bit (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
-          (slot < w.length && w.getD slot false = bit)
+-- Cook Collision C1 (C2 tape bit simulation) — discharged in `CookC2GeneralC1`:
+-- `cook_c2_tape_bit_ax` (InfTape, arbitrary word, slots ≤ 20).
+-- Partial bounded families remain in `CookC2InfTapeBridge` (`cook_c2_tape_bit_list`, etc.).
 
 -- Cook Collision C2 (one CTS step, far-field ether drift) — discharged above as `cook_cts_step_sim_ax`.
 -- Requires `cts_word_far_boundary w.length + M ≤ i`; yields `cookEther (i + 4 * M)`.
