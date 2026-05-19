@@ -46,4 +46,16 @@ theorem cook_bool_identity_simulates_step_witness (b b' : Bool)
       cookBoolIdentityTMComp.dec (w', idx') = b' :=
   cook_bool_identity_simulates_step b b' h
 
+theorem cook_consume_head_simulates_step_witness (s s' : Fin 2)
+    (h : tmConsumeHeadStep s = some s') :
+    ∃ m,
+      let (w, idx) := cookConsumeHeadTMComp.enc s
+      let (w', idx') := cookConsumeHeadTMComp.sys.cts_steps m w idx
+      cookConsumeHeadTMComp.dec (w', idx') = s' :=
+  cook_consume_head_simulates_step s s' h
+
+theorem cook_consume_head_eval_with_idx_one_witness :
+    cookConsumeHeadTMComp.eval_with_idx 0 1 = ([], 0) :=
+  cook_consume_head_eval_with_idx_one
+
 end Rule110

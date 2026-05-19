@@ -40,4 +40,42 @@ theorem trivial_identity_eval_with_idx_one (c : Unit) :
       trivialIdentityTMComp.sys.cts_eval_with_idx 1 [] 0 := by
   simp [TMCTSCompilation.eval_with_idx_one, trivialIdentityTMComp]
 
+/-! ### Consume-head two-state TM (non-identity Stage 4 witness) -/
+
+/-- Two-state machine: state `0` consumes the encoded head bit and halts in state `1`. -/
+def tmConsumeHeadStep (s : Fin 2) : Option (Fin 2) :=
+  match s with
+  | 0 => some 1
+  | 1 => none
+
+/-- Encode state `0` as `[true]` on the standard empty CTS; halting state `1` as `[]`. -/
+def cookConsumeHeadTMComp : TMCTSCompilation tmConsumeHeadStep where
+  sys := cook_standard_empty_cts
+  enc s := if s = 0 then ([true], 0) else ([], 0)
+  dec := fun (w, _) => if w = [] then (1 : Fin 2) else 0
+  decode_roundtrip := by
+    intro s
+    fin_cases s <;> simp
+  simulates_step := by
+    intro s s' h
+    fin_cases s
+    · simp [tmConsumeHeadStep] at h
+      subst h
+      refine ⟨1, ?_⟩
+      simp [cook_standard_empty_cts_steps_one_true]
+    · simp [tmConsumeHeadStep] at h
+
+theorem cook_consume_head_simulates_step (s s' : Fin 2) (h : tmConsumeHeadStep s = some s') :
+    ∃ m,
+      let (w, idx) := cookConsumeHeadTMComp.enc s
+      let (w', idx') := cookConsumeHeadTMComp.sys.cts_steps m w idx
+      cookConsumeHeadTMComp.dec (w', idx') = s' :=
+  cookConsumeHeadTMComp.simulates_step h
+
+theorem cook_consume_head_eval_with_idx_one :
+    cookConsumeHeadTMComp.eval_with_idx 0 1 = ([], 0) := by
+  unfold TMCTSCompilation.eval_with_idx
+  simp [cookConsumeHeadTMComp, TMCTSCompilation.eval_with_idx_one,
+    cook_standard_empty_cts_eval_with_idx_one_true]
+
 end Rule110

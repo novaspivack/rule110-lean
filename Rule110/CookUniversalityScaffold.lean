@@ -55,12 +55,15 @@ inductive CookBridgeAxiomTag where
 /-- Partial discharge map: which axiom tags have a bounded or case-specific theorem. -/
 def cook_bridge_axiom_partial_discharge : CookBridgeAxiomTag → Prop
   | .C1_c2_tape_bit => True  -- L ≤ 7 InfTape via `cook_c2_tape_bit_ax_partial_upto7`
-  | .C3_eval_sim => False
-  | .C3prime_data_cones => False  -- empty input only
+  | .C3_eval_sim => False  -- empty n=1 refuted; nonempty still open
+  | .C3prime_data_cones => True  -- empty input all-n via `cook_empty_appendant_c3prime_discharged`
   | .C3primeprime_origin_nonempty => True  -- L=6 n=1 via refinement
   | .C3_phased_post_decode_nonempty => True  -- L=6 n=1 via refinement
 
 theorem cook_bridge_c1_partial : cook_bridge_axiom_partial_discharge .C1_c2_tape_bit := trivial
+
+theorem cook_bridge_c3prime_empty :
+    cook_bridge_axiom_partial_discharge .C3prime_data_cones := trivial
 
 theorem cook_bridge_c3primeprime_len6 :
     cook_bridge_axiom_partial_discharge .C3primeprime_origin_nonempty := trivial
@@ -88,6 +91,14 @@ theorem cook_stage1_step_sim (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
     (L : ℕ) (M : ℕ) (hi : cts_word_far_boundary w.length + M ≤ i) :
     infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther (i + 4 * M) :=
   cook_cts_step_sim_ax cts idx w i L M hi
+
+/-- Stage 4: consume-head two-state TM satisfies `simulates_step` on standard empty CTS. -/
+theorem cook_tm_consume_head_simulates_step (s s' : Fin 2) (h : tmConsumeHeadStep s = some s') :
+    ∃ m,
+      let (w, idx) := cookConsumeHeadTMComp.enc s
+      let (w', idx') := cookConsumeHeadTMComp.sys.cts_steps m w idx
+      cookConsumeHeadTMComp.dec (w', idx') = s' :=
+  cook_consume_head_simulates_step s s' h
 
 /-- Stage 4 scaffold: trivial identity TM satisfies `simulates_step`. -/
 theorem cook_tm_identity_simulates_step (c c' : Unit) (h : tmIdentityStep c = some c') :

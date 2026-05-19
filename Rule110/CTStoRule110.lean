@@ -448,6 +448,15 @@ theorem cook_standard_empty_cts_eval (n : ℕ) :
     cook_standard_empty_cts.cts_eval n [] = [] :=
   cts_eval_empty_word_stable cook_standard_empty_cts n
 
+theorem cook_standard_empty_cts_steps_one_true :
+    cook_standard_empty_cts.cts_steps 1 [true] 0 = ([], 0) := by
+  simp [CyclicTagSystem.cts_steps, CyclicTagSystem.cts_step, cook_standard_empty_cts,
+    CyclicTagSystem.cycleLen]
+
+theorem cook_standard_empty_cts_eval_with_idx_one_true :
+    cook_standard_empty_cts.cts_eval_with_idx 1 [true] 0 = ([], 0) := by
+  simpa [CyclicTagSystem.cts_eval_with_idx] using cook_standard_empty_cts_steps_one_true
+
 theorem cts_word_to_placements_phased_nil :
     cts_word_to_placements_phased [] = [] := by
   simp [cts_word_to_placements_phased]

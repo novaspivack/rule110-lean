@@ -34,6 +34,7 @@ structure CookUniversalityDischarged where
   stage4_tm2_anchor : Nonempty Turing.FinTM2
   stage4_cts_identity : Nonempty (TMCTSCompilation tmIdentityStep)
   stage4_bool_identity : Nonempty (TMCTSCompilation tmBoolIdentityStep)
+  stage4_consume_head : Nonempty (TMCTSCompilation tmConsumeHeadStep)
   m_v_python_parity :
     cook_M_for_appendant_len 6 = 390 ∧
       cook_ossifier_v cook_python_example_appendants = 1142 ∧
@@ -53,6 +54,7 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
   stage4_tm2_anchor := cook_fin_tm2_id_machine
   stage4_cts_identity := ⟨trivialIdentityTMComp⟩
   stage4_bool_identity := ⟨cookBoolIdentityTMComp⟩
+  stage4_consume_head := ⟨cookConsumeHeadTMComp⟩
   m_v_python_parity := by
     refine ⟨?_, cook_v_python_example, cook_cycle_M_python_example⟩
     native_decide
