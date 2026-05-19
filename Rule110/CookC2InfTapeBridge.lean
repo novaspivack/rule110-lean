@@ -1,3 +1,5 @@
+import Init.Data.List.Lemmas
+
 import Mathlib.Data.List.GetD
 import Mathlib.Tactic.IntervalCases
 
@@ -195,6 +197,46 @@ theorem c2_init_read_cone_ok (L readSlot n : ℕ) (hL : L ≤ c2VerifyMaxLen)
     all_goals
       interval_cases n <;> native_decide
 
+private theorem c2InitReadConeOk_get (L readSlot n d : ℕ)
+    (hL : L ≤ c2VerifyMaxLen) (hslot : readSlot < L) (hn : n < 2^L) (hd : d < 61) :
+    listToInfTape (c2SimInitWord (natToWord L n)) (c2SimOrigin readSlot - 30 + d) =
+      cts_to_rule110_tape (CyclicTagSystem.mk []) 0 (natToWord L n)
+        (c2SimOrigin readSlot - 30 + d) := by
+  have hbool := c2_init_read_cone_ok L readSlot n hL hslot hn
+  have hall : ((List.range 61).all fun d =>
+      decide (listToInfTape (c2SimInitWord (natToWord L n)) (c2SimOrigin readSlot - 30 + d) =
+        cts_to_rule110_tape (CyclicTagSystem.mk []) 0 (natToWord L n)
+          (c2SimOrigin readSlot - 30 + d))) = true := by
+    simpa [c2InitReadConeOk, hL, hslot, hn, reduceIte] using hbool
+  have hdec := (List.all_eq_true.mp hall) d (List.mem_range.mpr hd)
+  exact (decide_eq_true_iff).1 hdec
+
+theorem c2SimInitWord_eq_cts_tape_cone_read (L readSlot n : ℕ) (hL : L ≤ c2VerifyMaxLen)
+    (hslot : readSlot < L) (hn : n < 2^L) (k : ℕ)
+    (hk_lo : c2SimOrigin readSlot - 30 ≤ k) (hk_hi : k ≤ c2SimOrigin readSlot + 30) :
+    listToInfTape (c2SimInitWord (natToWord L n)) k =
+      cts_to_rule110_tape (CyclicTagSystem.mk []) 0 (natToWord L n) k := by
+  have origin_eq : c2SimOrigin readSlot = cts_tape_origin + readSlot * cts_glider_spacing := rfl
+  have hd : ∃ d, d < 61 ∧ k = c2SimOrigin readSlot - 30 + d := by
+    refine ⟨k + 30 - c2SimOrigin readSlot, ?_, ?_⟩
+    · simp [origin_eq, cts_tape_origin, cts_glider_spacing] at hk_hi ⊢; omega
+    · simp [origin_eq, cts_tape_origin, cts_glider_spacing] at hk_lo hk_hi ⊢; omega
+  obtain ⟨d, hd_lt, hk_eq⟩ := hd
+  rw [hk_eq]
+  exact c2InitReadConeOk_get L readSlot n d hL hslot hn hd_lt
+
+private theorem c2SimOrigin_lt_bound (slot : ℕ) (hslot : slot ≤ 4) :
+    c2SimOrigin slot < c2SimBound := by
+  simp [c2SimOrigin, c2SimBound, cts_tape_origin, cts_glider_spacing]
+  have : slot * 42 ≤ 4 * 42 := Nat.mul_le_mul_right _ hslot
+  omega
+
+private theorem c2SimOrigin_add30_lt_bound (slot : ℕ) (hslot : slot ≤ 4) :
+    c2SimOrigin slot + 30 < c2SimBound := by
+  simp [c2SimOrigin, c2SimBound, cts_tape_origin, cts_glider_spacing]
+  have : slot * 42 ≤ 4 * 42 := Nat.mul_le_mul_right _ hslot
+  omega
+
 /-! ## Bounded C2 read ↔ InfTape decode (slots ≤ 20) -/
 
 theorem c2SimReadAt_eq_listReadDiff (slot : ℕ) (w : List Bool) :
@@ -251,12 +293,59 @@ theorem cook_c2_tape_read_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hsl
     all_goals
       interval_cases n <;> native_decide
 
-/-- **Cook Collision C1 (bounded general words, list sim).** InfTape min-word:
-    `cook_c2_tape_bit_min_word`. Multi-glider InfTape lift pending init-cone extraction. -/
+/-- **Cook Collision C1 (bounded general words, list sim).** InfTape:
+    `cook_c2_tape_bit_inf_nat` (multi-glider, L ≤ 4); min-word: `cook_c2_tape_bit_min_word`. -/
 theorem cook_c2_tape_bit_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
     (hn : n < 2^L) :
     c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false :=
   cook_c2_tape_read_list L slot n hL hslot hn
+
+/-- **Stage 1b (InfTape, bounded multi-glider words):** after 30 steps, decode `natToWord L n`
+    at `slot` via `tape_has_glider_at` when `L ≤ c2VerifyMaxLen`. -/
+theorem cook_c2_tape_bit_inf_nat (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
+    (hn : n < 2^L) (idx : ℕ) :
+    tape_has_glider_at
+      (infRule110Steps 30
+        (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n)))
+      slot 0 =
+      (natToWord L n).getD slot false := by
+  let w := natToWord L n
+  have hslot4 : slot ≤ 4 := by
+    have hL4 : L ≤ 4 := by simpa [c2VerifyMaxLen] using hL
+    omega
+  have hlist := cook_c2_tape_bit_list L slot n hL hslot hn
+  have hlen : c2SimOrigin slot < (c2SimRun 30 (c2SimInitWord w)).length := by
+    simpa [c2SimRun_length, c2SimInitWord_length] using c2SimOrigin_lt_bound slot hslot4
+  have h30 : 30 ≤ c2SimOrigin slot := by
+    simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing]; omega
+  have hj' : c2SimOrigin slot + 30 < c2SimBound :=
+    c2SimOrigin_add30_lt_bound slot hslot4
+  have hlist_inf :
+      tape_has_glider_at (listToInfTape (c2SimRun 30 (c2SimInitWord w))) slot 0 =
+        w.getD slot false := by
+    rw [← listReadDiff_eq_tape_has_glider_at (c2SimRun 30 (c2SimInitWord w)) slot hlen,
+      ← c2SimReadAt_eq_listReadDiff, hlist]
+  have hinit := c2SimInitWord_eq_cts_tape_cone_read L slot n hL hslot hn
+  have hagree :
+      infRule110Steps 30 (listToInfTape (c2SimInitWord w)) (c2SimOrigin slot) =
+        infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w) (c2SimOrigin slot) := by
+    apply Eq.symm
+    refine infRule110Steps_agree_Icc h30 fun k hk_lo hk_hi => ?_
+    rw [cts_tape_idx_irrelevant idx 0 w k]
+    exact (hinit k hk_lo hk_hi).symm
+  have hrun := c2SimRun_eq_infRule110Steps_at (c2SimInitWord w) 30 (c2SimOrigin slot) h30
+    (by simpa [c2SimInitWord_length] using hj')
+  have hrun' :
+      tape_has_glider_at (infRule110Steps 30 (listToInfTape (c2SimInitWord w))) slot 0 =
+        w.getD slot false := by
+    rw [← tape_has_glider_at_eq_of_origin
+      (listToInfTape (c2SimRun 30 (c2SimInitWord w)))
+      (infRule110Steps 30 (listToInfTape (c2SimInitWord w))) slot 0 hrun]
+    exact hlist_inf
+  rw [← tape_has_glider_at_eq_of_origin
+    (infRule110Steps 30 (listToInfTape (c2SimInitWord w)))
+    (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) slot 0 hagree]
+  exact hrun'
 
 theorem cook_c2_tape_bit_min_word (slot : ℕ) (bit : Bool) (hslot : slot ≤ 20) (idx : ℕ) :
     tape_has_glider_at
