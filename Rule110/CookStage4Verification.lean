@@ -38,6 +38,10 @@ theorem trivial_identity_eval_with_idx_add_witness (c : Unit) (m n : ℕ) :
 theorem cook_fin_tm2_id_machine_witness : Nonempty Turing.FinTM2 :=
   cook_fin_tm2_id_machine
 
+theorem cook_idComputer_fin_tm2_compiles_witness :
+    CookFinTM2Compiles (Turing.idComputer Bool) :=
+  cook_idComputer_fin_tm2_compiles
+
 theorem cook_bool_identity_simulates_step_witness (b b' : Bool)
     (h : tmBoolIdentityStep b = some b') :
     ∃ m,

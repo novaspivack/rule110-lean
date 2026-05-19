@@ -1,5 +1,6 @@
 import Mathlib.Computability.TuringMachine.Computable
 
+import Rule110.CookFinTM2Compilation
 import Rule110.CookTMCompilation
 import Rule110.TMtoCTS
 
@@ -83,9 +84,9 @@ theorem cook_stage4_dual_identity_scaffold :
         Nonempty (TMCTSCompilation tmBoolIdentityStep) :=
   ⟨⟨idComputer Bool⟩, ⟨trivialIdentityTMComp⟩, ⟨cookBoolIdentityTMComp⟩⟩
 
-/-- **Open (Stage 4):** `CookFinTM2Compiles (idComputer Bool)` needs a Cook §2 encoding
-`FinTM2.Cfg → List Bool × ℕ` compatible with `FinTM2.step` (multi-stack `TM2.Stmt.halt`). -/
-def cook_idComputer_fin_tm2_compiles_open : Prop :=
-  CookFinTM2Compiles (idComputer Bool)
+/-- Mathlib's halting identity `FinTM2` compiles to CTS (index-tagged empty-appendant encoding). -/
+theorem cook_idComputer_fin_tm2_compiles : CookFinTM2Compiles (idComputer Bool) := by
+  obtain ⟨comp, h⟩ := idComputer_fin_tm2_compiles_witness
+  exact ⟨comp, h⟩
 
 end Rule110
