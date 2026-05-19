@@ -55,7 +55,7 @@ inductive CookBridgeAxiomTag where
 
 /-- Partial discharge map: which axiom tags have a bounded or case-specific theorem. -/
 def cook_bridge_axiom_partial_discharge : CookBridgeAxiomTag → Prop
-  | .C1_c2_tape_bit => True  -- L ≤ 7 InfTape + list+ossifier + with_support via bare-equiv
+  | .C1_c2_tape_bit => True  -- L ≤ 7 decoder exists (`cook_c2_tape_bit_decoder_exists_upto7`)
   | .C3_eval_sim => False  -- empty n=1 refuted; nonempty still open
   | .C3prime_data_cones => True  -- empty input all-n via `cook_empty_appendant_c3prime_discharged`
   | .C3primeprime_origin_nonempty => True  -- L=6 n=1 via refinement

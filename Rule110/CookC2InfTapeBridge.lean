@@ -729,4 +729,47 @@ theorem cook_c2_tape_bit_ax_partial_with_support_upto7 (L slot n : ℕ) (hL : L 
       (natToWord L n).getD slot false :=
   cook_c2_tape_bit_inf_nat_with_support_upto7 L slot n hL hslot hn idx
 
+/-- Idx-aware support encoding: L ≤ 7 InfTape decode on empty appendant CTS. -/
+theorem cook_c2_tape_bit_inf_nat_with_support_idx_upto7 (L slot n idx₀ idx : ℕ) (hL : L ≤ 7)
+    (hslot : slot < L) (hn : n < 2^L) :
+    tape_has_glider_at
+      (infRule110Steps 30
+        (cts_to_rule110_tape_with_support_idx (CyclicTagSystem.mk []) idx₀ (natToWord L n)))
+      slot 0 =
+      (natToWord L n).getD slot false := by
+  let w := natToWord L n
+  have hslot20 : slot ≤ 20 := by omega
+  have h30 : 30 ≤ cts_slot_origin slot := by
+    simp [c2SimOrigin, cts_slot_origin, cts_tape_origin, cts_glider_spacing]
+    omega
+  let t_sup := cts_to_rule110_tape_with_support_idx (CyclicTagSystem.mk []) idx₀ w
+  let t_bare := cts_to_rule110_tape (CyclicTagSystem.mk []) idx w
+  have hagree :
+      infRule110Steps 30 t_sup (cts_slot_origin slot) =
+        infRule110Steps 30 t_bare (cts_slot_origin slot) :=
+    infRule110Steps_agree_Icc h30 fun k hk_lo hk_hi =>
+      cts_support_idx_agrees_on_data_cone (CyclicTagSystem.mk []) idx₀ idx w slot hslot20 k hk_lo hk_hi
+  have hgl := tape_has_glider_at_eq_of_origin (infRule110Steps 30 t_sup) (infRule110Steps 30 t_bare) slot 0
+    hagree
+  simpa [t_sup, t_bare, w] using hgl.trans (cook_c2_tape_bit_inf_nat_upto7 L slot n hL hslot hn idx)
+
+theorem cook_c2_tape_bit_ax_partial_with_support_idx_upto7 (L slot n idx₀ idx : ℕ) (hL : L ≤ 7)
+    (hslot : slot < L) (hn : n < 2^L) :
+    cook_c2_decode_at slot
+      (infRule110Steps 30
+        (cts_to_rule110_tape_with_support_idx (CyclicTagSystem.mk []) idx₀ (natToWord L n))) =
+      (natToWord L n).getD slot false :=
+  cook_c2_tape_bit_inf_nat_with_support_idx_upto7 L slot n idx₀ idx hL hslot hn
+
+/-- L ≤ 7: slot decoder exists in the shape of global C1 axiom (bounded `natToWord` family). -/
+theorem cook_c2_tape_bit_decoder_exists_upto7 (slot : ℕ) (hslot : slot ≤ 6) :
+    ∃ (decode_bit : InfTape → Bool),
+      ∀ (L n idx₀ idx : ℕ), L ≤ 7 → slot < L → n < 2 ^ L →
+        decode_bit
+            (infRule110Steps 30
+              (cts_to_rule110_tape_with_support_idx (CyclicTagSystem.mk []) idx₀ (natToWord L n))) =
+          (natToWord L n).getD slot false := by
+  refine ⟨cook_c2_decode_at slot, fun L n idx₀ idx hL hslot' hn => ?_⟩
+  exact cook_c2_tape_bit_ax_partial_with_support_idx_upto7 L slot n idx₀ idx hL hslot' hn
+
 end Rule110
