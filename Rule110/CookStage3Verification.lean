@@ -123,6 +123,22 @@ theorem cookEther_not_pointwise_fixed_one_step :
   rw [infRule110Steps_cookEther_shift_spotcheck₁]
   native_decide
 
+theorem cook_cts_eval_sim_empty_one_step_char (cts : CyclicTagSystem)
+    (hzero : ∀ k, k < cts.cycleLen → (cts.appendants.getD k []).length = 0) :
+    CookCtsEvalSim cts 1 (w₀ := []) ↔
+      gliders_to_tape_phased (cts_word_to_placements_phased_with_support []) =
+        infRule110Steps 30 (cts_to_rule110_tape_phased_with_support cts []) := by
+  constructor
+  · intro h
+    rw [CookCtsEvalSim] at h
+    rw [cook_cts_eval_one_empty cts, cts_word_to_placements_phased_with_support_nil,
+        cook_total_M_one_empty_appendant cts hzero] at h
+    exact h
+  · intro h
+    rw [CookCtsEvalSim, cook_cts_eval_one_empty cts, cts_word_to_placements_phased_with_support_nil,
+        cook_total_M_one_empty_appendant cts hzero]
+    exact h
+
 /-- **Negative witness (Stage 3):** bounded 30-step list simulation does not fix slot-0 cone. -/
 theorem empty_phased_support_slot0_cone_not_fixed_30 :
     emptyPhasedSupportConeFixed30 = false :=
