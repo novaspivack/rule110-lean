@@ -7,6 +7,7 @@ import Rule110.CookCollisionTaxonomy
 import Rule110.Gliders
 import Rule110.TMtoCTS
 import Rule110.CookTMCompilation
+import Rule110.CookFinTM2Compilation
 import Rule110.CookTM2Bridge
 import Rule110.CookStage4Verification
 import Rule110.CTStoRule110
@@ -44,6 +45,7 @@ import Rule110.CookLen6FirstBlock30
 import Rule110.CookStage3Len6Refinement
 import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookStage3C3PrimeOperationalChain
+import Rule110.CookStage3Induction
 import Rule110.CookC2VerifySupportLen5
 import Rule110.CookC2VerifySupportLen6
 import Rule110.CookC2VerifySupportLen7
