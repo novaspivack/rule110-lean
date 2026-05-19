@@ -134,6 +134,13 @@ theorem cook_total_M_one (cts : CyclicTagSystem) :
       cook_M_for_appendant_len (cts.appendants.getD (0 % cts.cycleLen) []).length := by
   simp [cook_total_M, cook_total_M_from]
 
+theorem cook_total_M_from_succ (cts : CyclicTagSystem) (n idx₀ : ℕ) :
+    cook_total_M_from cts (n + 1) idx₀ =
+      cook_total_M_from cts n idx₀ +
+        cook_M_for_appendant_len (cts.appendants.getD ((idx₀ + n) % cts.cycleLen) []).length := by
+  unfold cook_total_M_from
+  simp only [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
 /-! ## Phased support spacing (Stage 3 scaffolding) -/
 
 theorem cts_ossifier_placement_end_le_tape_origin :

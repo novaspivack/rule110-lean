@@ -3,6 +3,7 @@ import Rule110.CTStoRule110
 import Rule110.CookCollisionWitnesses
 import Rule110.CookEmptyAppendantSim
 import Rule110.CookLen6AppendantSim
+import Rule110.CookLen6InfTapeBridge
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -191,6 +192,12 @@ theorem empty_phased_support_init_read_cone_agrees :
 theorem len6_one_step_data_cones_negative :
     len6OneStepSimDataConesOk = false :=
   len6_one_step_data_cones_not_ok
+
+/-- List sim at slot origin after 390 steps matches InfTape stepping (L=6, idx encoding). -/
+theorem len6_true_origin_list_sim_eq_inf_390 :
+    listToInfTape (c2SimRun 390 len6TruePhasedSupportInit) (cts_slot_origin 0) =
+      infRule110Steps 390 (listToInfTape len6TruePhasedSupportInit) (cts_slot_origin 0) :=
+  len6True_origin_run_eq_inf_390
 
 /-- List sim at slot origin matches phased InfTape stepping (empty appendant, 30 steps). -/
 theorem emptyPhasedSupport_origin_list_sim_eq_phased_inf_30 :

@@ -25,7 +25,7 @@ def cook_ossifier_v (appendants : List (List Bool)) : ℕ :=
 theorem cook_ossifier_v_empty_appendant :
     cook_ossifier_v [[]] = 43 := by native_decide
 
-theorem cook_ossifier_v_len6_false :
+theorem cook_ossifier_v_min_len6_cts :
     cook_ossifier_v [List.replicate 6 false] = 540 := by native_decide
 
 theorem cook_ossifier_v_empty_and_len6 :

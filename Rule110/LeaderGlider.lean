@@ -103,4 +103,23 @@ theorem cts_leader_glider_bits_length :
 theorem cts_leader_glider_block_length :
     cts_leader_glider.bits.length = 235 := cookLBlockRow0_length
 
+/-- K-block leader glider (nonempty appendant case, Cook §1.4). -/
+def leaderKBlockPhase : ℕ := 7
+
+def cts_leader_k_glider : GliderConfig :=
+  { species := CookGliderRef.named CookNamedGlider.Ebar
+    origin  := cts_leader_origin
+    phase   := ⟨leaderKBlockPhase, by decide⟩
+    bits    := cookKBlockRow0 }
+
+theorem cts_leader_k_glider_bits_length :
+    cts_leader_k_glider.bits.length = cookKBlockRow0.length := rfl
+
+theorem cts_leader_k_glider_block_length :
+    cts_leader_k_glider.bits.length = 338 := cookKBlockRow0_length
+
+/-- K-block row 0 overrides pure ether within the patch. -/
+theorem leader_k_block_row0_differs :
+    cookKBlockRow0.getD 1 false ≠ cookEther (leaderSimOrigin + 1) := by native_decide
+
 end Rule110

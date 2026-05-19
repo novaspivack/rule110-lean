@@ -50,8 +50,13 @@ theorem cook_support_agrees_on_data_cone_empty (slot : ℕ) (hslot : slot ≤ 20
 theorem cook_phased_support_placements_witness :
     cts_support_placements.length = 2 ∧
     cts_ossifier_placement.cook_width = 6 ∧
-    cts_leader_placement.cook_width = cts_leader_cook_width :=
-  ⟨cts_support_placements_length, rfl, rfl⟩
+    cts_leader_placement.cook_width = cts_leader_cook_width ∧
+    cts_leader_k_glider.bits.length = 338 :=
+  ⟨cts_support_placements_length, rfl, rfl, cts_leader_k_glider_block_length⟩
+
+theorem cook_leader_k_block_row0_witness :
+    cookKBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
+  leader_k_block_row0_differs
 
 theorem cook_leader_placement_before_origin (i : ℕ) (hi : i < cts_leader_origin) :
     ¬ (cts_leader_placement.origin + cts_leader_placement.bits.length ≤ i) :=
