@@ -3,6 +3,7 @@ import Rule110.CookStage3Len6Refinement
 import Rule110.CookC2InfTapeBridge
 import Rule110.CookTM2Bridge
 import Rule110.CookMValuesVerification
+import Rule110.CookStage3EmptyAppendantChain
 
 /-!
 # Cook universality pipeline chain (SPEC_070_08)
@@ -37,6 +38,7 @@ structure CookUniversalityDischarged where
     cook_M_for_appendant_len 6 = 390 ∧
       cook_ossifier_v cook_python_example_appendants = 1142 ∧
         cook_cycle_M_sum cook_python_example_appendants = 840
+  empty_appendant_c3prime : CookEmptyAppendantC3PrimeDischarged
 
 theorem cook_universality_discharged : CookUniversalityDischarged where
   stage1_far_field := fun cts idx w i L M hi =>
@@ -53,6 +55,7 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
   m_v_python_parity := by
     refine ⟨?_, cook_v_python_example, cook_cycle_M_python_example⟩
     native_decide
+  empty_appendant_c3prime := cook_empty_appendant_c3prime_discharged
 
 /-- Named bridge axioms still required for **global** Cook certification. -/
 def cook_bridge_axioms_open : Prop :=
