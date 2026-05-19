@@ -703,7 +703,7 @@ theorem cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
 -- Cook Collision C1 (C2 tape bit simulation) — partial discharge in `CookC2InfTapeBridge`:
 -- `cook_c2_tape_bit_list` (multi-glider words ≤ 4, list sim);
 -- `cook_c2_tape_bit_min_word` (InfTape, isolated min-word, slots ≤ 20);
--- `cook_c2_tape_bit_inf_nat` (InfTape, bounded multi-glider natToWord, L ≤ 4).
+-- `cook_c2_tape_bit_inf_nat` (InfTape, bounded multi-glider natToWord, L ≤ 5).
 
 /-- **Cook Collision Axiom C1 (C2 tape bit simulation) — OPEN (InfTape, arbitrary word).**
     Partial results: `cook_c2_tape_bit_list`, `cook_c2_tape_bit_min_word`, `cook_c2_tape_bit_inf_nat`. -/

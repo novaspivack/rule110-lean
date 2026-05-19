@@ -58,7 +58,7 @@ def c2SimRead (slot : ℕ) (bit : Bool) : Bool :=
 
 /-! ### Exhaustive readback checker (words of length `≤ c2VerifyMaxLen`) -/
 
-def c2VerifyMaxLen : ℕ := 4
+def c2VerifyMaxLen : ℕ := 5
 
 def natToWord (L n : ℕ) : List Bool :=
   (List.range L).map fun i => decide (((n / 2^i) % 2) = 1)

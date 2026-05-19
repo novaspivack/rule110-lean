@@ -190,7 +190,7 @@ theorem c2_all_init_read_cones_ok : c2AllInitReadConesOk = true := by native_dec
 theorem c2_init_read_cone_ok (L readSlot n : ℕ) (hL : L ≤ c2VerifyMaxLen)
     (hslot : readSlot < L) (hn : n < 2^L) :
     c2InitReadConeOk L readSlot n = true := by
-  have _h4 : L ≤ 4 := by simpa [c2VerifyMaxLen] using hL
+  have _h5 : L ≤ 5 := by simpa [c2VerifyMaxLen] using hL
   interval_cases L
   all_goals
     interval_cases readSlot <;> try omega
@@ -286,7 +286,7 @@ theorem c2SimRead_eq_tape_has_glider_at_inf (slot : ℕ) (bit : Bool)
 theorem cook_c2_tape_read_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
     (_hn : n < 2^L) :
     c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false := by
-  have h4 : L ≤ 4 := by simpa [c2VerifyMaxLen] using hL
+  have h5 : L ≤ 5 := by simpa [c2VerifyMaxLen] using hL
   interval_cases L
   all_goals
     interval_cases slot <;> try omega
@@ -294,7 +294,7 @@ theorem cook_c2_tape_read_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hsl
       interval_cases n <;> native_decide
 
 /-- **Cook Collision C1 (bounded general words, list sim).** InfTape:
-    `cook_c2_tape_bit_inf_nat` (multi-glider, L ≤ 4); min-word: `cook_c2_tape_bit_min_word`. -/
+    `cook_c2_tape_bit_inf_nat` (multi-glider, L ≤ 5); min-word: `cook_c2_tape_bit_min_word`. -/
 theorem cook_c2_tape_bit_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
     (hn : n < 2^L) :
     c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false :=
@@ -311,7 +311,7 @@ theorem cook_c2_tape_bit_inf_nat (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (h
       (natToWord L n).getD slot false := by
   let w := natToWord L n
   have hslot4 : slot ≤ 4 := by
-    have hL4 : L ≤ 4 := by simpa [c2VerifyMaxLen] using hL
+    have hL5 : L ≤ 5 := by simpa [c2VerifyMaxLen] using hL
     omega
   have hlist := cook_c2_tape_bit_list L slot n hL hslot hn
   have hlen : c2SimOrigin slot < (c2SimRun 30 (c2SimInitWord w)).length := by
@@ -368,7 +368,7 @@ theorem cook_c2_tape_bit_min_word (slot : ℕ) (bit : Bool) (hslot : slot ≤ 20
       exact hcone k hk_lo hk_hi
   exact (tape_has_glider_at_eq_of_origin _ _ _ _ hagree).symm.trans hlist
 
-/-- **Bounded C1 discharge (natToWord, L ≤ 4):** decoder `cook_c2_decode_at` at slot. -/
+/-- **Bounded C1 discharge (natToWord, L ≤ 5):** decoder `cook_c2_decode_at` at slot. -/
 theorem cook_c2_tape_bit_bounded (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
     (hn : n < 2^L) (idx : ℕ) (bit : Bool)
     (hbit : (natToWord L n).getD slot false = bit) :
@@ -383,7 +383,7 @@ theorem cook_c2_tape_bit_bounded (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (h
 def cook_c2_decode_at (slot : ℕ) (tape : InfTape) : Bool :=
   tape_has_glider_at tape slot 0
 
-/-- **Partial C1 discharge:** bounded `natToWord` family (L ≤ 4) admits a slot decoder. -/
+/-- **Partial C1 discharge:** bounded `natToWord` family (L ≤ 5) admits a slot decoder. -/
 theorem cook_c2_tape_bit_ax_partial (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
     (hn : n < 2^L) (idx : ℕ) :
     cook_c2_decode_at slot

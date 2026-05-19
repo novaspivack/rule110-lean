@@ -8,6 +8,7 @@ import Rule110.CookLen6StackSim
 import Rule110.CookStage3CollisionModel
 import Rule110.CookConstructionCollisionCerts
 import Rule110.CookLen6BlockStepSim
+import Rule110.CookC3PrimeDecodeSim
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -253,6 +254,10 @@ theorem kind2_true_support_cone_negative :
 theorem len6_dynamic_block_step_negative :
     len6DynamicBlockStepDataConesOk cook_min_len6_true_word = false :=
   len6_dynamic_block_step_data_cones_not_ok
+
+theorem len6_one_step_glider_decode_negative :
+    len6OneStepGliderDecodeOk = false :=
+  len6_one_step_glider_decode_not_ok
 
 /-- List sim at slot origin after 390 steps matches InfTape stepping (L=6, idx encoding). -/
 theorem len6_true_origin_list_sim_eq_inf_390 :
