@@ -115,6 +115,9 @@ theorem cook_empty_cts_stage3_partial (n : ℕ) :
 theorem cook_universality_discharged_witness : CookUniversalityDischarged :=
   cook_universality_discharged
 
+theorem cook_legacy_c3_empty_n1_blocked_witness : CookLegacyC3EmptyN1Blocked :=
+  cook_legacy_c3_empty_n1_blocked
+
 theorem cook_empty_appendant_c3prime_discharged_witness : CookEmptyAppendantC3PrimeDischarged :=
   cook_empty_appendant_c3prime_discharged
 
