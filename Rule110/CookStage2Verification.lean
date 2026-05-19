@@ -58,6 +58,18 @@ theorem cook_leader_k_block_row0_witness :
     cookKBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
   leader_k_block_row0_differs
 
+theorem cook_i_block_row0_length_witness : cookIBlockRow0.length = 222 := cookIBlockRow0_length
+
+theorem cook_j_block_row0_length_witness : cookJBlockRow0.length = 252 := cookJBlockRow0_length
+
+theorem cook_i_block_row0_differs_witness :
+    cookIBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
+  leader_i_block_row0_differs
+
+theorem cook_j_block_row0_differs_witness :
+    cookJBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
+  leader_j_block_row0_differs
+
 theorem cook_leader_k_cell_outside_slot_cone_witness (slot : ℕ) (hslot : slot ≤ 20) {i : ℕ} {b : Bool}
     (h : (i, b) ∈ cts_leader_k_glider.toCells) :
     i < cts_slot_origin slot - 30 ∨ cts_slot_origin slot + 30 < i :=

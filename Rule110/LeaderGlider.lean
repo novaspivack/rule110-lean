@@ -122,4 +122,12 @@ theorem cts_leader_k_glider_block_length :
 theorem leader_k_block_row0_differs :
     cookKBlockRow0.getD 1 false ≠ cookEther (leaderSimOrigin + 1) := by native_decide
 
+/-- I-block row 0 overrides pure ether within the patch (KM decomposition). -/
+theorem leader_i_block_row0_differs :
+    cookIBlockRow0.getD 1 false ≠ cookEther (leaderSimOrigin + 1) := by native_decide
+
+/-- J-block row 0 overrides pure ether within the patch (KM decomposition). -/
+theorem leader_j_block_row0_differs :
+    cookJBlockRow0.getD 1 false ≠ cookEther (leaderSimOrigin + 1) := by native_decide
+
 end Rule110
