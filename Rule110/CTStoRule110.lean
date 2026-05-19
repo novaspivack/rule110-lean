@@ -1,6 +1,8 @@
 import Mathlib.Data.List.Basic
+import Mathlib.Tactic.Linarith
 
 import Rule110.CyclicTagSystem
+import Rule110.CookBlockData
 import Rule110.Ether
 import Rule110.Gliders
 import Rule110.InfTape
@@ -249,6 +251,36 @@ def cts_word_to_placements_phased (w : List Bool) : List GliderPlacement :=
 /-- Phase-correct CTS Rule 110 tape using `gliders_to_tape_phased`. -/
 def cts_to_rule110_tape_phased (_cts : CyclicTagSystem) (w : List Bool) : InfTape :=
   gliders_to_tape_phased (cts_word_to_placements_phased w)
+
+/-- Cook phase width for the Ē leader block (period 30, Cook §1.4). -/
+def cts_leader_cook_width : ℕ := 30
+
+def cts_ossifier_placement : GliderPlacement :=
+  { origin := cts_ossifier_origin, cook_width := 6, bits := cookOssifierPatchBits }
+
+def cts_leader_placement : GliderPlacement :=
+  { origin := cts_leader_origin, cook_width := cts_leader_cook_width, bits := cookLBlockRow0 }
+
+def cts_support_placements : List GliderPlacement :=
+  [cts_ossifier_placement, cts_leader_placement]
+
+/-- Phase-correct data placements with left ossifier and right leader (sorted by origin). -/
+def cts_word_to_placements_phased_with_support (w : List Bool) : List GliderPlacement :=
+  cts_support_placements ++ cts_word_to_placements_phased w
+
+def cts_to_rule110_tape_phased_with_support (_cts : CyclicTagSystem) (w : List Bool) : InfTape :=
+  gliders_to_tape_phased (cts_word_to_placements_phased_with_support w)
+
+theorem cts_support_placements_length : cts_support_placements.length = 2 := rfl
+
+theorem cts_leader_placement_ends_after (i : ℕ) (hi : i < cts_leader_origin) :
+    ¬ (cts_leader_placement.origin + cts_leader_placement.bits.length ≤ i) := by
+  intro hle
+  have h8235 : 8235 ≤ i := by
+    dsimp [cts_leader_placement, cts_leader_origin] at hle
+    simpa [cookLBlockRow0_length] using hle
+  simp [cts_leader_origin] at hi
+  linarith
 
 /-- The canonical Rule 110 tape encoding for a CTS word + appendant index.
     Uses the simple (phase-0-only) glider placement; suitable for the collision axioms

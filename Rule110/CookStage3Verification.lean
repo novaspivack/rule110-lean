@@ -1,5 +1,6 @@
 import Rule110.CyclicTagSystem
 import Rule110.CTStoRule110
+import Rule110.CookCollisionWitnesses
 import Rule110.InfTape
 
 /-!
@@ -20,5 +21,11 @@ theorem cook_cts_eval_sim_zero (cts : CyclicTagSystem) (w₀ : List Bool) :
       infRule110Steps (cook_total_M cts 0) (cts_to_rule110_tape_phased cts w₀) := by
   simp [CyclicTagSystem.cts_eval_zero, cook_total_M_zero, infRule110Steps_zero,
     cts_to_rule110_tape_phased]
+
+theorem cook_total_M_succ_witness (cts : CyclicTagSystem) (n : ℕ) :
+    cook_total_M cts (n + 1) =
+      cook_total_M cts n +
+        cook_M_for_appendant_len (cts.appendants.getD (n % cts.cycleLen) []).length :=
+  cook_total_M_succ cts n
 
 end Rule110

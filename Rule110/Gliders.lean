@@ -50,6 +50,43 @@ theorem overrideCells_cons (base : InfTape) (i : ℕ) (b : Bool) (rest : List (�
       overrideCells (fun j => if j = i then b else base j) rest :=
   rfl
 
+/-- If two bases agree at `k`, an overlay produces the same value at `k`. -/
+theorem overrideCells_base_eq_at (base base' : InfTape) (cells : List (ℕ × Bool)) (k : ℕ)
+    (heq : base k = base' k) :
+    overrideCells base cells k = overrideCells base' cells k := by
+  revert base base' heq
+  induction cells with
+  | nil =>
+    intro base base' heq
+    exact heq
+  | cons p ps ih =>
+    intro base base' heq
+    rcases p with ⟨i, b⟩
+    simp only [overrideCells]
+    by_cases hi : i = k
+    · subst hi
+      exact ih _ _ (by simp)
+    · exact ih _ _ (by simp [hi, heq])
+
+theorem overrideCells_cons_index_ne (base : InfTape) (i k : ℕ) (b : Bool) (ps : List (ℕ × Bool))
+    (hi : i ≠ k) :
+    overrideCells base ((i, b) :: ps) k = overrideCells base ps k := by
+  rw [overrideCells]
+  exact overrideCells_base_eq_at (fun j => if j = i then b else base j) base ps k
+    (by simp [Ne.symm hi])
+
+/-- If every write at `k` is absent, the overlay leaves `base k` unchanged. -/
+theorem overrideCells_eq_base_at (base : InfTape) (cells : List (ℕ × Bool)) (k : ℕ)
+    (h : ∀ p ∈ cells, p.1 ≠ k) :
+    overrideCells base cells k = base k := by
+  induction cells with
+  | nil => rfl
+  | cons p ps ih =>
+    rcases p with ⟨i, b⟩
+    simp only [List.mem_cons, forall_eq_or_imp] at h
+    rw [overrideCells_cons_index_ne base i k b ps h.1]
+    exact ih h.2
+
 /-- If every write lies strictly outside `[lo, hi]`, the overlay agrees with `base` on that interval. -/
 theorem overrideCells_eq_base_on_Icc (base : InfTape) (cells : List (ℕ × Bool)) (lo hi : ℕ)
     (hdisj : ∀ p ∈ cells, p.1 < lo ∨ hi < p.1) :
