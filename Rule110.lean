@@ -44,5 +44,6 @@ import Rule110.CookStage3Len6Refinement
 import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookStage3C3PrimeOperationalChain
 import Rule110.CookC2VerifySupportLen5
+import Rule110.CookC2VerifySupportLen6
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

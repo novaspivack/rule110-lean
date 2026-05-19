@@ -453,6 +453,11 @@ theorem cook_standard_empty_cts_steps_one_true :
   simp [CyclicTagSystem.cts_steps, CyclicTagSystem.cts_step, cook_standard_empty_cts,
     CyclicTagSystem.cycleLen]
 
+theorem cook_standard_empty_cts_steps_one_true_pair :
+    cook_standard_empty_cts.cts_steps 1 [true, true] 0 = ([true], 0) := by
+  simp [CyclicTagSystem.cts_steps, CyclicTagSystem.cts_step, cook_standard_empty_cts,
+    CyclicTagSystem.cycleLen]
+
 theorem cook_standard_empty_cts_eval_with_idx_one_true :
     cook_standard_empty_cts.cts_eval_with_idx 1 [true] 0 = ([], 0) := by
   simpa [CyclicTagSystem.cts_eval_with_idx] using cook_standard_empty_cts_steps_one_true

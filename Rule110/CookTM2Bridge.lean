@@ -52,21 +52,24 @@ theorem cook_bool_identity_tm_compiles_step :
     TMCompilesStep tmBoolIdentityStep cookBoolIdentityTMComp :=
   cookBoolIdentityTMComp.tm_compiles_step
 
-/-- All three Stage 4 scaffolds satisfy `TMCompilesStep`. -/
+/-- All four Stage 4 scaffolds satisfy `TMCompilesStep`. -/
 theorem cook_stage4_tm_compiles_step_bundle :
     TMCompilesStep tmIdentityStep trivialIdentityTMComp ∧
       TMCompilesStep tmBoolIdentityStep cookBoolIdentityTMComp ∧
-        TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp :=
+        TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp ∧
+          TMCompilesStep tmCountDownStep cookCountDownTMComp :=
   ⟨trivial_identity_tm_compiles_step, cook_bool_identity_tm_compiles_step,
-    cook_consume_head_tm_compiles_step⟩
+    cook_consume_head_tm_compiles_step, cook_count_down_tm_compiles_step⟩
 
-/-- Stage 4: Mathlib TM2 identity anchor **and** Cook CTS scaffolds (identity + consume-head). -/
-theorem cook_stage4_triple_scaffold :
+/-- Stage 4: Mathlib TM2 identity anchor **and** Cook CTS scaffolds (identity + consume-head + countdown). -/
+theorem cook_stage4_quad_scaffold :
     Nonempty FinTM2 ∧
       Nonempty (TMCTSCompilation tmIdentityStep) ∧
         Nonempty (TMCTSCompilation tmBoolIdentityStep) ∧
-          Nonempty (TMCTSCompilation tmConsumeHeadStep) :=
-  ⟨⟨idComputer Bool⟩, ⟨trivialIdentityTMComp⟩, ⟨cookBoolIdentityTMComp⟩, ⟨cookConsumeHeadTMComp⟩⟩
+          Nonempty (TMCTSCompilation tmConsumeHeadStep) ∧
+            Nonempty (TMCTSCompilation tmCountDownStep) :=
+  ⟨⟨idComputer Bool⟩, ⟨trivialIdentityTMComp⟩, ⟨cookBoolIdentityTMComp⟩, ⟨cookConsumeHeadTMComp⟩,
+    ⟨cookCountDownTMComp⟩⟩
 
 /-- Stage 4: Mathlib TM2 identity anchor **and** Cook CTS identity scaffolds coexist. -/
 theorem cook_stage4_dual_identity_scaffold :

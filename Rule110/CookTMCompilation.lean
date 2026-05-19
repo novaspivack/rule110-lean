@@ -99,6 +99,59 @@ theorem cook_consume_head_tm_compiles_step :
     TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp :=
   cookConsumeHeadTMComp.tm_compiles_step
 
+/-! ### Three-state countdown TM (multi-step consume on standard empty CTS) -/
+
+/-- Three-state machine: `0 → 1 → 2 → halt`. -/
+def tmCountDownStep (s : Fin 3) : Option (Fin 3) :=
+  match s with
+  | 0 => some 1
+  | 1 => some 2
+  | 2 => none
+
+private def countDownEnc (s : Fin 3) : List Bool × ℕ :=
+  match s with
+  | 0 => ([true, true], 0)
+  | 1 => ([true], 0)
+  | 2 => ([], 0)
+
+private def countDownDec (w : List Bool) (_ : ℕ) : Fin 3 :=
+  match w with
+  | [] => 2
+  | [_] => 1
+  | _ => 0
+
+/-- Unary-length encoding: state `k` carries `2 - k` head `true` bits before halting. -/
+def cookCountDownTMComp : TMCTSCompilation tmCountDownStep where
+  sys := cook_standard_empty_cts
+  enc := countDownEnc
+  dec := fun p => countDownDec p.1 p.2
+  decode_roundtrip := by
+    intro s
+    fin_cases s <;> simp [countDownEnc, countDownDec]
+  simulates_step := by
+    intro s s' h
+    fin_cases s
+    · simp [tmCountDownStep] at h
+      subst h
+      refine ⟨1, ?_⟩
+      simp [countDownEnc, countDownDec, cook_standard_empty_cts_steps_one_true_pair]
+    · simp [tmCountDownStep] at h
+      subst h
+      refine ⟨1, ?_⟩
+      simp [countDownEnc, countDownDec, cook_standard_empty_cts_steps_one_true]
+    · simp [tmCountDownStep] at h
+
+theorem cook_count_down_simulates_step (s s' : Fin 3) (h : tmCountDownStep s = some s') :
+    ∃ m,
+      let (w, idx) := cookCountDownTMComp.enc s
+      let (w', idx') := cookCountDownTMComp.sys.cts_steps m w idx
+      cookCountDownTMComp.dec (w', idx') = s' :=
+  cookCountDownTMComp.simulates_step h
+
+theorem cook_count_down_tm_compiles_step :
+    TMCompilesStep tmCountDownStep cookCountDownTMComp :=
+  cookCountDownTMComp.tm_compiles_step
+
 theorem trivial_identity_tm_compiles_step :
     TMCompilesStep tmIdentityStep trivialIdentityTMComp :=
   trivialIdentityTMComp.tm_compiles_step
