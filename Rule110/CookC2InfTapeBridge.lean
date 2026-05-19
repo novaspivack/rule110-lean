@@ -368,6 +368,17 @@ theorem cook_c2_tape_bit_min_word (slot : ℕ) (bit : Bool) (hslot : slot ≤ 20
       exact hcone k hk_lo hk_hi
   exact (tape_has_glider_at_eq_of_origin _ _ _ _ hagree).symm.trans hlist
 
+/-- **Bounded C1 discharge (natToWord, L ≤ 4):** decoder `cook_c2_decode_at` at slot. -/
+theorem cook_c2_tape_bit_bounded (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
+    (hn : n < 2^L) (idx : ℕ) (bit : Bool)
+    (hbit : (natToWord L n).getD slot false = bit) :
+    tape_has_glider_at
+      (infRule110Steps 30
+        (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n)))
+      slot 0 = bit := by
+  rw [← hbit]
+  exact cook_c2_tape_bit_inf_nat L slot n hL hslot hn idx
+
 /-- Decoder witness for the min-word case (Stage 1b partial discharge). -/
 def cook_c2_decode_at (slot : ℕ) (tape : InfTape) : Bool :=
   tape_has_glider_at tape slot 0
