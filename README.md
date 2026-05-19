@@ -34,7 +34,8 @@ This library formalizes the mathematical infrastructure for Cook's construction 
 | | `infRule110Steps_shiftInfTape_four` | Shift by 4 intertwines with `n` Rule 110 steps (boundary-isolated) |
 | **Overlay locality** | `overrideCells_eq_base_on_Icc` | Writes outside `[lo,hi]` are invisible inside `[lo,hi]` |
 | | `ctsTapeWithOverrides_infRule110Steps_eq_shift_of_disjoint` | Payload outside the backwards cone ⇒ observer sees unperturbed ether drift |
-| **Stage 1 (partial)** | `cook_cts_step_sim_ax` | Far-field ether drift after M steps (theorem; was axiom) |
+| **Stage 1** | `cook_cts_step_sim_ax` | Far-field ether drift after M steps (theorem; was axiom) |
+| **Stage 1b (partial)** | `cook_c2_tape_bit_min_word` | InfTape decode after 30 steps for isolated min-word (slots 0–20) |
 | | `cook_c2_tape_bit_sim_witness` | Bounded C2 read slots 0–20 via `native_decide` |
 | **C-glider patterns** | `cookCGliderCycle` | Verified 7-phase cycle for C1/C2/C3 gliders |
 | | `cookC1/C2/C3Bits_length` | Each glider is 6 cells wide |
@@ -94,7 +95,7 @@ Patterns extracted by organic emergence (random initial conditions → long Rule
 | **M5** | Full chain assembly; `#print axioms` clean | **Open** |
 
 The three collision axioms in `Rule110.CTStoRule110` are honest, named, falsifiable claims:
-- `cook_c2_tape_bit_ax` — C2 glider encodes one CTS bit (**open**; bounded witness slots 0–20 in `CookC2BoundedSim`)
+- `cook_c2_tape_bit_ax` — general multi-glider word (**open**); min-word InfTape decode proved for slots 0–20 (`cook_c2_tape_bit_min_word`)
 - `cook_cts_step_sim_ax` — one CTS step = M Rule 110 steps (**discharged** as theorem, far-field)
 - `cook_cts_eval_sim_ax` — n CTS steps = M Rule 110 steps (inductive extension; **open**, Stage 3)
 
