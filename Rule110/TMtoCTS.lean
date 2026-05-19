@@ -34,4 +34,15 @@ structure TMCTSCompilation (tmStep : Cfg → Option Cfg) where
           let (w', idx') := cts_steps sys m w idx
           dec (w', idx') = c'
 
+/-- Encoded configuration after `m` CTS microsteps (word + appendant index). -/
+def TMCTSCompilation.eval_with_idx {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) (m : ℕ) : List Bool × ℕ :=
+  let (w, idx) := comp.enc c
+  comp.sys.cts_eval_with_idx m w idx
+
+/-- Extracted word component of `eval_with_idx`. -/
+def TMCTSCompilation.eval_word {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) (m : ℕ) : List Bool :=
+  (comp.eval_with_idx c m).1
+
 end Rule110
