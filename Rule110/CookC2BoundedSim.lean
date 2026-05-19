@@ -40,6 +40,18 @@ def c2SimRun : ℕ → List Bool → List Bool
   | 0, tape => tape
   | n + 1, tape => c2SimRun n (c2SimStep tape)
 
+@[simp] theorem c2SimStep_length (l : List Bool) :
+    (c2SimStep l).length = l.length := by
+  simp [c2SimStep, List.length_map, List.length_range]
+
+@[simp] theorem c2SimRun_length (n : ℕ) (l : List Bool) :
+    (c2SimRun n l).length = l.length := by
+  induction n generalizing l with
+  | zero => simp [c2SimRun]
+  | succ n ih =>
+    simp only [c2SimRun]
+    rw [ih, c2SimStep_length]
+
 def c2SimReadAt (slot : ℕ) (w : List Bool) : Bool :=
   let origin := c2SimOrigin slot
   let tape := c2SimRun 30 (c2SimInitWord w)

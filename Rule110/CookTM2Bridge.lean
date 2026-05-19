@@ -15,6 +15,11 @@ namespace Rule110
 
 open Turing CyclicTagSystem
 
+/-- Cook §2 target: a bundled `FinTM2` admits a step-correct `TMCTSCompilation`. Still open
+    for nontrivial machines; see `cook_stage4_tm_compiles_step_bundle` for scaffold instances. -/
+def CookFinTM2Compiles (M : FinTM2) : Prop :=
+  ∃ (comp : TMCTSCompilation M.step), TMCompilesStep M.step comp
+
 /-- Mathlib provides a halting identity `FinTM2` (input stack = output stack). -/
 theorem cook_fin_tm2_id_machine : Nonempty FinTM2 :=
   ⟨idComputer Bool⟩

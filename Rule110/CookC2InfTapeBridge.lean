@@ -81,18 +81,6 @@ private theorem c2SimRight_eq_listToInfTape (l : List Bool) {i : ℕ} (hi : i < 
     have hi1' : i + 1 = l.length := by omega
     simp [h, hi1', listToInfTape_ge l hi1]
 
-@[simp] theorem c2SimStep_length (l : List Bool) :
-    (c2SimStep l).length = l.length := by
-  simp [c2SimStep, List.length_map, List.length_range]
-
-@[simp] theorem c2SimRun_length (n : ℕ) (l : List Bool) :
-    (c2SimRun n l).length = l.length := by
-  induction n generalizing l with
-  | zero => simp [c2SimRun]
-  | succ n ih =>
-    simp only [c2SimRun]
-    rw [ih, c2SimStep_length]
-
 theorem c2SimStep_listToInfTape (l : List Bool) {i : ℕ} (hi : i < l.length) :
     listToInfTape (c2SimStep l) i = infTapeStep (listToInfTape l) i := by
   have hi' : i < (c2SimStep l).length := by simpa [c2SimStep_length] using hi
