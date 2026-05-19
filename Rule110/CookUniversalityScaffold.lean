@@ -4,6 +4,7 @@ import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
 import Rule110.CookStage3Len6Refinement
 import Rule110.CookTMCompilation
+import Rule110.CookMValuesVerification
 
 /-!
 # Cook universality scaffold (SPEC_070_08 top-level target)
@@ -92,5 +93,19 @@ theorem cook_tm_identity_simulates_step (c c' : Unit) (h : tmIdentityStep c = so
       let (w', idx') := trivialIdentityTMComp.sys.cts_steps m w idx
       trivialIdentityTMComp.dec (w', idx') = c' :=
   trivial_identity_tm_simulates_step c c' h
+
+/-- Python calculator parity: M table and example cycle (`scripts/cook_m_values.py`). -/
+theorem cook_m_values_python_parity :
+    cook_M_for_appendant_len 6 = 390 ∧
+      cook_ossifier_v cook_python_example_appendants = 1142 ∧
+        cook_cycle_M_sum cook_python_example_appendants = 840 := by
+  refine ⟨?_, cook_v_python_example, cook_cycle_M_python_example⟩
+  native_decide
+
+/-- Empty-appendant CTS: C3′ and C3′′ hold for all n (vacuous / empty-input theorems). -/
+theorem cook_empty_cts_stage3_partial (n : ℕ) :
+    CookCtsEvalSimAtDataCones cook_standard_empty_cts n [] 0 ∧
+      CookCtsEvalSimAtDataConesOrigin cook_standard_empty_cts n [] 0 :=
+  ⟨cook_standard_empty_cts_data_cones n, cook_standard_empty_cts_data_cones_origin n⟩
 
 end Rule110

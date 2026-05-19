@@ -28,6 +28,8 @@ import Rule110.CookAppendantBlockStack
 import Rule110.CookLen6StackSim
 import Rule110.CookStage3CollisionModel
 import Rule110.CookConstructionCollisionCerts
+import Rule110.CookMValuesVerification
+import Rule110.CookMValuesWitness
 import Rule110.CookLen6BlockStepSim
 import Rule110.CookUniversalityScaffold
 import Rule110.CookC3PrimeDecodeSim

@@ -102,4 +102,28 @@ abbrev cook_collision_kind2_empty_negative := kind2_empty_support_slot0_cone_not
 
 abbrev cook_collision_kind3_negative := kind3_slot19_cone_not_fixed_30
 
+/-! ### Kind 5 — acceptor/rejector meets raw leader (`acceptor_rejector_meets_raw_leader`) -/
+
+/-- Ossifier + K-block raw leader (no H): slot-0 read cone not fixed over 30 steps. -/
+def kind5RawKLeaderPlacements : List GliderPlacement :=
+  [cts_ossifier_placement, cts_leader_k_placement]
+
+theorem kind5_raw_k_leader_slot0_not_fixed_30 :
+    collisionSimConeFixed (collisionSimInit kind5RawKLeaderPlacements) 30 0 = false := by
+  native_decide
+
+abbrev cook_collision_kind5_negative := kind5_raw_k_leader_slot0_not_fixed_30
+
+/-! ### Taxonomy linkage (re-export all five kind negative witnesses) -/
+
+abbrev cook_collision_cert_ossifier_meets_moving := kind1_ossifier_c2_slot0_cone_not_fixed_30
+
+abbrev cook_collision_cert_tape_passes_moving := kind2_empty_support_slot0_cone_not_fixed_30
+
+abbrev cook_collision_cert_tape_hits_leader := kind3_slot19_cone_not_fixed_30
+
+abbrev cook_collision_cert_acceptor_table := kind4_kh_leader_true_slot0_not_fixed_30
+
+abbrev cook_collision_cert_acceptor_raw_leader := kind5_raw_k_leader_slot0_not_fixed_30
+
 end Rule110
