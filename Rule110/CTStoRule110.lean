@@ -471,6 +471,50 @@ def cts_to_rule110_tape_with_support (_cts : CyclicTagSystem) (idx : ℕ) (w : L
     InfTape :=
   gliders_to_tape (cts_word_to_gliders w idx ++ cts_support_gliders)
 
+/-- Right-side leader glider for appendant index (L empty; K nonempty). -/
+def cts_leader_support_gliders_for_idx (cts : CyclicTagSystem) (idx : ℕ) : List GliderConfig :=
+  match cts.appendants.getD (idx % cts.cycleLen) [] with
+  | [] => [cts_leader_glider]
+  | _ :: _ => [cts_leader_k_glider]
+
+/-- Ossifier + idx-selected leader glider configs. -/
+def cts_support_gliders_for_idx (cts : CyclicTagSystem) (idx : ℕ) : List GliderConfig :=
+  cts_ossifier_glider :: cts_leader_support_gliders_for_idx cts idx
+
+/-- CTS encoding with appendant-index-aware support gliders. -/
+def cts_to_rule110_tape_with_support_idx (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
+    InfTape :=
+  gliders_to_tape (cts_word_to_gliders w idx ++ cts_support_gliders_for_idx cts idx)
+
+theorem cts_support_gliders_for_idx_empty_zero :
+    cts_support_gliders_for_idx (CyclicTagSystem.mk [[]]) 0 = cts_support_gliders := by
+  simp [cts_support_gliders_for_idx, cts_leader_support_gliders_for_idx, cts_support_gliders]
+
+theorem cts_to_rule110_tape_with_support_idx_empty_zero (w : List Bool) :
+    cts_to_rule110_tape_with_support_idx (CyclicTagSystem.mk [[]]) 0 w =
+      cts_to_rule110_tape_with_support (CyclicTagSystem.mk [[]]) 0 w := by
+  simp [cts_to_rule110_tape_with_support_idx, cts_to_rule110_tape_with_support,
+    cts_support_gliders_for_idx_empty_zero]
+
+theorem cts_support_gliders_for_idx_length (cts : CyclicTagSystem) (idx : ℕ) :
+    (cts_support_gliders_for_idx cts idx).length = 2 := by
+  simp only [cts_support_gliders_for_idx, List.length_cons, cts_leader_support_gliders_for_idx]
+  cases cts.appendants.getD (idx % cts.cycleLen) [] <;> rfl
+
+theorem cts_support_gliders_for_idx_empty (cts : CyclicTagSystem) (idx₀ : ℕ)
+    (hnil : cts.appendants.getD (idx₀ % cts.cycleLen) [] = []) :
+    cts_support_gliders_for_idx cts idx₀ = cts_support_gliders := by
+  unfold cts_support_gliders_for_idx cts_leader_support_gliders_for_idx cts_support_gliders
+  rw [hnil]
+
+theorem cts_support_gliders_for_idx_nonempty (cts : CyclicTagSystem) (idx₀ : ℕ)
+    (hne : cts.appendants.getD (idx₀ % cts.cycleLen) [] ≠ []) :
+    cts_support_gliders_for_idx cts idx₀ = [cts_ossifier_glider, cts_leader_k_glider] := by
+  unfold cts_support_gliders_for_idx cts_leader_support_gliders_for_idx
+  cases hword : cts.appendants.getD (idx₀ % cts.cycleLen) [] with
+  | nil => exact absurd hword hne
+  | cons _ _ => rfl
+
 theorem cts_support_gliders_length : cts_support_gliders.length = 2 := rfl
 
 /-! ## Tape → CTS word decode (Milestone 3 — round-trip for simulation)
@@ -575,6 +619,12 @@ def cook_min_len6_true_word : List Bool := [true]
 theorem cook_min_len6_cts_cycleLen : cook_min_len6_cts.cycleLen = 1 := rfl
 
 theorem cook_min_len6_appendant_len : cook_min_len6_appendant.length = 6 := rfl
+
+theorem cts_support_gliders_for_idx_len6 :
+    cts_support_gliders_for_idx cook_min_len6_cts 0 =
+      [cts_ossifier_glider, cts_leader_k_glider] := by
+  simp [cts_support_gliders_for_idx, cts_leader_support_gliders_for_idx, cook_min_len6_cts,
+    cook_min_len6_appendant, cook_min_len6_appendant_len]
 
 theorem cts_support_placements_for_idx_len6 :
     (cts_support_placements_for_idx cook_min_len6_cts 0).length = 3 := by

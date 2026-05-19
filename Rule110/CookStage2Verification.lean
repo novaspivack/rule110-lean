@@ -36,6 +36,27 @@ theorem cook_cts_support_gliders_witness :
     cts_leader_glider.species = CookGliderRef.named CookNamedGlider.Ebar :=
   ⟨cts_support_gliders_length, rfl, rfl⟩
 
+theorem cook_cts_support_gliders_for_idx_witness (cts : CyclicTagSystem) (idx : ℕ) :
+    (cts_support_gliders_for_idx cts idx).length = 2 ∧
+      cts_ossifier_glider.species = CookGliderRef.named CookNamedGlider.A := by
+  refine ⟨cts_support_gliders_for_idx_length cts idx, rfl⟩
+
+theorem cook_cts_support_gliders_for_idx_len6_witness :
+    cts_support_gliders_for_idx cook_min_len6_cts 0 =
+      [cts_ossifier_glider, cts_leader_k_glider] :=
+  cts_support_gliders_for_idx_len6
+
+theorem cook_support_idx_agrees_on_data_cone_witness (cts : CyclicTagSystem) (idx₀ idx : ℕ)
+    (w : List Bool) (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    cts_to_rule110_tape_with_support_idx cts idx₀ w k = cts_to_rule110_tape cts idx w k :=
+  cts_support_idx_agrees_on_data_cone cts idx₀ idx w slot hslot k hk_lo hk_hi
+
+theorem cook_to_rule110_tape_with_support_idx_empty_zero (w : List Bool) :
+    cts_to_rule110_tape_with_support_idx (CyclicTagSystem.mk [[]]) 0 w =
+      cts_to_rule110_tape_with_support (CyclicTagSystem.mk [[]]) 0 w :=
+  cts_to_rule110_tape_with_support_idx_empty_zero w
+
 theorem cook_support_agrees_on_data_cone_witness (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
     (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
     (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :

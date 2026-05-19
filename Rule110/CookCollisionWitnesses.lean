@@ -124,6 +124,56 @@ private theorem cts_word_support_flatMap (w : List Bool) (idx : ℕ) :
       (cts_support_gliders).reverse.flatMap GliderConfig.toCells ++ cts_word_to_cells w idx := by
   simp only [cts_word_to_cells, List.reverse_append, List.flatMap_append]
 
+private theorem ne_of_mem_outside_cone_k (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30)
+    {i : ℕ} {b : Bool}
+    (hmem : (i, b) ∈ cts_ossifier_glider.toCells ∨ (i, b) ∈ cts_leader_k_glider.toCells) :
+    i ≠ k := by
+  intro heq
+  rcases hmem with hmem | hmem
+  · have hout := cts_ossifier_cell_outside_slot_cone slot hslot hmem
+    rw [heq] at hout
+    rcases hout with hlt | hgt <;> omega
+  · have hout := cts_leader_k_cell_outside_slot_cone slot hslot hmem
+    rw [heq] at hout
+    rcases hout with hlt | hgt <;> omega
+
+private theorem cts_support_k_flatMap_eq :
+    ([cts_ossifier_glider, cts_leader_k_glider]).reverse.flatMap GliderConfig.toCells =
+      cts_leader_k_glider.toCells ++ cts_ossifier_glider.toCells := by
+  simp [List.flatMap_append, List.flatMap_cons, List.flatMap_nil, List.reverse_cons, List.reverse_nil]
+
+private theorem cts_support_k_cells_outside_slot_cone (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    ∀ p ∈ ([cts_ossifier_glider, cts_leader_k_glider]).reverse.flatMap GliderConfig.toCells, p.1 ≠ k := by
+  intro p hp
+  rw [cts_support_k_flatMap_eq] at hp
+  rcases List.mem_append.mp hp with hp | hp
+  · exact ne_of_mem_outside_cone_k slot hslot k hk_lo hk_hi (Or.inr hp)
+  · exact ne_of_mem_outside_cone_k slot hslot k hk_lo hk_hi (Or.inl hp)
+
+private theorem cts_word_support_k_flatMap (w : List Bool) (idx : ℕ) :
+    (cts_word_to_gliders w idx ++ [cts_ossifier_glider, cts_leader_k_glider]).reverse.flatMap
+        GliderConfig.toCells =
+      ([cts_ossifier_glider, cts_leader_k_glider]).reverse.flatMap GliderConfig.toCells ++
+        cts_word_to_cells w idx := by
+  simp only [cts_word_to_cells, List.reverse_append, List.flatMap_append]
+
+private theorem cts_support_k_agrees_on_data_cone (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
+    (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    gliders_to_tape (cts_word_to_gliders w idx ++ [cts_ossifier_glider, cts_leader_k_glider]) k =
+      cts_to_rule110_tape cts idx w k := by
+  simp only [cts_to_rule110_tape]
+  rw [gliders_to_tape_eq_reverse_flatMap, gliders_to_tape_eq_reverse_flatMap,
+    cts_word_support_k_flatMap, overrideCells_append]
+  let supportCells :=
+    ([cts_ossifier_glider, cts_leader_k_glider]).reverse.flatMap GliderConfig.toCells
+  let dataCells := cts_word_to_cells w idx
+  have hdisj := cts_support_k_cells_outside_slot_cone slot hslot k hk_lo hk_hi
+  have hbase := overrideCells_eq_base_at cookEther supportCells k hdisj
+  exact overrideCells_base_eq_at _ _ dataCells k (by rw [hbase])
+
 /-- Support gliders do not affect the tape on the 30-step cone around data slot `slot ≤ 20`. -/
 theorem cts_support_agrees_on_data_cone_gen (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
     (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
@@ -138,7 +188,22 @@ theorem cts_support_agrees_on_data_cone_gen (cts : CyclicTagSystem) (idx : ℕ) 
   have hbase := overrideCells_eq_base_at cookEther supportCells k hdisj
   exact overrideCells_base_eq_at _ _ dataCells k (by rw [hbase])
 
-/-! ## `cook_total_M` stepping (Stage 3 induction scaffolding) -/
+/-- Idx-aware support gliders agree with data-only encoding on slot read cones. -/
+theorem cts_support_idx_agrees_on_data_cone (cts : CyclicTagSystem) (idx₀ idx : ℕ) (w : List Bool)
+    (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    cts_to_rule110_tape_with_support_idx cts idx₀ w k = cts_to_rule110_tape cts idx w k := by
+  by_cases hlen : (cts.appendants.getD (idx₀ % cts.cycleLen) []).length = 0
+  · have hnil := List.length_eq_zero_iff.mp hlen
+    have hsup := cts_support_gliders_for_idx_empty cts idx₀ hnil
+    simp only [cts_to_rule110_tape_with_support_idx, cts_to_rule110_tape_with_support, hsup]
+    exact cts_support_agrees_on_data_cone_gen cts idx w slot hslot k hk_lo hk_hi
+  · have hne : cts.appendants.getD (idx₀ % cts.cycleLen) [] ≠ [] := by
+      intro hnil
+      exact hlen (List.length_eq_zero_iff.mpr hnil)
+    have hsup := cts_support_gliders_for_idx_nonempty cts idx₀ hne
+    simp only [cts_to_rule110_tape_with_support_idx, hsup]
+    exact cts_support_k_agrees_on_data_cone cts idx w slot hslot k hk_lo hk_hi
 
 theorem cook_total_M_succ (cts : CyclicTagSystem) (n : ℕ) :
     cook_total_M cts (n + 1) =
