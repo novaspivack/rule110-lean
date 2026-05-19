@@ -3,6 +3,7 @@ import Rule110.CookC2InfTapeBridge
 import Rule110.CookC2VerifySupportLen5
 import Rule110.CookC2VerifySupportLen6
 import Rule110.CookC2VerifySupportLen7
+import Rule110.CookC2SupportBareEquiv
 import Rule110.CTStoRule110
 
 /-!
@@ -96,6 +97,15 @@ theorem c2_support_len6_word_read_witness (slot n : ℕ) (hslot : slot < 6) (hn 
 theorem c2_support_len7_word_read_witness (slot n : ℕ) (hslot : slot < 7) (hn : n < 2 ^ 7) :
     c2SimReadAtWithOssifier slot (natToWord 7 n) = (natToWord 7 n).getD slot false :=
   c2_support_len7_word_read slot n hslot hn
+
+theorem c2_support_word_read_from_bare_witness (L slot n : ℕ) (hL : L ≤ 7) (hslot : slot < L)
+    (hn : n < 2 ^ L) :
+    c2SimReadAtWithOssifier slot (natToWord L n) = (natToWord L n).getD slot false :=
+  c2_support_word_read_from_bare L slot n hL hslot hn
+
+theorem c2_support_len7_word_read_from_bare_witness (slot n : ℕ) (hslot : slot < 7) (hn : n < 2 ^ 7) :
+    c2SimReadAtWithOssifier slot (natToWord 7 n) = (natToWord 7 n).getD slot false :=
+  c2_support_len7_word_read_from_bare slot n hslot hn
 
 theorem c2_len6_all_init_read_cones_ok_witness :
     c2Len6AllInitReadConesOk = true :=

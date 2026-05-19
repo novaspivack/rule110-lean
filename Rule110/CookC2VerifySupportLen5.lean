@@ -22,6 +22,10 @@ def c2SimCellForWordWithOssifier (w : List Bool) (i : ℕ) : Bool :=
 def c2SimInitWordWithOssifier (w : List Bool) : List Bool :=
   (List.range c2SimBound).map (c2SimCellForWordWithOssifier w)
 
+@[simp] theorem c2SimInitWordWithOssifier_length (w : List Bool) :
+    (c2SimInitWordWithOssifier w).length = c2SimBound := by
+  simp [c2SimInitWordWithOssifier, List.length_map, List.length_range]
+
 def c2SimReadAtWithOssifier (slot : ℕ) (w : List Bool) : Bool :=
   let origin := c2SimOrigin slot
   let tape := c2SimRun 30 (c2SimInitWordWithOssifier w)

@@ -47,5 +47,6 @@ import Rule110.CookC2VerifySupportLen5
 import Rule110.CookC2VerifySupportLen6
 import Rule110.CookC2VerifySupportLen7
 import Rule110.CookC2SupportConeDisjoint
+import Rule110.CookC2SupportBareEquiv
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

@@ -6,6 +6,7 @@ import Rule110.CookMValuesVerification
 import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookStage3C3PrimeOperationalChain
 import Rule110.CookC2VerifySupportLen7
+import Rule110.CookC2SupportBareEquiv
 
 /-!
 # Cook universality pipeline chain (SPEC_070_08)
@@ -54,7 +55,7 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
   stage1b_c2_upto7 := fun L slot n idx hL hslot hn =>
     cook_c2_tape_bit_ax_partial_upto7 L slot n hL hslot hn idx
   stage1b_support_upto7 := fun slot n hslot hn =>
-    c2_support_len7_word_read slot n hslot hn
+    c2_support_word_read_from_bare 7 slot n (by decide) hslot hn
   stage3_empty_c3prime := cook_standard_empty_cts_data_cones
   stage3_empty_c3primeprime := cook_standard_empty_cts_data_cones_origin
   stage3_len6_origin := cook_cts_eval_sim_at_data_cones_origin_len6_one
