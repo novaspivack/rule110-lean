@@ -19,6 +19,7 @@ import Rule110.CookCollisionWitnesses
 import Rule110.CookStage3Verification
 import Rule110.CookEmptyAppendantSim
 import Rule110.CookLen6AppendantSim
+import Rule110.CookMFormula
 import Rule110.CookPhasedSupportInfTapeBridge
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

@@ -26,6 +26,11 @@ theorem cook_cts_eval_sim_zero (cts : CyclicTagSystem) (w₀ : List Bool) :
   simp [CookCtsEvalSim, CyclicTagSystem.cts_eval_zero, cook_total_M_zero, infRule110Steps_zero,
     cts_to_rule110_tape_phased_with_support]
 
+theorem cook_cts_eval_sim_zero_at (cts : CyclicTagSystem) (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsEvalSimAt cts 0 w₀ idx₀ := by
+  simp [CookCtsEvalSimAt, CyclicTagSystem.cts_eval_with_idx_zero, cook_total_M_from_zero,
+    cts_to_rule110_tape_phased_with_support_idx, infRule110Steps_zero]
+
 theorem cook_total_M_succ_witness (cts : CyclicTagSystem) (n : ℕ) :
     cook_total_M cts (n + 1) =
       cook_total_M cts n +
@@ -160,6 +165,17 @@ theorem cook_cts_eval_sim_len6_one_step_char_iff :
   · intro h
     rw [CookCtsEvalSim, cts_eval_one_true_len6, cook_total_M_one_len6]
     exact h
+
+/-- Idx-aware L=6 one-step characterization (K-block leader at idx 0). -/
+theorem cook_cts_eval_sim_at_len6_one_step_char_iff :
+    CookCtsEvalSimAt cook_min_len6_cts 1 cook_min_len6_true_word 0 ↔
+      gliders_to_tape_phased
+        (cts_word_to_placements_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_appendant) =
+        infRule110Steps 390
+          (cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word) := by
+  dsimp [CookCtsEvalSimAt]
+  rw [cts_eval_with_idx_one_true_len6, cook_total_M_from_one_len6]
+  tauto
 
 /-- **Negative witness (Stage 3):** bounded 30-step list simulation does not fix slot-0 cone. -/
 theorem empty_phased_support_slot0_cone_not_fixed_30 :

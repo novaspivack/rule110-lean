@@ -269,12 +269,16 @@ def cts_ossifier_placement : GliderPlacement :=
 def cts_leader_placement : GliderPlacement :=
   { origin := cts_leader_origin, cook_width := cts_leader_cook_width, bits := cookLBlockRow0 }
 
-/-- Leader block for appendant index `idx` (L-block for empty appendant; KM-block TBD). -/
+/-- K-block raw leader (nonempty appendant case, Cook §1.4 KM replacement). -/
+def cts_leader_k_placement : GliderPlacement :=
+  { origin := cts_leader_origin, cook_width := cts_leader_cook_width, bits := cookKBlockRow0 }
+
+/-- Leader block for appendant index `idx` (L-block empty; K-block nonempty). -/
 def cts_leader_placement_for_idx (cts : CyclicTagSystem) (idx : ℕ) : GliderPlacement :=
   if (cts.appendants.getD (idx % cts.cycleLen) []).length = 0 then
     cts_leader_placement
   else
-    cts_leader_placement
+    cts_leader_k_placement
 
 def cts_support_placements : List GliderPlacement :=
   [cts_ossifier_placement, cts_leader_placement]
@@ -320,6 +324,26 @@ theorem cts_leader_placement_ends_after (i : ℕ) (hi : i < cts_leader_origin) :
     simpa [cookLBlockRow0_length] using hle
   simp [cts_leader_origin] at hi
   linarith
+
+theorem cts_leader_k_placement_ends_after (i : ℕ) (hi : i < cts_leader_origin) :
+    ¬ (cts_leader_k_placement.origin + cts_leader_k_placement.bits.length ≤ i) := by
+  intro hle
+  have h8338 : 8338 ≤ i := by
+    dsimp [cts_leader_k_placement, cts_leader_origin] at hle
+    simpa [cookKBlockRow0_length] using hle
+  simp [cts_leader_origin] at hi
+  linarith
+
+theorem cts_leader_placement_for_idx_ends_after (cts : CyclicTagSystem) (idx : ℕ) (i : ℕ)
+    (hi : i < cts_leader_origin) :
+    ¬ (cts_leader_placement_for_idx cts idx).origin +
+        (cts_leader_placement_for_idx cts idx).bits.length ≤ i := by
+  unfold cts_leader_placement_for_idx
+  by_cases hlen : (cts.appendants.getD (idx % cts.cycleLen) []).length = 0
+  · rw [if_pos hlen]
+    exact cts_leader_placement_ends_after i hi
+  · rw [if_neg hlen]
+    exact cts_leader_k_placement_ends_after i hi
 
 private theorem accumPhaseAt_foldl_add_init (gs : List GliderPlacement) (i init : ℕ) :
     gs.foldl (fun p g => if g.origin + g.bits.length ≤ i then p + g.cook_width else p) init =
@@ -667,11 +691,34 @@ axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
 -- Cook Collision C2 (one CTS step, far-field ether drift) — discharged above as `cook_cts_step_sim_ax`.
 -- Requires `cts_word_far_boundary w.length + M ≤ i`; yields `cookEther (i + 4 * M)`.
 
-/-- Multi-step CTS simulation predicate (Stage 3).
-    Uses phased **with support** (ossifier + leader) — Cook §4 empty-appendant case. -/
+/-- Multi-step CTS simulation at initial appendant index `idx₀` (Stage 3). -/
+def CookCtsEvalSimAt (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) : Prop :=
+  let (w, idx) := cts.cts_eval_with_idx n w₀ idx₀
+  gliders_to_tape_phased (cts_word_to_placements_phased_with_support_idx cts idx w) =
+    infRule110Steps (cook_total_M_from cts n idx₀)
+      (cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀)
+
+/-- Multi-step CTS simulation predicate (Stage 3, legacy encoding without idx on initial tape). -/
 def CookCtsEvalSim (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) : Prop :=
   gliders_to_tape_phased (cts_word_to_placements_phased_with_support (cts.cts_eval n w₀)) =
     infRule110Steps (cook_total_M cts n) (cts_to_rule110_tape_phased_with_support cts w₀)
+
+theorem cook_total_M_from_zero (cts : CyclicTagSystem) (idx₀ : ℕ) :
+    cook_total_M_from cts 0 idx₀ = 0 := by
+  simp [cook_total_M_from]
+
+theorem cook_total_M_eq_from_zero (cts : CyclicTagSystem) (n : ℕ) :
+    cook_total_M cts n = cook_total_M_from cts n 0 := rfl
+
+theorem cook_total_M_from_one_len6 :
+    cook_total_M_from cook_min_len6_cts 1 0 = 390 := by
+  simp [cook_total_M_from, cook_min_len6_cts, cook_min_len6_appendant, cook_M_len6]
+
+theorem cts_eval_with_idx_one_true_len6 :
+    cook_min_len6_cts.cts_eval_with_idx 1 cook_min_len6_true_word 0 =
+      (cook_min_len6_appendant, 0) := by
+  simp [CyclicTagSystem.cts_eval_with_idx, CyclicTagSystem.cts_steps_succ, cts_eval_one_true_len6,
+    CyclicTagSystem.cts_step, cook_min_len6_cts, cook_min_len6_true_word, cook_min_len6_appendant]
 
 /-- **Cook Collision Axiom C3 (multi-step CTS simulation):**
     `n` CTS steps from `w₀` correspond to `cook_total_M cts n` total Rule 110 steps,

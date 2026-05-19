@@ -383,4 +383,13 @@ theorem cook_c2_tape_bit_bounded (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (h
 def cook_c2_decode_at (slot : ℕ) (tape : InfTape) : Bool :=
   tape_has_glider_at tape slot 0
 
+/-- **Partial C1 discharge:** bounded `natToWord` family (L ≤ 4) admits a slot decoder. -/
+theorem cook_c2_tape_bit_ax_partial (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
+    (hn : n < 2^L) (idx : ℕ) :
+    cook_c2_decode_at slot
+      (infRule110Steps 30
+        (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
+      (natToWord L n).getD slot false :=
+  cook_c2_tape_bit_inf_nat L slot n hL hslot hn idx
+
 end Rule110

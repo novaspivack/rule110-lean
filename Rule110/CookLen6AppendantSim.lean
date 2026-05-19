@@ -17,17 +17,19 @@ def len6Slot0ConeLo : ℕ := cts_slot_origin 0 - 30
 
 def len6TruePhasedSupportInit : List Bool :=
   (List.range c2SimBound).map fun i =>
-    gliders_to_tape_phased (cts_word_to_placements_phased_with_support cook_min_len6_true_word) i
+    gliders_to_tape_phased
+      (cts_word_to_placements_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word) i
 
 def len6PostAppendantPhasedSupportInit : List Bool :=
   (List.range c2SimBound).map fun i =>
-    gliders_to_tape_phased (cts_word_to_placements_phased_with_support cook_min_len6_appendant) i
+    gliders_to_tape_phased
+      (cts_word_to_placements_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_appendant) i
 
 def len6TrueInitReadConeOk : Bool :=
   (List.range 61).all fun d =>
     let k := len6Slot0ConeLo + d
     decide (listToInfTape len6TruePhasedSupportInit k =
-      cts_to_rule110_tape_phased_with_support cook_min_len6_cts cook_min_len6_true_word k)
+      cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word k)
 
 /-- Init agreement for `[true]` with phased ossifier+leader support (slot-0 cone). -/
 theorem len6_true_init_read_cone_ok : len6TrueInitReadConeOk = true := by
