@@ -58,6 +58,18 @@ theorem cook_leader_k_block_row0_witness :
     cookKBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
   leader_k_block_row0_differs
 
+theorem cook_leader_k_cell_outside_slot_cone_witness (slot : ℕ) (hslot : slot ≤ 20) {i : ℕ} {b : Bool}
+    (h : (i, b) ∈ cts_leader_k_glider.toCells) :
+    i < cts_slot_origin slot - 30 ∨ cts_slot_origin slot + 30 < i :=
+  cts_leader_k_cell_outside_slot_cone slot hslot h
+
+theorem cook_phased_support_outside_slot_cone_for_idx_witness (cts : CyclicTagSystem) (idx : ℕ)
+    (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    ∀ g ∈ cts_support_placements_for_idx cts idx,
+      ¬ (g.origin ≤ k ∧ k - g.origin < g.bits.length) :=
+  cts_phased_support_outside_slot_cone_for_idx cts idx slot hslot k hk_lo hk_hi
+
 theorem cook_leader_placement_before_origin (i : ℕ) (hi : i < cts_leader_origin) :
     ¬ (cts_leader_placement.origin + cts_leader_placement.bits.length ≤ i) :=
   cts_leader_placement_ends_after i hi

@@ -71,6 +71,23 @@ theorem cts_leader_cell_outside_slot_cone (slot : ℕ) (hslot : slot ≤ 20) {i 
   simp [cts_leader_origin] at hge ⊢
   omega
 
+theorem cts_leader_k_cell_ge_leader_origin {i : ℕ} {b : Bool}
+    (h : (i, b) ∈ cts_leader_k_glider.toCells) :
+    cts_leader_origin ≤ i := by
+  simp only [GliderConfig.toCells, List.mem_map, List.mem_range] at h
+  obtain ⟨j, _, heq⟩ := h
+  cases heq
+  simp [cts_leader_k_glider, cts_leader_origin]
+
+theorem cts_leader_k_cell_outside_slot_cone (slot : ℕ) (hslot : slot ≤ 20) {i : ℕ} {b : Bool}
+    (h : (i, b) ∈ cts_leader_k_glider.toCells) :
+    i < cts_slot_origin slot - 30 ∨ cts_slot_origin slot + 30 < i := by
+  right
+  have hge := cts_leader_k_cell_ge_leader_origin h
+  have hhi := cts_slot_cone_hi_le slot hslot
+  simp [cts_leader_origin] at hge ⊢
+  omega
+
 private theorem cts_support_flatMap_eq :
     (cts_support_gliders).reverse.flatMap GliderConfig.toCells =
       cts_leader_glider.toCells ++ cts_ossifier_glider.toCells := by
@@ -190,6 +207,34 @@ theorem cts_phased_support_outside_slot_cone (slot : ℕ) (hslot : slot ≤ 20) 
     simp [cts_leader_placement, cts_leader_origin, cts_slot_origin, cts_tape_origin,
       cts_glider_spacing] at hk_origin hk_hi hhi ⊢
     omega
+
+/-- Idx-selected support placements are outside the slot read cone (slots ≤ 20). -/
+theorem cts_phased_support_outside_slot_cone_for_idx (cts : CyclicTagSystem) (idx : ℕ)
+    (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    ∀ g ∈ cts_support_placements_for_idx cts idx,
+      ¬ (g.origin ≤ k ∧ k - g.origin < g.bits.length) := by
+  intro g hg
+  simp only [cts_support_placements_for_idx, List.mem_cons, List.mem_nil_iff, or_false] at hg
+  rcases hg with rfl | hg
+  · intro ⟨_hk_origin, hk_in⟩
+    have h506 : cts_ossifier_origin + 6 ≤ k := by
+      have hend := cts_ossifier_placement_end_lt_slot_cone slot hslot
+      simp [cts_ossifier_placement, cts_ossifier_origin, cookOssifierPatchBits_length,
+        cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hend hk_lo ⊢
+      omega
+    have hk506 : k < cts_ossifier_origin + 6 := by
+      simp [cts_ossifier_placement, cts_ossifier_origin, cookOssifierPatchBits_length] at hk_in ⊢
+      omega
+    exact (Nat.not_lt.mpr h506) hk506
+  · subst hg
+    intro ⟨hk_origin, _⟩
+    have hhi := cts_slot_cone_hi_le slot hslot
+    have h8000 : cts_leader_origin ≤ k := by
+      dsimp [cts_leader_placement_for_idx] at hk_origin
+      split_ifs at hk_origin <;> exact hk_origin
+    simp [cts_leader_origin, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at h8000 hk_hi hhi
+    linarith
 
 /-- Empty-word phased-with-support encoding is +6 ether on data-region slot cones. -/
 theorem cts_phased_empty_support_ether_at (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)

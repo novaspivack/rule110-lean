@@ -38,6 +38,12 @@ theorem cook_total_M_succ_witness (cts : CyclicTagSystem) (n : ℕ) :
         cook_M_for_appendant_len (cts.appendants.getD (n % cts.cycleLen) []).length :=
   cook_total_M_succ cts n
 
+theorem cook_total_M_from_succ_witness (cts : CyclicTagSystem) (n idx₀ : ℕ) :
+    cook_total_M_from cts (n + 1) idx₀ =
+      cook_total_M_from cts n idx₀ +
+        cook_M_for_appendant_len (cts.appendants.getD ((idx₀ + n) % cts.cycleLen) []).length :=
+  cook_total_M_from_succ cts n idx₀
+
 theorem cook_total_M_succ_empty_appendant (cts : CyclicTagSystem) (n : ℕ)
     (h : ∀ k, k < cts.cycleLen → (cts.appendants.getD k []).length = 0) :
     cook_total_M cts (n + 1) = cook_total_M cts n + 30 := by

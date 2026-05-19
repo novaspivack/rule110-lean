@@ -45,4 +45,15 @@ def TMCTSCompilation.eval_word {Cfg : Type} {tmStep : Cfg → Option Cfg}
     (comp : TMCTSCompilation tmStep) (c : Cfg) (m : ℕ) : List Bool :=
   (comp.eval_with_idx c m).1
 
+/-- Zero CTS microsteps leave the encoded configuration unchanged. -/
+theorem TMCTSCompilation.eval_with_idx_zero {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) :
+    comp.eval_with_idx c 0 = comp.enc c := by
+  simp [TMCTSCompilation.eval_with_idx, cts_eval_with_idx_zero]
+
+theorem TMCTSCompilation.eval_word_zero {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) :
+    comp.eval_word c 0 = (comp.enc c).1 := by
+  simp [TMCTSCompilation.eval_word, TMCTSCompilation.eval_with_idx_zero]
+
 end Rule110
