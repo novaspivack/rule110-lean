@@ -85,4 +85,21 @@ theorem TMCTSCompilation.eval_with_idx_one {Cfg : Type} {tmStep : Cfg → Option
       comp.sys.cts_eval_with_idx 1 w idx := by
   simpa using comp.eval_with_idx_add c 0 1
 
+/-- `eval_with_idx` matches `cts_steps` on the encoded configuration. -/
+theorem TMCTSCompilation.eval_with_idx_eq_cts_steps {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) (m : ℕ) :
+    comp.eval_with_idx c m =
+      let (w, idx) := comp.enc c
+      comp.sys.cts_steps m w idx := by
+  simp only [TMCTSCompilation.eval_with_idx, CyclicTagSystem.cts_eval_with_idx]
+
+/-- From `simulates_step`, some `eval_with_idx` horizon decodes to the TM successor. -/
+theorem TMCTSCompilation.exists_eval_decodes_step {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) {c c' : Cfg} (h : tmStep c = some c') :
+    ∃ m, comp.dec (comp.eval_with_idx c m) = c' := by
+  obtain ⟨m, hm⟩ := comp.simulates_step h
+  refine ⟨m, ?_⟩
+  rw [comp.eval_with_idx_eq_cts_steps c m]
+  exact hm
+
 end Rule110

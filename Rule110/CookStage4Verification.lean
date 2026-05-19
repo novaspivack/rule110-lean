@@ -78,4 +78,19 @@ theorem cook_consume_head_dec_after_one_step_witness :
     cookConsumeHeadTMComp.dec (cookConsumeHeadTMComp.eval_with_idx 0 1) = 1 :=
   cook_consume_head_dec_after_one_step
 
+theorem cook_consume_head_exists_eval_decodes_step (s s' : Fin 2)
+    (h : tmConsumeHeadStep s = some s') :
+    ∃ m, cookConsumeHeadTMComp.dec (cookConsumeHeadTMComp.eval_with_idx s m) = s' :=
+  cookConsumeHeadTMComp.exists_eval_decodes_step h
+
+theorem trivial_identity_exists_eval_decodes_step (c c' : Unit)
+    (h : tmIdentityStep c = some c') :
+    ∃ m, trivialIdentityTMComp.dec (trivialIdentityTMComp.eval_with_idx c m) = c' :=
+  trivialIdentityTMComp.exists_eval_decodes_step h
+
+theorem cook_bool_identity_exists_eval_decodes_step (b b' : Bool)
+    (h : tmBoolIdentityStep b = some b') :
+    ∃ m, cookBoolIdentityTMComp.dec (cookBoolIdentityTMComp.eval_with_idx b m) = b' :=
+  cookBoolIdentityTMComp.exists_eval_decodes_step h
+
 end Rule110
