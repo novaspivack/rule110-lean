@@ -48,6 +48,44 @@ theorem len6True_init_cone_eq_phased_idx (k : ℕ)
   rw [hk_eq]
   exact len6TrueInitReadConeOk_get d hd_lt
 
+theorem len6True_phased_init_eq_list_on_slot0_cone (k : ℕ)
+    (hk_lo : len6Slot0ConeLo ≤ k) (hk_hi : k ≤ cts_slot_origin 0 + 30) :
+    cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word k =
+      listToInfTape len6TruePhasedSupportInit k :=
+  (len6True_init_cone_eq_phased_idx k hk_lo hk_hi).symm
+
+theorem len6True_slot0_cone_run_eq_inf_30 (k : ℕ)
+    (hk_lo : len6Slot0ConeLo ≤ k) (hk_hi : k ≤ cts_slot_origin 0 + 30) :
+    listToInfTape (c2SimRun 30 len6TruePhasedSupportInit) k =
+      infRule110Steps 30 (listToInfTape len6TruePhasedSupportInit) k := by
+  apply len6TruePhasedSupport_run_eq_inf_at 30 k
+  · simp [len6Slot0ConeLo, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hk_lo ⊢; omega
+  · simp [c2SimBound, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hk_hi ⊢; omega
+
+theorem len6_slot0_origin_inf_steps_agree_init_30 :
+    infRule110Steps 30
+        (cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word)
+        (cts_slot_origin 0) =
+      infRule110Steps 30 (listToInfTape len6TruePhasedSupportInit) (cts_slot_origin 0) := by
+  have hk_le : 30 ≤ cts_slot_origin 0 := by
+    simp [cts_slot_origin, cts_tape_origin, cts_glider_spacing]
+  have hagree :
+      ∀ j, cts_slot_origin 0 - 30 ≤ j → j ≤ cts_slot_origin 0 + 30 →
+        cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word j =
+          listToInfTape len6TruePhasedSupportInit j := by
+    intro j hj_lo hj_hi
+    exact len6True_phased_init_eq_list_on_slot0_cone j
+      (by simp [len6Slot0ConeLo, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hj_lo ⊢; omega)
+      (by simp [len6Slot0ConeLo, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hj_hi ⊢; omega)
+  exact infRule110Steps_agree_Icc hk_le hagree
+
+theorem len6True_origin_run_eq_inf_30 :
+    listToInfTape (c2SimRun 30 len6TruePhasedSupportInit) (cts_slot_origin 0) =
+      infRule110Steps 30 (listToInfTape len6TruePhasedSupportInit) (cts_slot_origin 0) :=
+  len6True_slot0_cone_run_eq_inf_30 (cts_slot_origin 0)
+    (by simp [len6Slot0ConeLo, cts_slot_origin, cts_tape_origin, cts_glider_spacing])
+    (by simp [len6Slot0ConeLo, cts_slot_origin, cts_tape_origin, cts_glider_spacing])
+
 theorem len6True_origin_run_eq_inf_390 :
     listToInfTape (c2SimRun 390 len6TruePhasedSupportInit) (cts_slot_origin 0) =
       infRule110Steps 390 (listToInfTape len6TruePhasedSupportInit) (cts_slot_origin 0) := by

@@ -11,6 +11,7 @@ import Rule110.CookLen6BlockStepSim
 import Rule110.CookC3PrimeDecodeSim
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
+import Rule110.CookLen6FirstBlock30
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -289,6 +290,14 @@ theorem len6_phased_post_decode_inf_one_witness (slot : ℕ) (hslot : slot < 6) 
 theorem cook_cts_phased_post_decode_len6_one_witness :
     CookCtsPhasedPostDecodeAt cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
   cook_cts_phased_post_decode_len6_one
+
+theorem len6_first_block_30_origin_inf_witness :
+    infRule110Steps 30
+        (cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word)
+        (c2SimOrigin 0) =
+      cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_appendant
+        (c2SimOrigin 0) :=
+  len6_first_block_30_origin_inf
 
 theorem cook_cts_eval_sim_at_data_cones_origin_zero_witness (cts : CyclicTagSystem) (w₀ : List Bool)
     (idx₀ : ℕ) :
