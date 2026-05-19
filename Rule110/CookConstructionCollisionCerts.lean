@@ -1,4 +1,6 @@
 import Rule110.CookC2BoundedSim
+import Rule110.CookLen6AppendantSim
+import Rule110.CookEmptyAppendantSim
 import Rule110.CookCollisionTaxonomy
 import Rule110.CTStoRule110
 
@@ -27,6 +29,16 @@ def collisionSimConeEq (init fin : List Bool) (slot : ℕ) : Bool :=
 
 def collisionSimConeFixed (init : List Bool) (steps slot : ℕ) : Bool :=
   collisionSimConeEq init (c2SimRun steps init) slot
+
+/-! ### Init-cone positive certificates (pre-step agreement) -/
+
+theorem kind0_empty_init_read_cone_ok :
+    emptyPhasedSupportInitReadConeOk = true :=
+  empty_phased_support_init_read_cone_ok
+
+theorem kind0_len6_true_init_read_cone_ok :
+    len6TrueInitReadConeOk = true :=
+  len6_true_init_read_cone_ok
 
 /-! ### Kind 1 — ossifier meets moving data (`ossifier_meets_moving_or_invisible`) -/
 
