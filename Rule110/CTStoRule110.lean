@@ -269,20 +269,46 @@ def cts_ossifier_placement : GliderPlacement :=
 def cts_leader_placement : GliderPlacement :=
   { origin := cts_leader_origin, cook_width := cts_leader_cook_width, bits := cookLBlockRow0 }
 
+/-- Leader block for appendant index `idx` (L-block for empty appendant; KM-block TBD). -/
+def cts_leader_placement_for_idx (cts : CyclicTagSystem) (idx : ℕ) : GliderPlacement :=
+  if (cts.appendants.getD (idx % cts.cycleLen) []).length = 0 then
+    cts_leader_placement
+  else
+    cts_leader_placement
+
 def cts_support_placements : List GliderPlacement :=
   [cts_ossifier_placement, cts_leader_placement]
+
+def cts_support_placements_for_idx (cts : CyclicTagSystem) (idx : ℕ) : List GliderPlacement :=
+  [cts_ossifier_placement, cts_leader_placement_for_idx cts idx]
 
 /-- Phase-correct data placements with left ossifier and right leader (sorted by origin). -/
 def cts_word_to_placements_phased_with_support (w : List Bool) : List GliderPlacement :=
   cts_support_placements ++ cts_word_to_placements_phased w
 
+/-- Phase-correct data placements with ossifier and idx-selected leader. -/
+def cts_word_to_placements_phased_with_support_idx (cts : CyclicTagSystem) (idx : ℕ)
+    (w : List Bool) : List GliderPlacement :=
+  cts_support_placements_for_idx cts idx ++ cts_word_to_placements_phased w
+
 def cts_to_rule110_tape_phased_with_support (_cts : CyclicTagSystem) (w : List Bool) : InfTape :=
   gliders_to_tape_phased (cts_word_to_placements_phased_with_support w)
 
-/-- Appendant-index hook for phased-with-support encoding (leader variant per appendant TBD). -/
-def cts_to_rule110_tape_phased_with_support_idx (_cts : CyclicTagSystem) (_idx : ℕ)
+/-- Appendant-index hook for phased-with-support encoding. -/
+def cts_to_rule110_tape_phased_with_support_idx (cts : CyclicTagSystem) (idx : ℕ)
     (w : List Bool) : InfTape :=
-  gliders_to_tape_phased (cts_word_to_placements_phased_with_support w)
+  gliders_to_tape_phased (cts_word_to_placements_phased_with_support_idx cts idx w)
+
+theorem cts_support_placements_for_idx_empty_zero :
+    cts_support_placements_for_idx (CyclicTagSystem.mk [[]]) 0 = cts_support_placements := by
+  simp [cts_support_placements_for_idx, cts_support_placements, cts_leader_placement_for_idx]
+
+theorem cts_word_to_placements_phased_with_support_idx_empty_zero
+    (w : List Bool) :
+    cts_word_to_placements_phased_with_support_idx (CyclicTagSystem.mk [[]]) 0 w =
+      cts_word_to_placements_phased_with_support w := by
+  simp [cts_word_to_placements_phased_with_support_idx, cts_word_to_placements_phased_with_support,
+    cts_support_placements_for_idx_empty_zero]
 
 theorem cts_support_placements_length : cts_support_placements.length = 2 := rfl
 
