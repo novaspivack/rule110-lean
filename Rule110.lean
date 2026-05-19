@@ -22,5 +22,7 @@ import Rule110.CookLen6AppendantSim
 import Rule110.CookMFormula
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.CookLen6InfTapeBridge
+import Rule110.CookAppendantBlockStack
+import Rule110.CookLen6StackSim
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

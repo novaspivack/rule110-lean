@@ -65,4 +65,8 @@ theorem TMCTSCompilation.eval_with_idx_succ {Cfg : Type} {tmStep : Cfg → Optio
       comp.sys.cts_eval_with_idx m w₁ idx₁ := by
   simp [TMCTSCompilation.eval_with_idx, cts_eval_with_idx_succ]
 
+theorem TMCTSCompilation.eval_word_succ {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) (m : ℕ) :
+    comp.eval_word c (m + 1) = (comp.eval_with_idx c (m + 1)).1 := rfl
+
 end Rule110

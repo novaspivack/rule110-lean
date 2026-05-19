@@ -1,6 +1,7 @@
 import Rule110.OssifierGlider
 import Rule110.LeaderGlider
 import Rule110.CookCollisionWitnesses
+import Rule110.CookAppendantBlockStack
 import Rule110.CTStoRule110
 
 /-!
@@ -89,6 +90,11 @@ theorem cook_phased_support_outside_slot_cone_for_idx_witness (cts : CyclicTagSy
     ∀ g ∈ cts_support_placements_for_idx cts idx,
       ¬ (g.origin ≤ k ∧ k - g.origin < g.bits.length) :=
   cts_phased_support_outside_slot_cone_for_idx cts idx slot hslot k hk_lo hk_hi
+
+theorem cook_len6_appendant_block_stack_witness :
+    (cook_appendant_block_stack (List.replicate 6 false)).length = 13 ∧
+    (cook_appendant_block_stack (List.replicate 6 false)).getLast? = some .K :=
+  ⟨cook_len6_block_stack_length, cook_len6_block_stack_ends_with_k⟩
 
 theorem cook_leader_placement_before_origin (i : ℕ) (hi : i < cts_leader_origin) :
     ¬ (cts_leader_placement.origin + cts_leader_placement.bits.length ≤ i) :=
