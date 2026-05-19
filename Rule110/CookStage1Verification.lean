@@ -51,4 +51,17 @@ theorem cook_c2_tape_bit_inf_nat_witness (L slot n : ℕ) (idx : ℕ)
       (natToWord L n).getD slot false :=
   cook_c2_tape_bit_inf_nat L slot n hL hslot hn idx
 
+theorem cook_c2_tape_bit_inf_nat_upto6_witness (L slot n : ℕ) (idx : ℕ) (hL : L ≤ 6)
+    (hslot : slot < L) (hn : n < 2^L) :
+    tape_has_glider_at
+      (infRule110Steps 30
+        (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n)))
+      slot 0 =
+      (natToWord L n).getD slot false :=
+  cook_c2_tape_bit_inf_nat_upto6 L slot n hL hslot hn idx
+
+theorem c2_len6_all_init_read_cones_ok_witness :
+    c2Len6AllInitReadConesOk = true :=
+  c2_len6_all_init_read_cones_ok
+
 end Rule110
