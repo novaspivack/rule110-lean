@@ -8,7 +8,9 @@ import Rule110.CTStoRule110
 * **`cook_cts_step_sim_ax`** — discharged in `CTStoRule110` (far-field ether drift).
 * **`cook_c2_tape_bit_sim_witness`** — bounded list simulator (slots 0–20).
 * **`cook_c2_tape_bit_min_word`** — InfTape decode for isolated min-word encoding (Stage 1b).
-* **`cook_c2_tape_bit_ax`** — full general-word axiom remains open.
+* **`cook_c2_tape_bit_list`** — multi-glider list sim read (word length ≤ 4).
+* **`cook_c2_tape_bit_min_word`** — InfTape decode for isolated min-word (slots ≤ 20).
+* **`cook_c2_tape_bit_ax`** — full InfTape general-word axiom remains open.
 -/
 
 namespace Rule110
@@ -23,5 +25,10 @@ theorem cook_c2_tape_bit_min_word_witness (slot : ℕ) (bit : Bool) (hslot : slo
         (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (cts_min_word slot bit)))
       slot 0 = bit :=
   cook_c2_tape_bit_min_word slot bit hslot idx
+
+theorem cook_c2_tape_bit_list_witness (L slot n : ℕ)
+    (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L) (hn : n < 2^L) :
+    c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false :=
+  cook_c2_tape_bit_list L slot n hL hslot hn
 
 end Rule110

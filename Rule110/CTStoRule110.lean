@@ -431,13 +431,12 @@ theorem cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
     infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther (i + 4 * M) :=
   cook_cts_step_sim_far_field cts idx w i L M hi
 
--- Cook Collision C1 (C2 tape bit simulation) — bounded simulator witness in `CookC2BoundedSim`
--- (`c2SimRead slot bit = bit` for slots ≤ 20). InfTape-level axiom pending Stage 1b link.
+-- Cook Collision C1 (C2 tape bit simulation) — partial discharge in `CookC2InfTapeBridge`:
+-- `cook_c2_tape_bit_list` (multi-glider words ≤ 4, list sim); `cook_c2_tape_bit_min_word` (InfTape, slots ≤ 20).
+-- Former `cook_c2_tape_bit_ax` existential axiom replaced; full InfTape multi-glider read open.
 
-/-- **Cook Collision Axiom C1 (C2 tape bit simulation):**
-    A C2 glider encodes one CTS bit; after 30 Rule 110 steps (one empty-appendant period),
-    the bit can be read from the tape.
-    Source: Cook (2008) §1.4; Neary–Woods arXiv:0906.3248 §2 bullet 2. -/
+/-- **Cook Collision Axiom C1 (C2 tape bit simulation) — OPEN (InfTape, general word).**
+    List-sim partial results: `cook_c2_tape_bit_list`, `cook_c2_tape_bit_min_word`. -/
 axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
     ∃ (decode_bit : InfTape → Bool),
       ∀ w idx,

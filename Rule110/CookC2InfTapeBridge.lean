@@ -5,7 +5,8 @@ import Rule110.CookC2BoundedSim
 import Rule110.CTStoRule110
 import Rule110.InfTape
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 100000
+set_option maxHeartbeats 800000
 
 /-!
 # List simulator ↔ InfTape bridge (Stage 1b)
@@ -88,10 +89,6 @@ private theorem c2SimRight_eq_listToInfTape (l : List Bool) {i : ℕ} (hi : i < 
     simp only [c2SimRun]
     rw [ih, c2SimStep_length]
 
-@[simp] theorem c2SimInit_length (slot : ℕ) (bit : Bool) :
-    (c2SimInit slot bit).length = c2SimBound := by
-  simp [c2SimInit, c2SimBound, List.length_map, List.length_range]
-
 theorem c2SimStep_listToInfTape (l : List Bool) {i : ℕ} (hi : i < l.length) :
     listToInfTape (c2SimStep l) i = infTapeStep (listToInfTape l) i := by
   have hi' : i < (c2SimStep l).length := by simpa [c2SimStep_length] using hi
@@ -170,10 +167,15 @@ theorem c2SimInit_eq_cts_tape_cone (slot : ℕ) (bit : Bool) (hslot : slot ≤ 2
 
 /-! ## Bounded C2 read ↔ InfTape decode (slots ≤ 20) -/
 
+theorem c2SimReadAt_eq_listReadDiff (slot : ℕ) (w : List Bool) :
+    c2SimReadAt slot w =
+      listReadDiff (c2SimRun 30 (c2SimInitWord w)) (c2SimOrigin slot) := by
+  simp [c2SimReadAt, listReadDiff, c2SimOrigin, cts_tape_origin, cts_glider_spacing]
+
 theorem c2SimRead_eq_listReadDiff (slot : ℕ) (bit : Bool) :
     c2SimRead slot bit =
       listReadDiff (c2SimRun 30 (c2SimInit slot bit)) (c2SimOrigin slot) := by
-  simp [c2SimRead, listReadDiff, c2SimOrigin, cts_tape_origin, cts_glider_spacing]
+  simp [c2SimRead, c2SimInit, c2SimReadAt_eq_listReadDiff]
 
 theorem c2SimRead_eq_tape_has_glider_at_list (slot : ℕ) (bit : Bool)
     (hslot : slot ≤ 20) :
@@ -207,8 +209,26 @@ theorem c2SimRead_eq_tape_has_glider_at_inf (slot : ℕ) (bit : Bool)
     (infRule110Steps 30 (listToInfTape (c2SimInit slot bit))) slot 0 hagree]
   exact hlist
 
-/-- **Stage 1b (isolated min-word):** after 30 Rule 110 steps, `tape_has_glider_at` decodes
-    the C2 bit at `slot` for the canonical min-word encoding (slots `≤ 20`). -/
+/-- **Stage 1b (general words, bounded, list sim):** after 30 steps, `c2SimReadAt` decodes
+    `natToWord L n` at `slot` when `L ≤ c2VerifyMaxLen`. InfTape lift pending. -/
+theorem cook_c2_tape_read_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
+    (_hn : n < 2^L) :
+    c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false := by
+  have h4 : L ≤ 4 := by simpa [c2VerifyMaxLen] using hL
+  interval_cases L
+  all_goals
+    interval_cases slot <;> try omega
+    all_goals
+      interval_cases n <;> native_decide
+
+/-- **Cook Collision C1 (bounded general words, list sim).** InfTape version: see
+    `cook_c2_tape_bit_min_word` (min-word, slots ≤ 20). Full InfTape read for arbitrary
+    multi-glider words remains open. -/
+theorem cook_c2_tape_bit_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
+    (hn : n < 2^L) :
+    c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false :=
+  cook_c2_tape_read_list L slot n hL hslot hn
+
 theorem cook_c2_tape_bit_min_word (slot : ℕ) (bit : Bool) (hslot : slot ≤ 20) (idx : ℕ) :
     tape_has_glider_at
       (infRule110Steps 30
