@@ -15,5 +15,6 @@ import Rule110.CookBlockData
 import Rule110.OssifierGlider
 import Rule110.LeaderGlider
 import Rule110.CookStage2Verification
+import Rule110.CookStage3Verification
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/
