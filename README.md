@@ -37,6 +37,9 @@ This library formalizes the mathematical infrastructure for Cook's construction 
 | **Stage 1** | `cook_cts_step_sim_ax` | Far-field ether drift after M steps (theorem; was axiom) |
 | **Stage 1b (partial)** | `cook_c2_tape_bit_min_word` | InfTape decode after 30 steps for isolated min-word (slots 0–20) |
 | | `cook_c2_tape_bit_sim_witness` | Bounded C2 read slots 0–20 via `native_decide` |
+| **Stage 2 (partial)** | `OssifierGlider` | A-type catalog linkage, block A rows, `cts_ossifier_glider` scaffold |
+| | `LeaderGlider` | Ē-type catalog linkage, L-block row 0, `cts_leader_glider` scaffold |
+| | `CookBlockData` | Cook block A/L bit patterns from PNG extraction |
 | **C-glider patterns** | `cookCGliderCycle` | Verified 7-phase cycle for C1/C2/C3 gliders |
 | | `cookC1/C2/C3Bits_length` | Each glider is 6 cells wide |
 | **Two-phase ether** | `phaseEther_zero` | Zero accumulated shift reduces to `cookEther` |

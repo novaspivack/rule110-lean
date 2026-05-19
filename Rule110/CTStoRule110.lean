@@ -183,8 +183,8 @@ spatially-arranged train of gliders riding the ether background:
 
 * **Tape data (C2) gliders** — one C2 glider per CTS `1`-bit, placed at positions spaced by
   `cts_glider_spacing` (= 14 × 3 = 42 cells, one ether period × 3) starting from `cts_tape_origin`.
-* **Ossifier (A-type) gliders** — mark the current appendant boundary (not yet implemented).
-* **Leader (Ē/F-type) gliders** — boundary signal for the "head" of the CTS word (not yet).
+* **Ossifier (A-type) gliders** — marks appendant boundary (`OssifierGlider.lean`, block A data).
+* **Leader (Ē-type) gliders** — boundary signal for CTS word head (`LeaderGlider.lean`, block L data).
 
 The concrete bit patterns for each species come from Cook §3 / Neary–Woods §2; they require
 reading the paper directly. For now the function is specified by its expected TYPE and the
