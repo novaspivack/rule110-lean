@@ -6,6 +6,7 @@ import Mathlib.Tactic.IntervalCases
 import Rule110.CookC2BoundedSim
 import Rule110.CookC2VerifyLen6
 import Rule110.CookC2VerifyLen7
+import Rule110.CookCollisionWitnesses
 import Rule110.CTStoRule110
 import Rule110.InfTape
 
@@ -694,5 +695,38 @@ theorem cook_c2_tape_bit_ax_partial_upto7 (L slot n : ℕ) (hL : L ≤ 7) (hslot
         (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
       (natToWord L n).getD slot false :=
   cook_c2_tape_bit_inf_nat_upto7 L slot n hL hslot hn idx
+
+/-- Support gliders are invisible on data read cones: L ≤ 7 InfTape decode on full encoding. -/
+theorem cook_c2_tape_bit_inf_nat_with_support_upto7 (L slot n : ℕ) (hL : L ≤ 7) (hslot : slot < L)
+    (hn : n < 2^L) (idx : ℕ) :
+    tape_has_glider_at
+      (infRule110Steps 30
+        (cts_to_rule110_tape_with_support (CyclicTagSystem.mk []) idx (natToWord L n)))
+      slot 0 =
+      (natToWord L n).getD slot false := by
+  let w := natToWord L n
+  have hslot20 : slot ≤ 20 := by omega
+  have h30 : 30 ≤ cts_slot_origin slot := by
+    simp [c2SimOrigin, cts_slot_origin, cts_tape_origin, cts_glider_spacing]
+    omega
+  let t_sup := cts_to_rule110_tape_with_support (CyclicTagSystem.mk []) idx w
+  let t_bare := cts_to_rule110_tape (CyclicTagSystem.mk []) idx w
+  have hagree :
+      infRule110Steps 30 t_sup (cts_slot_origin slot) =
+        infRule110Steps 30 t_bare (cts_slot_origin slot) :=
+    infRule110Steps_agree_Icc h30 fun k hk_lo hk_hi =>
+      cts_support_agrees_on_data_cone_gen (CyclicTagSystem.mk []) idx w slot hslot20 k hk_lo hk_hi
+  have hgl := tape_has_glider_at_eq_of_origin (infRule110Steps 30 t_sup) (infRule110Steps 30 t_bare) slot 0
+    hagree
+  simpa [t_sup, t_bare, w] using hgl.trans (cook_c2_tape_bit_inf_nat_upto7 L slot n hL hslot hn idx)
+
+/-- **Partial C1 discharge (L ≤ 7):** bounded family on `cts_to_rule110_tape_with_support`. -/
+theorem cook_c2_tape_bit_ax_partial_with_support_upto7 (L slot n : ℕ) (hL : L ≤ 7) (hslot : slot < L)
+    (hn : n < 2^L) (idx : ℕ) :
+    cook_c2_decode_at slot
+      (infRule110Steps 30
+        (cts_to_rule110_tape_with_support (CyclicTagSystem.mk []) idx (natToWord L n))) =
+      (natToWord L n).getD slot false :=
+  cook_c2_tape_bit_inf_nat_with_support_upto7 L slot n hL hslot hn idx
 
 end Rule110
