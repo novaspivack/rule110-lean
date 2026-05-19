@@ -1,6 +1,7 @@
 import Rule110.CyclicTagSystem
 import Rule110.CTStoRule110
 import Rule110.CookCollisionWitnesses
+import Rule110.Ether
 import Rule110.InfTape
 
 /-!
@@ -107,5 +108,13 @@ theorem cook_cts_eval_sim_standard_empty_from_one_step
       subst hk0
       rfl)
     hstep
+
+/-- Bare ether drifts under one Rule 110 step (existing spotcheck); empty phased encoding cannot
+    satisfy `CookCtsEvalSim` at n=1 without Cook collision simulation restoring the tape. -/
+theorem cookEther_not_pointwise_fixed_one_step :
+    ∃ i, infRule110Steps 1 cookEther i ≠ cookEther i := by
+  refine ⟨5, ?_⟩
+  rw [infRule110Steps_cookEther_shift_spotcheck₁]
+  native_decide
 
 end Rule110
