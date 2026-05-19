@@ -1,5 +1,6 @@
 import Rule110.OssifierGlider
 import Rule110.LeaderGlider
+import Rule110.CTStoRule110
 
 /-!
 # Stage 2 Cook glider verification (Ossifier / Leader)
@@ -26,5 +27,11 @@ theorem cook_ossifier_block_present :
 theorem cook_leader_block_present :
     cookLBlockRow0.getD 1 false ≠ cookEther (leaderSimOrigin + 1) :=
   leader_block_row0_differs
+
+theorem cook_cts_support_gliders_witness :
+    cts_support_gliders.length = 2 ∧
+    cts_ossifier_glider.species = CookGliderRef.named CookNamedGlider.A ∧
+    cts_leader_glider.species = CookGliderRef.named CookNamedGlider.Ebar :=
+  ⟨cts_support_gliders_length, rfl, rfl⟩
 
 end Rule110

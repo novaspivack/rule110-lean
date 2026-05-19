@@ -4,6 +4,8 @@ import Rule110.CyclicTagSystem
 import Rule110.Ether
 import Rule110.Gliders
 import Rule110.InfTape
+import Rule110.OssifierGlider
+import Rule110.LeaderGlider
 
 /-!
 # Cyclic tag systems → Rule 110 tapes (Cook §4 — Milestone 3)
@@ -254,6 +256,17 @@ def cts_to_rule110_tape_phased (_cts : CyclicTagSystem) (w : List Bool) : InfTap
 def cts_to_rule110_tape (_cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) : InfTape :=
   gliders_to_tape (cts_word_to_gliders w idx)
 
+/-- Left ossifier + right leader configs from Stage 2 modules. -/
+def cts_support_gliders : List GliderConfig :=
+  [cts_ossifier_glider, cts_leader_glider]
+
+/-- CTS encoding with Cook support gliders (ossifier at left, leader at right). -/
+def cts_to_rule110_tape_with_support (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
+    InfTape :=
+  gliders_to_tape (cts_word_to_gliders w idx ++ cts_support_gliders)
+
+theorem cts_support_gliders_length : cts_support_gliders.length = 2 := rfl
+
 /-! ## Tape → CTS word decode (Milestone 3 — round-trip for simulation)
 
 `tape_to_gliders_bit` reads a single CTS bit from the tape at slot `k` by checking
@@ -343,6 +356,19 @@ def cts_word_far_boundary (n : ℕ) : ℕ :=
 
 def cts_slot_origin (slot : ℕ) : ℕ :=
   cts_tape_origin + slot * cts_glider_spacing
+
+/-- Support gliders are outside the 30-step cone around data slot `slot ≤ 20` (empty word witness). -/
+theorem cts_support_agrees_on_data_cone (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30) :
+    cts_to_rule110_tape_with_support (CyclicTagSystem.mk []) 0 [] k =
+      cts_to_rule110_tape (CyclicTagSystem.mk []) 0 [] k := by
+  interval_cases slot
+  all_goals
+    simp [cts_slot_origin, cts_tape_origin, cts_glider_spacing,
+          cts_to_rule110_tape_with_support, cts_to_rule110_tape,
+          cts_support_gliders, cts_ossifier_glider, cts_leader_glider,
+          cts_ossifier_origin, cts_leader_origin, cts_word_to_gliders] at hk_lo hk_hi ⊢
+    interval_cases k <;> native_decide
 
 def cts_slot_right (slot : ℕ) : ℕ :=
   cts_slot_origin slot + 6
