@@ -22,7 +22,7 @@ structure CookUniversalityDischarged where
   stage1_far_field : ∀ (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) (i L M : ℕ)
       (hi : cts_word_far_boundary w.length + M ≤ i),
       infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther (i + 4 * M)
-  stage1b_c2_upto6 : ∀ L slot n idx, L ≤ 6 → slot < L → n < 2 ^ L →
+  stage1b_c2_upto7 : ∀ L slot n idx, L ≤ 7 → slot < L → n < 2 ^ L →
       cook_c2_decode_at slot
         (infRule110Steps 30
           (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
@@ -43,8 +43,8 @@ structure CookUniversalityDischarged where
 theorem cook_universality_discharged : CookUniversalityDischarged where
   stage1_far_field := fun cts idx w i L M hi =>
     cook_cts_step_sim_ax cts idx w i L M hi
-  stage1b_c2_upto6 := fun L slot n idx hL hslot hn =>
-    cook_c2_tape_bit_ax_partial_upto6 L slot n hL hslot hn idx
+  stage1b_c2_upto7 := fun L slot n idx hL hslot hn =>
+    cook_c2_tape_bit_ax_partial_upto7 L slot n hL hslot hn idx
   stage3_empty_c3prime := cook_standard_empty_cts_data_cones
   stage3_empty_c3primeprime := cook_standard_empty_cts_data_cones_origin
   stage3_len6_origin := cook_cts_eval_sim_at_data_cones_origin_len6_one

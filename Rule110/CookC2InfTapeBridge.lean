@@ -5,6 +5,7 @@ import Mathlib.Tactic.IntervalCases
 
 import Rule110.CookC2BoundedSim
 import Rule110.CookC2VerifyLen6
+import Rule110.CookC2VerifyLen7
 import Rule110.CTStoRule110
 import Rule110.InfTape
 
@@ -544,5 +545,151 @@ theorem cook_c2_tape_bit_ax_partial_upto6 (L slot n : ℕ) (hL : L ≤ 6) (hslot
         (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
       (natToWord L n).getD slot false :=
   cook_c2_tape_bit_inf_nat_upto6 L slot n hL hslot hn idx
+
+/-! ### L=7 isolated init-cone cert (Stage 1b InfTape extension) -/
+
+def c2Len7InitReadConeOk (readSlot n : ℕ) : Bool :=
+  if _ : readSlot < 7 then
+    if _ : n < 2^7 then
+      (List.range 61).all fun d =>
+        let k := c2SimOrigin readSlot - 30 + d
+        decide (listToInfTape (c2SimInitWord (natToWord 7 n)) k =
+          cts_to_rule110_tape (CyclicTagSystem.mk []) 0 (natToWord 7 n) k)
+    else true
+  else true
+
+def c2Len7AllInitReadConesOk : Bool :=
+  (List.range 7).all fun readSlot =>
+    (List.range (2^7)).all fun n => c2Len7InitReadConeOk readSlot n
+
+theorem c2_len7_all_init_read_cones_ok : c2Len7AllInitReadConesOk = true := by
+  native_decide
+
+theorem c2_len7_init_read_cone_ok (readSlot n : ℕ) (hslot : readSlot < 7) (hn : n < 2^7) :
+    c2Len7InitReadConeOk readSlot n = true := by
+  have hn128 : n < 128 := by
+    have hpow : 2^7 = 128 := by decide
+    simpa [hpow] using hn
+  have hall : ((List.range 7).all fun readSlot =>
+      ((List.range (2^7)).all fun n => c2Len7InitReadConeOk readSlot n)) = true := by
+    simpa [c2Len7AllInitReadConesOk] using c2_len7_all_init_read_cones_ok
+  have h1 := (List.all_eq_true.mp hall) readSlot (List.mem_range.mpr hslot)
+  have h2 := (List.all_eq_true.mp h1) n (List.mem_range.mpr hn128)
+  exact (decide_eq_true_iff).1 (by simpa [c2Len7InitReadConeOk, hslot, hn, hn128, reduceIte] using h2)
+
+private theorem c2Len7InitReadConeOk_get (readSlot n d : ℕ) (hslot : readSlot < 7) (hn : n < 2^7)
+    (hd : d < 61) :
+    listToInfTape (c2SimInitWord (natToWord 7 n)) (c2SimOrigin readSlot - 30 + d) =
+      cts_to_rule110_tape (CyclicTagSystem.mk []) 0 (natToWord 7 n)
+        (c2SimOrigin readSlot - 30 + d) := by
+  have hn128 : n < 128 := by
+    have hpow : 2^7 = 128 := by decide
+    simpa [hpow] using hn
+  have hbool := c2_len7_init_read_cone_ok readSlot n hslot hn
+  have hall : ((List.range 61).all fun d =>
+      decide (listToInfTape (c2SimInitWord (natToWord 7 n)) (c2SimOrigin readSlot - 30 + d) =
+        cts_to_rule110_tape (CyclicTagSystem.mk []) 0 (natToWord 7 n)
+          (c2SimOrigin readSlot - 30 + d))) = true := by
+    simpa [c2Len7InitReadConeOk, hslot, hn, hn128, reduceIte] using hbool
+  have hdec := (List.all_eq_true.mp hall) d (List.mem_range.mpr hd)
+  exact (decide_eq_true_iff).1 hdec
+
+theorem c2Len7SimInitWord_eq_cts_tape_cone_read (readSlot n : ℕ) (hslot : readSlot < 7)
+    (hn : n < 2^7) (k : ℕ)
+    (hk_lo : c2SimOrigin readSlot - 30 ≤ k) (hk_hi : k ≤ c2SimOrigin readSlot + 30) :
+    listToInfTape (c2SimInitWord (natToWord 7 n)) k =
+      cts_to_rule110_tape (CyclicTagSystem.mk []) 0 (natToWord 7 n) k := by
+  have origin_eq : c2SimOrigin readSlot = cts_tape_origin + readSlot * cts_glider_spacing := rfl
+  have hd : ∃ d, d < 61 ∧ k = c2SimOrigin readSlot - 30 + d := by
+    refine ⟨k + 30 - c2SimOrigin readSlot, ?_, ?_⟩
+    · simp [origin_eq, cts_tape_origin, cts_glider_spacing] at hk_hi ⊢; omega
+    · simp [origin_eq, cts_tape_origin, cts_glider_spacing] at hk_lo hk_hi ⊢; omega
+  obtain ⟨d, hd_lt, hk_eq⟩ := hd
+  rw [hk_eq]
+  exact c2Len7InitReadConeOk_get readSlot n d hslot hn hd_lt
+
+private theorem c2SimOrigin_lt_bound_len7 (slot : ℕ) (hslot : slot ≤ 6) :
+    c2SimOrigin slot < c2SimBound := by
+  simp [c2SimOrigin, c2SimBound, cts_tape_origin, cts_glider_spacing]
+  have : slot * 42 ≤ 6 * 42 := Nat.mul_le_mul_right _ hslot
+  omega
+
+private theorem c2SimOrigin_add30_lt_bound_len7 (slot : ℕ) (hslot : slot ≤ 6) :
+    c2SimOrigin slot + 30 < c2SimBound := by
+  simp [c2SimOrigin, c2SimBound, cts_tape_origin, cts_glider_spacing]
+  have : slot * 42 ≤ 6 * 42 := Nat.mul_le_mul_right _ hslot
+  omega
+
+/-- **Stage 1b (InfTape, L = 7):** decode `natToWord 7 n` at slot after 30 steps. -/
+theorem cook_c2_tape_bit_inf_nat_len7 (slot n : ℕ) (hslot : slot < 7) (hn : n < 2^7) (idx : ℕ) :
+    tape_has_glider_at
+      (infRule110Steps 30
+        (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord 7 n)))
+      slot 0 =
+      (natToWord 7 n).getD slot false := by
+  let w := natToWord 7 n
+  have hslot6 : slot ≤ 6 := by omega
+  have hlist := c2_len7_word_read_ok slot n hslot hn
+  have hlen : c2SimOrigin slot < (c2SimRun 30 (c2SimInitWord w)).length := by
+    simpa [c2SimRun_length, c2SimInitWord_length] using c2SimOrigin_lt_bound_len7 slot hslot6
+  have h30 : 30 ≤ c2SimOrigin slot := by
+    simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing]; omega
+  have hj' : c2SimOrigin slot + 30 < c2SimBound :=
+    c2SimOrigin_add30_lt_bound_len7 slot hslot6
+  have hlist_inf :
+      tape_has_glider_at (listToInfTape (c2SimRun 30 (c2SimInitWord w))) slot 0 =
+        w.getD slot false := by
+    rw [← listReadDiff_eq_tape_has_glider_at (c2SimRun 30 (c2SimInitWord w)) slot hlen,
+      ← c2SimReadAt_eq_listReadDiff, hlist]
+  have hinit := c2Len7SimInitWord_eq_cts_tape_cone_read slot n hslot hn
+  have hagree :
+      infRule110Steps 30 (listToInfTape (c2SimInitWord w)) (c2SimOrigin slot) =
+        infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w) (c2SimOrigin slot) := by
+    apply Eq.symm
+    refine infRule110Steps_agree_Icc h30 fun k hk_lo hk_hi => ?_
+    rw [cts_tape_idx_irrelevant idx 0 w k]
+    exact (hinit k hk_lo hk_hi).symm
+  have hrun := c2SimRun_eq_infRule110Steps_at (c2SimInitWord w) 30 (c2SimOrigin slot) h30
+    (by simpa [c2SimInitWord_length] using hj')
+  have hrun' :
+      tape_has_glider_at (infRule110Steps 30 (listToInfTape (c2SimInitWord w))) slot 0 =
+        w.getD slot false := by
+    rw [← tape_has_glider_at_eq_of_origin
+      (listToInfTape (c2SimRun 30 (c2SimInitWord w)))
+      (infRule110Steps 30 (listToInfTape (c2SimInitWord w))) slot 0 hrun]
+    exact hlist_inf
+  rw [← tape_has_glider_at_eq_of_origin
+    (infRule110Steps 30 (listToInfTape (c2SimInitWord w)))
+    (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) slot 0 hagree]
+  exact hrun'
+
+/-- **Stage 1b (InfTape, L ≤ 7):** extends partial C1 with isolated L=7 cert. -/
+theorem cook_c2_tape_bit_inf_nat_upto7 (L slot n : ℕ) (hL : L ≤ 7) (hslot : slot < L) (hn : n < 2^L)
+    (idx : ℕ) :
+    tape_has_glider_at
+      (infRule110Steps 30
+        (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n)))
+      slot 0 =
+      (natToWord L n).getD slot false := by
+  by_cases h5 : L ≤ c2VerifyMaxLen
+  · exact cook_c2_tape_bit_inf_nat L slot n h5 hslot hn idx
+  · by_cases h6 : L ≤ 6
+    · have hL6 : L = 6 := by
+        simp [c2VerifyMaxLen] at h5 h6 hL ⊢; omega
+      subst hL6
+      exact cook_c2_tape_bit_inf_nat_len6 slot n hslot hn idx
+    · have hL7 : L = 7 := by
+        simp [c2VerifyMaxLen] at h5 h6 hL ⊢; omega
+      subst hL7
+      exact cook_c2_tape_bit_inf_nat_len7 slot n hslot hn idx
+
+/-- **Partial C1 discharge (L ≤ 7):** bounded `natToWord` family on InfTape. -/
+theorem cook_c2_tape_bit_ax_partial_upto7 (L slot n : ℕ) (hL : L ≤ 7) (hslot : slot < L)
+    (hn : n < 2^L) (idx : ℕ) :
+    cook_c2_decode_at slot
+      (infRule110Steps 30
+        (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
+      (natToWord L n).getD slot false :=
+  cook_c2_tape_bit_inf_nat_upto7 L slot n hL hslot hn idx
 
 end Rule110

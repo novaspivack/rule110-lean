@@ -35,8 +35,8 @@ import Rule110.CookMValuesWitness
 import Rule110.CookLen6BlockStepSim
 import Rule110.CookUniversalityScaffold
 import Rule110.CookC3PrimeDecodeSim
-import Rule110.CookC2VerifyLen5
 import Rule110.CookC2VerifyLen6
+import Rule110.CookC2VerifyLen7
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
