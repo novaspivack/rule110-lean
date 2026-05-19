@@ -84,6 +84,17 @@ theorem cook_consume_head_eval_with_idx_add (m n : ℕ) :
       cookConsumeHeadTMComp.sys.cts_eval_with_idx n w' idx' :=
   cookConsumeHeadTMComp.eval_with_idx_add 0 m n
 
+/-- One TM microstep from state `0` reaches the halting encoding for state `1`. -/
+theorem cook_consume_head_eval_reaches_halt :
+    cookConsumeHeadTMComp.eval_with_idx 0 1 = cookConsumeHeadTMComp.enc 1 := by
+  rw [cook_consume_head_eval_with_idx_one]
+  simp [cookConsumeHeadTMComp]
+
+theorem cook_consume_head_dec_after_one_step :
+    cookConsumeHeadTMComp.dec (cookConsumeHeadTMComp.eval_with_idx 0 1) = 1 := by
+  rw [cook_consume_head_eval_with_idx_one]
+  simp [cookConsumeHeadTMComp]
+
 theorem trivial_identity_eval_with_idx_add (c : Unit) (m n : ℕ) :
     trivialIdentityTMComp.eval_with_idx c (m + n) =
       let (w', idx') := trivialIdentityTMComp.eval_with_idx c m

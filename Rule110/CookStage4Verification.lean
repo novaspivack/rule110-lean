@@ -46,6 +46,12 @@ theorem cook_bool_identity_simulates_step_witness (b b' : Bool)
       cookBoolIdentityTMComp.dec (w', idx') = b' :=
   cook_bool_identity_simulates_step b b' h
 
+theorem cook_bool_identity_eval_with_idx_add_witness (b : Bool) (m n : ℕ) :
+    cookBoolIdentityTMComp.eval_with_idx b (m + n) =
+      let (w', idx') := cookBoolIdentityTMComp.eval_with_idx b m
+      cookBoolIdentityTMComp.sys.cts_eval_with_idx n w' idx' :=
+  cook_bool_identity_eval_with_idx_add b m n
+
 theorem cook_consume_head_simulates_step_witness (s s' : Fin 2)
     (h : tmConsumeHeadStep s = some s') :
     ∃ m,
@@ -63,5 +69,13 @@ theorem cook_consume_head_eval_with_idx_add_witness (m n : ℕ) :
       let (w', idx') := cookConsumeHeadTMComp.eval_with_idx 0 m
       cookConsumeHeadTMComp.sys.cts_eval_with_idx n w' idx' :=
   cook_consume_head_eval_with_idx_add m n
+
+theorem cook_consume_head_eval_reaches_halt_witness :
+    cookConsumeHeadTMComp.eval_with_idx 0 1 = cookConsumeHeadTMComp.enc 1 :=
+  cook_consume_head_eval_reaches_halt
+
+theorem cook_consume_head_dec_after_one_step_witness :
+    cookConsumeHeadTMComp.dec (cookConsumeHeadTMComp.eval_with_idx 0 1) = 1 :=
+  cook_consume_head_dec_after_one_step
 
 end Rule110

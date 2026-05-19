@@ -42,6 +42,12 @@ theorem cook_bool_identity_simulates_step (b b' : Bool) (h : tmBoolIdentityStep 
       cookBoolIdentityTMComp.dec (w', idx') = b' :=
   cookBoolIdentityTMComp.simulates_step h
 
+theorem cook_bool_identity_eval_with_idx_add (b : Bool) (m n : ℕ) :
+    cookBoolIdentityTMComp.eval_with_idx b (m + n) =
+      let (w', idx') := cookBoolIdentityTMComp.eval_with_idx b m
+      cookBoolIdentityTMComp.sys.cts_eval_with_idx n w' idx' :=
+  cookBoolIdentityTMComp.eval_with_idx_add b m n
+
 /-- Stage 4: Mathlib TM2 identity anchor **and** Cook CTS scaffolds (identity + consume-head). -/
 theorem cook_stage4_triple_scaffold :
     Nonempty FinTM2 ∧
