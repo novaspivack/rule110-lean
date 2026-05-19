@@ -336,6 +336,104 @@ def cook_total_M (cts : CyclicTagSystem) (n : ℕ) : ℕ :=
   (List.range n).foldl (fun acc k =>
     acc + cook_M_for_appendant_len (cts.appendants.getD (k % cts.cycleLen) []).length) 0
 
+/-! ## Stage 1: far-field ether drift (discharges `cook_cts_step_sim_ax`) -/
+
+def cts_word_far_boundary (n : ℕ) : ℕ :=
+  cts_tape_origin + (n + 1) * cts_glider_spacing
+
+def cts_slot_origin (slot : ℕ) : ℕ :=
+  cts_tape_origin + slot * cts_glider_spacing
+
+def cts_slot_right (slot : ℕ) : ℕ :=
+  cts_slot_origin slot + 6
+
+theorem cts_slot_right_lt_far_boundary (slot n : ℕ) (h : slot + 1 ≤ n) :
+    cts_slot_right slot < cts_word_far_boundary n := by
+  simp only [cts_slot_right, cts_slot_origin, cts_word_far_boundary,
+             cts_tape_origin, cts_glider_spacing]
+  omega
+
+def cts_word_outside_all (w : List Bool) (j : ℕ) : Prop :=
+  cts_word_far_boundary w.length ≤ j
+
+/-- Flatten all C2 cell overrides for word `w` (order matches `gliders_to_tape`). -/
+def cts_word_to_cells (w : List Bool) (idx : ℕ) : List (ℕ × Bool) :=
+  (cts_word_to_gliders w idx).reverse.flatMap GliderConfig.toCells
+
+theorem cts_to_rule110_tape_eq_overrides (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
+    cts_to_rule110_tape cts idx w =
+      ctsTapeWithOverrides cts idx w (cts_word_to_cells w idx) := by
+  simp only [cts_to_rule110_tape, cts_word_to_gliders, cts_word_to_cells,
+             ctsTapeWithOverrides, ctsBaselineTape_eq_cookEther]
+  exact gliders_to_tape_eq_reverse_flatMap (cts_word_to_gliders w idx)
+
+theorem cts_word_cell_lt_far_boundary {w : List Bool} {idx : ℕ} {p : ℕ × Bool}
+    (hmem : p ∈ cts_word_to_cells w idx) :
+    p.1 < cts_word_far_boundary w.length := by
+  simp only [cts_word_to_cells, List.mem_flatMap, List.mem_reverse] at hmem
+  obtain ⟨gc, hgc, hp⟩ := hmem
+  have hcell := GliderConfig.toCells_fst_lt (gc := gc) hp
+  simp only [cts_word_to_gliders, List.mem_filterMap, List.mem_range] at hgc
+  obtain ⟨slot, hslot, hsome⟩ := hgc
+  have hslot' : slot + 1 ≤ w.length := by omega
+  have hbound := cts_slot_right_lt_far_boundary slot w.length hslot'
+  have heq : cts_bit_to_glider (w.get ⟨slot, hslot⟩) slot = some gc := by
+    rw [dif_pos hslot] at hsome
+    exact hsome
+  cases hb : w.get ⟨slot, hslot⟩ with
+  | false =>
+    rw [cts_bit_to_glider, hb] at heq
+    cases heq
+  | true =>
+    rw [cts_bit_to_glider, hb] at heq
+    cases heq
+    dsimp at hcell
+    rw [cookC2Bits_length] at hcell
+    simp only [cts_slot_right, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hbound ⊢
+    exact Nat.lt_trans hcell hbound
+
+theorem cts_to_rule110_tape_eq_cookEther_at (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
+    (j : ℕ) (hout : cts_word_outside_all w j) :
+    cts_to_rule110_tape cts idx w j = cookEther j := by
+  rw [cts_to_rule110_tape_eq_overrides]
+  simp only [ctsTapeWithOverrides, ctsBaselineTape_eq_cookEther]
+  apply overrideCells_eq_base_on_Icc cookEther (cts_word_to_cells w idx) j j
+  · intro p hp
+    exact Or.inl (Nat.lt_of_lt_of_le (cts_word_cell_lt_far_boundary hp) hout)
+  · exact le_rfl
+  · exact le_rfl
+
+theorem cook_cts_step_sim_far_field (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) (i : ℕ)
+    (L : ℕ := (cts.appendants.getD idx []).length)
+    (M : ℕ := cook_M_for_appendant_len L)
+    (hi : cts_word_far_boundary w.length + M ≤ i) :
+    infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther (i + 4 * M) := by
+  have hM_le_i : M ≤ i := by
+    have : cts_word_far_boundary w.length ≤ i := Nat.le_trans (Nat.le_add_right _ M) hi
+    simp only [cts_word_far_boundary, cts_tape_origin, cts_glider_spacing] at this
+    omega
+  have hag :
+      ∀ j, i - M ≤ j → j ≤ i + M →
+        cts_to_rule110_tape cts idx w j = cookEther j := by
+    intro j hj_lo hj_hi
+    apply cts_to_rule110_tape_eq_cookEther_at cts idx w j
+    simp only [cts_word_outside_all]
+    exact Nat.le_trans (by omega) hj_lo
+  calc
+    infRule110Steps M (cts_to_rule110_tape cts idx w) i
+        = infRule110Steps M cookEther i := infRule110Steps_agree_Icc hM_le_i hag
+    _ = cookEther (i + 4 * M) := infRule110Steps_cookEther_shift hM_le_i
+
+theorem cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) (i : ℕ)
+    (L : ℕ := (cts.appendants.getD idx []).length)
+    (M : ℕ := cook_M_for_appendant_len L)
+    (hi : cts_word_far_boundary w.length + M ≤ i) :
+    infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther (i + 4 * M) :=
+  cook_cts_step_sim_far_field cts idx w i L M hi
+
+-- Cook Collision C1 (C2 tape bit simulation) — bounded simulator witness in `CookC2BoundedSim`
+-- (`c2SimRead slot bit = bit` for slots ≤ 20). InfTape-level axiom pending Stage 1b link.
+
 /-- **Cook Collision Axiom C1 (C2 tape bit simulation):**
     A C2 glider encodes one CTS bit; after 30 Rule 110 steps (one empty-appendant period),
     the bit can be read from the tape.
@@ -346,15 +444,8 @@ axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
         decode_bit (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
           (slot < w.length && w.getD slot false = bit)
 
-/-- **Cook Collision Axiom C2 (one CTS step simulation):**
-    One CTS step on word `w` with appendant at index `idx` (length L) corresponds to
-    exactly `cook_M_for_appendant_len L` Rule 110 steps.
-    Source: Cook (2008) §1.4 block decomposition. -/
-axiom cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
-    let L := (cts.appendants.getD idx []).length
-    let M := cook_M_for_appendant_len L
-    ∀ i, cts_tape_origin + (w.length + 1) * cts_glider_spacing ≤ i →
-      infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther i
+-- Cook Collision C2 (one CTS step, far-field ether drift) — discharged above as `cook_cts_step_sim_ax`.
+-- Requires `cts_word_far_boundary w.length + M ≤ i`; yields `cookEther (i + 4 * M)`.
 
 /-- **Cook Collision Axiom C3 (multi-step CTS simulation):**
     `n` CTS steps from `w₀` correspond to `cook_total_M cts n` total Rule 110 steps,

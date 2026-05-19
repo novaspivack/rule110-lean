@@ -107,7 +107,15 @@ structure GliderConfig where
 
 /-- Lay a single glider config as an ordered list of `(index, value)` cell overrides. -/
 def GliderConfig.toCells (gc : GliderConfig) : List (ℕ × Bool) :=
-  (gc.bits.zipWith Prod.mk (List.range gc.bits.length)).map (fun ⟨b, j⟩ => (gc.origin + j, b))
+  (List.range gc.bits.length).map (fun j => (gc.origin + j, gc.bits.getD j false))
+
+theorem GliderConfig.toCells_fst_lt (gc : GliderConfig) {i : ℕ} {b : Bool}
+    (h : (i, b) ∈ gc.toCells) : i < gc.origin + gc.bits.length := by
+  simp only [GliderConfig.toCells, List.mem_map, List.mem_range] at h
+  obtain ⟨j, hj, heq⟩ := h
+  have heqi : i = gc.origin + j := by cases heq; rfl
+  rw [heqi]
+  omega
 
 /-- Place a list of glider configs atop the ether background.
     Head config wins on overlap (it is overlaid last). -/
@@ -128,5 +136,14 @@ theorem overrideCells_append (base : InfTape) (l1 l2 : List (ℕ × Bool)) :
   | cons hd t ih =>
     simp only [List.cons_append]
     exact ih _
+
+theorem gliders_to_tape_eq_reverse_flatMap (gcs : List GliderConfig) :
+    gliders_to_tape gcs =
+      overrideCells cookEther (gcs.reverse.flatMap GliderConfig.toCells) := by
+  induction gcs with
+  | nil => simp [gliders_to_tape_nil]
+  | cons gc rest ih =>
+    rw [gliders_to_tape_cons, List.reverse_cons, List.flatMap_append, List.flatMap_singleton,
+        overrideCells_append, ih]
 
 end Rule110
