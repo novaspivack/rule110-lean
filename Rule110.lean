@@ -17,5 +17,6 @@ import Rule110.LeaderGlider
 import Rule110.CookStage2Verification
 import Rule110.CookCollisionWitnesses
 import Rule110.CookStage3Verification
+import Rule110.CookEmptyAppendantSim
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

@@ -608,10 +608,11 @@ axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
 -- Cook Collision C2 (one CTS step, far-field ether drift) — discharged above as `cook_cts_step_sim_ax`.
 -- Requires `cts_word_far_boundary w.length + M ≤ i`; yields `cookEther (i + 4 * M)`.
 
-/-- Multi-step CTS simulation predicate (Stage 3). -/
+/-- Multi-step CTS simulation predicate (Stage 3).
+    Uses phased **with support** (ossifier + leader) — Cook §4 empty-appendant case. -/
 def CookCtsEvalSim (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) : Prop :=
-  gliders_to_tape_phased (cts_word_to_placements_phased (cts.cts_eval n w₀)) =
-    infRule110Steps (cook_total_M cts n) (cts_to_rule110_tape_phased cts w₀)
+  gliders_to_tape_phased (cts_word_to_placements_phased_with_support (cts.cts_eval n w₀)) =
+    infRule110Steps (cook_total_M cts n) (cts_to_rule110_tape_phased_with_support cts w₀)
 
 /-- **Cook Collision Axiom C3 (multi-step CTS simulation):**
     `n` CTS steps from `w₀` correspond to `cook_total_M cts n` total Rule 110 steps,
