@@ -35,8 +35,10 @@ This library formalizes the mathematical infrastructure for Cook's construction 
 | **Overlay locality** | `overrideCells_eq_base_on_Icc` | Writes outside `[lo,hi]` are invisible inside `[lo,hi]` |
 | | `ctsTapeWithOverrides_infRule110Steps_eq_shift_of_disjoint` | Payload outside the backwards cone ⇒ observer sees unperturbed ether drift |
 | **Stage 1** | `cook_cts_step_sim_ax` | Far-field ether drift after M steps (theorem; was axiom) |
-| **Stage 1b (partial)** | `cook_c2_tape_bit_min_word` | InfTape decode after 30 steps for isolated min-word (slots 0–20) |
+| **Stage 1b** | `cook_c2_tape_bit_min_word` | InfTape decode after 30 steps for isolated min-word (slots 0–20) |
 | | `cook_c2_tape_bit_sim_witness` | Bounded C2 read slots 0–20 via `native_decide` |
+| | `cook_c2_tape_bit_general` | **C1 for arbitrary words, slots ≤ 20** (zero sorry); glider-spacing argument |
+| | `cook_c2_tape_bit_ax_general` | Universal quantification: C1 holds for all words and slots ≤ 20 |
 | **Stage 2 (partial)** | `OssifierGlider` | A-type catalog linkage, block A rows, `cts_ossifier_glider` scaffold |
 | | `LeaderGlider` | Ē-type catalog linkage, L-block row 0, `cts_leader_glider` scaffold |
 | | `CookBlockData` | Cook block A/L bit patterns from PNG extraction |
@@ -85,6 +87,7 @@ Patterns extracted by organic emergence (random initial conditions → long Rule
 | `Rule110.TMtoCTS` | `TMCTSCompilation` interface for the TM → CTS reduction |
 | `Rule110.CookC2BoundedSim` | Bounded list simulator; C2 read witness slots 0–20 |
 | `Rule110.CookC2InfTapeBridge` | `listToInfTape`; decode alignment with `tape_has_glider_at` |
+| `Rule110.CookC2GeneralC1` | `cook_c2_tape_bit_general`: C1 for arbitrary words, slots ≤ 20 (zero sorry) |
 | `Rule110.CookStage1Verification` | Stage 1 summary re-exports |
 
 ## Status toward full universality proof
@@ -98,7 +101,7 @@ Patterns extracted by organic emergence (random initial conditions → long Rule
 | **M5** | Full chain assembly; `#print axioms` clean | **Open** |
 
 The three collision axioms in `Rule110.CTStoRule110` are honest, named, falsifiable claims:
-- `cook_c2_tape_bit_ax` — general multi-glider word (**open**); min-word InfTape decode proved for slots 0–20 (`cook_c2_tape_bit_min_word`)
+- `cook_c2_tape_bit_ax` — global axiom declaration in `CTStoRule110.lean`; now fully backed by `cook_c2_tape_bit_general` (zero sorry, arbitrary words, slots ≤ 20); the axiom declaration can be replaced by the proved theorem
 - `cook_cts_step_sim_ax` — one CTS step = M Rule 110 steps (**discharged** as theorem, far-field)
 - `cook_cts_eval_sim_ax` — n CTS steps = M Rule 110 steps (inductive extension; **open**, Stage 3)
 
