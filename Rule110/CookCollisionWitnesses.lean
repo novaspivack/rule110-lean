@@ -184,4 +184,18 @@ theorem cts_phased_support_outside_slot_cone (slot : ℕ) (hslot : slot ≤ 20) 
       cts_glider_spacing] at hk_origin hk_hi hhi ⊢
     omega
 
+/-- Empty-word phased-with-support encoding is +6 ether on data-region slot cones. -/
+theorem cts_phased_empty_support_ether_at (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
+    (hk_lo : cts_slot_origin slot - 30 ≤ k) (hk_hi : k ≤ cts_slot_origin slot + 30)
+    (hdata : cts_tape_origin ≤ k) (hleader : k < cts_leader_origin) :
+    cts_to_rule110_tape_phased_with_support cook_standard_empty_cts [] k =
+      phaseEther k 6 := by
+  unfold cts_to_rule110_tape_phased_with_support
+  apply cts_to_rule110_tape_phased_with_support_outside cook_standard_empty_cts [] k
+  · intro g hg
+    rw [cts_word_to_placements_phased_with_support_nil] at hg
+    exact cts_phased_support_outside_slot_cone slot hslot k hk_lo hk_hi g hg
+  · exact hdata
+  · exact hleader
+
 end Rule110

@@ -348,6 +348,39 @@ theorem cts_to_rule110_tape_phased_with_support_outside
   rw [gliders_to_tape_phased_outside _ i hout,
     accumPhaseAt_phased_with_support_ossifier_offset w i hdata hleader]
 
+theorem cts_eval_one_empty (cts : CyclicTagSystem) :
+    cts.cts_eval 1 [] = [] := by
+  simp [CyclicTagSystem.cts_eval_succ, CyclicTagSystem.cts_step]
+
+/-- Empty CTS word stays empty under any number of steps. -/
+theorem cts_eval_empty_word_stable (cts : CyclicTagSystem) (n : ℕ) :
+    cts.cts_eval n [] = [] := by
+  induction n with
+  | zero => simp [CyclicTagSystem.cts_eval_zero]
+  | succ n ih =>
+    rw [CyclicTagSystem.cts_eval_succ]
+    simp only [CyclicTagSystem.cts_step]
+    exact ih
+
+/-- Canonical single-cycle CTS with an empty appendant (Cook empty-block case, M = 30). -/
+def cook_standard_empty_cts : CyclicTagSystem :=
+  { appendants := [[]] }
+
+theorem cook_standard_empty_cts_cycleLen :
+    cook_standard_empty_cts.cycleLen = 1 := rfl
+
+theorem cook_standard_empty_cts_eval (n : ℕ) :
+    cook_standard_empty_cts.cts_eval n [] = [] :=
+  cts_eval_empty_word_stable cook_standard_empty_cts n
+
+theorem cts_word_to_placements_phased_nil :
+    cts_word_to_placements_phased [] = [] := by
+  simp [cts_word_to_placements_phased]
+
+theorem cts_word_to_placements_phased_with_support_nil :
+    cts_word_to_placements_phased_with_support [] = cts_support_placements := by
+  simp [cts_word_to_placements_phased_with_support, cts_word_to_placements_phased_nil]
+
 /-- The canonical Rule 110 tape encoding for a CTS word + appendant index.
     Uses the simple (phase-0-only) glider placement; suitable for the collision axioms
     which only require existence of encode/decode. -/
@@ -446,6 +479,10 @@ theorem cook_M_nonempty (L : ℕ) (hL : 0 < L) : cook_M_for_appendant_len L = 30
 def cook_total_M (cts : CyclicTagSystem) (n : ℕ) : ℕ :=
   (List.range n).foldl (fun acc k =>
     acc + cook_M_for_appendant_len (cts.appendants.getD (k % cts.cycleLen) []).length) 0
+
+theorem cook_standard_empty_M_one :
+    cook_total_M cook_standard_empty_cts 1 = 30 := by
+  simp [cook_total_M, cook_standard_empty_cts, cook_M_empty]
 
 /-! ## Stage 1: far-field ether drift (discharges `cook_cts_step_sim_ax`) -/
 
@@ -571,13 +608,17 @@ axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
 -- Cook Collision C2 (one CTS step, far-field ether drift) — discharged above as `cook_cts_step_sim_ax`.
 -- Requires `cts_word_far_boundary w.length + M ≤ i`; yields `cookEther (i + 4 * M)`.
 
+/-- Multi-step CTS simulation predicate (Stage 3). -/
+def CookCtsEvalSim (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) : Prop :=
+  gliders_to_tape_phased (cts_word_to_placements_phased (cts.cts_eval n w₀)) =
+    infRule110Steps (cook_total_M cts n) (cts_to_rule110_tape_phased cts w₀)
+
 /-- **Cook Collision Axiom C3 (multi-step CTS simulation):**
     `n` CTS steps from `w₀` correspond to `cook_total_M cts n` total Rule 110 steps,
     and the resulting tape encodes the n-stepped word via `gliders_to_tape_phased`.
     Source: Cook (2008) §1, inductive block decomposition. -/
 axiom cook_cts_eval_sim_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) :
-    gliders_to_tape_phased (cts_word_to_placements_phased (cts.cts_eval n w₀)) =
-      infRule110Steps (cook_total_M cts n) (cts_to_rule110_tape_phased cts w₀)
+    CookCtsEvalSim cts n w₀
 
 
 end Rule110

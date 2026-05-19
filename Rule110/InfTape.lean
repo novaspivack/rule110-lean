@@ -111,4 +111,12 @@ theorem infRule110Steps_shiftInfTape_four {t : InfTape} {n i : ℕ} (hi : n + 1 
     dsimp [v, shiftInfTape_apply]
     exact ih (t := infTapeStep t) (i := i) (by omega)
 
+/-- Rule 110 evolution splits over summed step counts. -/
+theorem infRule110Steps_add (m n : ℕ) (t : InfTape) :
+    infRule110Steps (m + n) t = infRule110Steps n (infRule110Steps m t) := by
+  induction m generalizing t with
+  | zero => simp [Nat.zero_add, infRule110Steps_zero]
+  | succ m ih =>
+    rw [Nat.succ_add, infRule110Steps_succ, ih, infRule110Steps_succ]
+
 end Rule110
