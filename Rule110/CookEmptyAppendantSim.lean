@@ -48,4 +48,34 @@ theorem empty_phased_support_cone_not_fixed_30 :
     emptyPhasedSupportConeFixed30 = false := by
   native_decide
 
+/-- Slot-origin cell (not the full 61-cell cone) drifts after 30 steps. -/
+def emptyPhasedSupportOriginCellNotFixed30 : Bool :=
+  let init := emptyPhasedSupportInit
+  let fin := c2SimRun 30 init
+  decide (fin.getD (cts_slot_origin 0) false ≠ init.getD (cts_slot_origin 0) false)
+
+theorem empty_phased_support_origin_cell_not_fixed_30 :
+    emptyPhasedSupportOriginCellNotFixed30 = true := by
+  native_decide
+
+theorem emptyPhasedSupportInit_getD_origin :
+    (c2SimRun 30 emptyPhasedSupportInit).getD (cts_slot_origin 0) false ≠
+      emptyPhasedSupportInit.getD (cts_slot_origin 0) false := by
+  have h := empty_phased_support_origin_cell_not_fixed_30
+  simpa [emptyPhasedSupportOriginCellNotFixed30, decide_eq_true_iff] using h
+
+def emptyPhasedSupportOriginListNotFixed30 : Bool :=
+  decide (listToInfTape (c2SimRun 30 emptyPhasedSupportInit) (cts_slot_origin 0) ≠
+    listToInfTape emptyPhasedSupportInit (cts_slot_origin 0))
+
+theorem emptyPhasedSupportOriginListNotFixed30_true :
+    emptyPhasedSupportOriginListNotFixed30 = true := by
+  native_decide
+
+theorem empty_phased_support_origin_list_not_fixed_30 :
+    listToInfTape (c2SimRun 30 emptyPhasedSupportInit) (cts_slot_origin 0) ≠
+      listToInfTape emptyPhasedSupportInit (cts_slot_origin 0) := by
+  have h := emptyPhasedSupportOriginListNotFixed30_true
+  exact (decide_eq_true_iff.mp (by simpa [emptyPhasedSupportOriginListNotFixed30] using h))
+
 end Rule110

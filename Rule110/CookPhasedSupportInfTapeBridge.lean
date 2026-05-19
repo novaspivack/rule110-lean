@@ -25,7 +25,7 @@ theorem emptyPhasedSupport_run_eq_inf_at (n k : ℕ)
   rw [← emptyPhasedSupportInit_length] at hk
   exact c2SimRun_eq_infRule110Steps_at emptyPhasedSupportInit n k hn_k hk
 
-private theorem emptyPhasedSupportInitReadConeOk_get (d : ℕ) (hd : d < 61) :
+theorem emptyPhasedSupportInitReadConeOk_get (d : ℕ) (hd : d < 61) :
     listToInfTape emptyPhasedSupportInit (emptySlot0ConeLo + d) =
       cts_to_rule110_tape_phased_with_support (CyclicTagSystem.mk []) []
         (emptySlot0ConeLo + d) := by

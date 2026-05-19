@@ -320,8 +320,16 @@ theorem emptyPhasedSupport_origin_list_sim_eq_phased_inf_30 :
         (cts_slot_origin 0) :=
   cook_empty_appendant_origin_list_inf_30
 
-theorem cook_empty_appendant_c3prime_discharged_witness : CookEmptyAppendantC3PrimeDischarged :=
-  cook_empty_appendant_c3prime_discharged
+theorem cook_legacy_c3_empty_n1_blocked_witness : CookLegacyC3EmptyN1Blocked :=
+  cook_legacy_c3_empty_n1_blocked
+
+theorem cook_standard_empty_cts_legacy_c3_n1_blocked_witness :
+    ¬ CookCtsEvalSim cook_standard_empty_cts 1 [] :=
+  cook_standard_empty_cts_legacy_c3_n1_blocked
+
+theorem cook_cts_support_placements_not_fixed_30_witness :
+    ¬ CookCtsSupportPlacementsFixed 30 cts_support_placements :=
+  cook_cts_support_placements_not_fixed_30
 
 theorem cook_collision_all_five_kinds_witness :
     collisionSimConeFixed kind1OssifierC2Init 30 0 = false ∧

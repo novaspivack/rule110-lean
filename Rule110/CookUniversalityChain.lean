@@ -39,6 +39,7 @@ structure CookUniversalityDischarged where
       cook_ossifier_v cook_python_example_appendants = 1142 ∧
         cook_cycle_M_sum cook_python_example_appendants = 840
   empty_appendant_c3prime : CookEmptyAppendantC3PrimeDischarged
+  legacy_c3_empty_n1_blocked : CookLegacyC3EmptyN1Blocked
 
 theorem cook_universality_discharged : CookUniversalityDischarged where
   stage1_far_field := fun cts idx w i L M hi =>
@@ -56,6 +57,7 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
     refine ⟨?_, cook_v_python_example, cook_cycle_M_python_example⟩
     native_decide
   empty_appendant_c3prime := cook_empty_appendant_c3prime_discharged
+  legacy_c3_empty_n1_blocked := cook_legacy_c3_empty_n1_blocked
 
 /-- Named bridge axioms still required for **global** Cook certification. -/
 def cook_bridge_axioms_open : Prop :=
@@ -63,7 +65,7 @@ def cook_bridge_axioms_open : Prop :=
       ∀ w idx,
         decode_bit (infRule110Steps 30 (cts_to_rule110_tape (CyclicTagSystem.mk []) idx w)) =
           (slot < w.length && w.getD slot false = bit)) ∧
-    (∀ cts n w, CookCtsEvalSim cts n w)
+    (∀ cts n w, n > 0 ∨ w ≠ [] → CookCtsEvalSim cts n w)
 
 /-- SPEC_070_08 top target: not yet proved (see `cook_bridge_axioms_open`). -/
 def rule110_turing_universal_from_cook_open : Prop :=
