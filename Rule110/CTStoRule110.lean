@@ -336,6 +336,18 @@ theorem accumPhaseAt_phased_with_support_ossifier_offset (w : List Bool) (i : �
     exact h506
   rw [if_pos hoss, accumPhaseAt_foldl_add_init (cts_word_to_placements_phased w) i 6]
 
+/-- Outside all phased-with-support gliders at data-region sites, tape value is +6 shifted ether. -/
+theorem cts_to_rule110_tape_phased_with_support_outside
+    (cts : CyclicTagSystem) (w : List Bool) (i : ℕ)
+    (hout : ∀ g ∈ cts_word_to_placements_phased_with_support w,
+      ¬ (g.origin ≤ i ∧ i - g.origin < g.bits.length))
+    (hdata : cts_tape_origin ≤ i) (hleader : i < cts_leader_origin) :
+    cts_to_rule110_tape_phased_with_support cts w i =
+      phaseEther i (6 + accumPhaseAt (cts_word_to_placements_phased w) i) := by
+  unfold cts_to_rule110_tape_phased_with_support
+  rw [gliders_to_tape_phased_outside _ i hout,
+    accumPhaseAt_phased_with_support_ossifier_offset w i hdata hleader]
+
 /-- The canonical Rule 110 tape encoding for a CTS word + appendant index.
     Uses the simple (phase-0-only) glider placement; suitable for the collision axioms
     which only require existence of encode/decode. -/
