@@ -83,4 +83,9 @@ theorem cook_stage4_dual_identity_scaffold :
         Nonempty (TMCTSCompilation tmBoolIdentityStep) :=
   ⟨⟨idComputer Bool⟩, ⟨trivialIdentityTMComp⟩, ⟨cookBoolIdentityTMComp⟩⟩
 
+/-- **Open (Stage 4):** `CookFinTM2Compiles (idComputer Bool)` needs a Cook §2 encoding
+`FinTM2.Cfg → List Bool × ℕ` compatible with `FinTM2.step` (multi-stack `TM2.Stmt.halt`). -/
+def cook_idComputer_fin_tm2_compiles_open : Prop :=
+  CookFinTM2Compiles (idComputer Bool)
+
 end Rule110
