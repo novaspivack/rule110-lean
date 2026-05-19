@@ -42,6 +42,14 @@ theorem cook_bool_identity_simulates_step (b b' : Bool) (h : tmBoolIdentityStep 
       cookBoolIdentityTMComp.dec (w', idx') = b' :=
   cookBoolIdentityTMComp.simulates_step h
 
+/-- Stage 4: Mathlib TM2 identity anchor **and** Cook CTS scaffolds (identity + consume-head). -/
+theorem cook_stage4_triple_scaffold :
+    Nonempty FinTM2 ∧
+      Nonempty (TMCTSCompilation tmIdentityStep) ∧
+        Nonempty (TMCTSCompilation tmBoolIdentityStep) ∧
+          Nonempty (TMCTSCompilation tmConsumeHeadStep) :=
+  ⟨⟨idComputer Bool⟩, ⟨trivialIdentityTMComp⟩, ⟨cookBoolIdentityTMComp⟩, ⟨cookConsumeHeadTMComp⟩⟩
+
 /-- Stage 4: Mathlib TM2 identity anchor **and** Cook CTS identity scaffolds coexist. -/
 theorem cook_stage4_dual_identity_scaffold :
     Nonempty FinTM2 ∧
