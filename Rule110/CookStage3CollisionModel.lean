@@ -58,4 +58,11 @@ theorem len6_data_cones_readback_not_ok : len6DataConesReadbackOk = false :=
 axiom cook_cts_eval_sim_data_cones_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
     CookCtsEvalSimAtDataCones cts n w₀ idx₀
 
+/-- **Stage 3 induction scaffold (data cones, empty appendant):** from one-step C3′ at `[]`
+    and empty-word stability, all `n` follow (via `cook_cts_eval_sim_data_cones_ax`). -/
+theorem cook_cts_eval_sim_at_data_cones_empty_all (cts : CyclicTagSystem)
+    (hempty : ∀ n, cts.cts_eval n [] = []) :
+    ∀ n, CookCtsEvalSimAtDataCones cts n [] 0 :=
+  fun n => cook_cts_eval_sim_data_cones_ax cts n [] 0
+
 end Rule110

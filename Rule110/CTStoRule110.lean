@@ -745,10 +745,9 @@ theorem cts_eval_with_idx_one_true_len6 :
   simp [CyclicTagSystem.cts_eval_with_idx, CyclicTagSystem.cts_steps_succ, cts_eval_one_true_len6,
     CyclicTagSystem.cts_step, cook_min_len6_cts, cook_min_len6_true_word, cook_min_len6_appendant]
 
-/-- **Cook Collision Axiom C3 (multi-step CTS simulation):**
-    `n` CTS steps from `w₀` correspond to `cook_total_M cts n` total Rule 110 steps,
-    and the resulting tape encodes the n-stepped word via `gliders_to_tape_phased`.
-    Source: Cook (2008) §1, inductive block decomposition. -/
+/-- **Cook Collision Axiom C3 (multi-step CTS simulation):** legacy full static tape equality.
+    See `CookCtsEvalSimAtDataCones` and `cook_cts_eval_sim_data_cones_ax` in
+    `CookStage3CollisionModel` for the weaker C3′ data-cone target. -/
 axiom cook_cts_eval_sim_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) :
     CookCtsEvalSim cts n w₀
 
