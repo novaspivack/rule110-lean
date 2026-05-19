@@ -5,7 +5,7 @@ import Rule110.CookEmptyAppendantSim
 import Rule110.CookLen6AppendantSim
 import Rule110.CookLen6InfTapeBridge
 import Rule110.CookLen6StackSim
-import Rule110.CookAppendantBlockStack
+import Rule110.CookStage3CollisionModel
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -210,6 +210,16 @@ theorem len6_stack_one_step_data_cones_negative :
 theorem cook_len6_block_stack_count_witness :
     (cook_appendant_block_stack (List.replicate 6 false)).length = 13 :=
   cook_len6_block_stack_length
+
+theorem cook_cts_eval_sim_at_data_cones_zero_witness (cts : CyclicTagSystem) (w₀ : List Bool)
+    (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataCones cts 0 w₀ idx₀ :=
+  cook_cts_eval_sim_at_data_cones_zero cts w₀ idx₀
+
+theorem CookCtsEvalSimAt_implies_data_cones_witness (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ) (h : CookCtsEvalSimAt cts n w₀ idx₀) :
+    CookCtsEvalSimAtDataCones cts n w₀ idx₀ :=
+  CookCtsEvalSimAt_implies_data_cones cts n w₀ idx₀ h
 
 /-- List sim at slot origin after 390 steps matches InfTape stepping (L=6, idx encoding). -/
 theorem len6_true_origin_list_sim_eq_inf_390 :
