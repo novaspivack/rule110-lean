@@ -261,7 +261,7 @@ def cts_support_gliders : List GliderConfig :=
   [cts_ossifier_glider, cts_leader_glider]
 
 /-- CTS encoding with Cook support gliders (ossifier at left, leader at right). -/
-def cts_to_rule110_tape_with_support (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
+def cts_to_rule110_tape_with_support (_cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
     InfTape :=
   gliders_to_tape (cts_word_to_gliders w idx ++ cts_support_gliders)
 
@@ -458,11 +458,13 @@ theorem cook_cts_step_sim_ax (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
   cook_cts_step_sim_far_field cts idx w i L M hi
 
 -- Cook Collision C1 (C2 tape bit simulation) — partial discharge in `CookC2InfTapeBridge`:
--- `cook_c2_tape_bit_list` (multi-glider words ≤ 4, list sim); `cook_c2_tape_bit_min_word` (InfTape, slots ≤ 20).
--- Former `cook_c2_tape_bit_ax` existential axiom replaced; full InfTape multi-glider read open.
+-- `cook_c2_tape_bit_list` (multi-glider words ≤ 4, list sim);
+-- `cook_c2_tape_bit_min_word` (InfTape, isolated min-word, slots ≤ 20);
+-- `c2_init_read_cone_ok` (init cone agreement, bundled checker).
+-- Former `cook_c2_tape_bit_ax` existential axiom replaced; InfTape multi-glider read open.
 
-/-- **Cook Collision Axiom C1 (C2 tape bit simulation) — OPEN (InfTape, general word).**
-    List-sim partial results: `cook_c2_tape_bit_list`, `cook_c2_tape_bit_min_word`. -/
+/-- **Cook Collision Axiom C1 (C2 tape bit simulation) — OPEN (InfTape, arbitrary word).**
+    Partial results: `cook_c2_tape_bit_list`, `cook_c2_tape_bit_min_word`, `c2_init_read_cone_ok`. -/
 axiom cook_c2_tape_bit_ax (slot : ℕ) (bit : Bool) :
     ∃ (decode_bit : InfTape → Bool),
       ∀ w idx,

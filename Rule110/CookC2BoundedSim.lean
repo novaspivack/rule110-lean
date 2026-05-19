@@ -90,7 +90,7 @@ theorem c2_all_words_read_ok : c2AllWordsOk = true := by native_decide
 def c2ConeCellOk (L n slot k : ℕ) : Bool :=
   if _ : L ≤ c2VerifyMaxLen then
     if _ : slot ≤ c2VerifyMaxLen then
-      if hn : n < 2^L then
+      if _ : n < 2^L then
         let w := natToWord L n
         let lo := c2SimOrigin slot - 30
         let hi := c2SimOrigin slot + 30
