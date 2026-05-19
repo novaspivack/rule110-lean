@@ -81,6 +81,75 @@ private theorem cts_tape_no_cell_at_k (w : List Bool) (readSlot k : ℕ)
 
 /-! ## CTS tape equals min-word on cone -/
 
+/-- When `w.getD readSlot false = true`, the C2 cell at position `k ∈ [c2SimOrigin readSlot, +6)`
+    belongs to `cts_word_to_cells w 0`. -/
+private theorem cts_word_cell_at_readSlot_mem (w : List Bool) (readSlot k : ℕ)
+    (hbit : w.getD readSlot false = true)
+    (hk_ge : c2SimOrigin readSlot ≤ k)
+    (hk_lt6 : k < c2SimOrigin readSlot + 6) :
+    (k, cookC2Bits.getD (k - c2SimOrigin readSlot) false) ∈ cts_word_to_cells w 0 := by
+  have hlen : readSlot < w.length := by
+    by_contra h
+    push_neg at h
+    rw [List.getD_eq_default w false h] at hbit
+    exact absurd hbit (by decide)
+  have hget : w.get ⟨readSlot, hlen⟩ = true := by
+    rw [← List.getD_eq_get w false ⟨readSlot, hlen⟩]
+    exact hbit
+  simp only [cts_word_to_cells, List.mem_flatMap, List.mem_reverse]
+  refine ⟨{ species := CookGliderRef.named CookNamedGlider.C2,
+              origin := cts_tape_origin + readSlot * cts_glider_spacing,
+              phase := ⟨2, by decide⟩,
+              bits := cookC2Bits }, ?_, ?_⟩
+  · simp only [cts_word_to_gliders, List.mem_filterMap, List.mem_range]
+    refine ⟨readSlot, hlen, ?_⟩
+    rw [dif_pos hlen, hget]; simp [cts_bit_to_glider]
+  · simp only [GliderConfig.toCells, List.mem_map, List.mem_range, cookC2Bits_length]
+    refine ⟨k - c2SimOrigin readSlot, ?_, ?_⟩
+    · simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge hk_lt6 ⊢; omega
+    · apply Prod.ext
+      · simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge ⊢; omega
+      · rfl
+
+/-- Every cell at position `k ∈ [c2SimOrigin readSlot, +6)` in `cts_word_to_cells w 0`
+    equals `(k, cookC2Bits.getD (k - c2SimOrigin readSlot) false)`.
+    (Uniqueness: the 42-cell glider spacing ensures only one slot contributes.) -/
+private theorem cts_word_cell_unique_at (w : List Bool) (readSlot k : ℕ)
+    (hk_ge : c2SimOrigin readSlot ≤ k)
+    (hk_lt6 : k < c2SimOrigin readSlot + 6)
+    (p : ℕ × Bool)
+    (hp : p ∈ cts_word_to_cells w 0)
+    (hpk : p.1 = k) :
+    p = (k, cookC2Bits.getD (k - c2SimOrigin readSlot) false) := by
+  simp only [cts_word_to_cells, List.mem_flatMap, List.mem_reverse] at hp
+  obtain ⟨gc, hgc, hcell⟩ := hp
+  simp only [cts_word_to_gliders, List.mem_filterMap, List.mem_range] at hgc
+  obtain ⟨slot', hslot', hsome⟩ := hgc
+  rw [dif_pos hslot'] at hsome
+  cases hbs : w.get ⟨slot', hslot'⟩ with
+  | false =>
+    rw [cts_bit_to_glider, hbs] at hsome
+    cases hsome
+  | true =>
+    rw [cts_bit_to_glider, hbs] at hsome
+    cases hsome
+    -- gc is now { origin := cts_tape_origin + slot' * cts_glider_spacing, bits := cookC2Bits, ... }
+    simp only [GliderConfig.toCells, List.mem_map, List.mem_range] at hcell
+    obtain ⟨j, hj, heq_p⟩ := hcell
+    rw [cookC2Bits_length] at hj
+    have hpeq_fst : p.1 = cts_tape_origin + slot' * cts_glider_spacing + j :=
+      congrArg Prod.fst heq_p.symm
+    have hs_eq : slot' = readSlot := by
+      rw [hpk] at hpeq_fst
+      simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge hk_lt6 hpeq_fst
+      omega
+    have hj_eq : j = k - c2SimOrigin readSlot := by
+      rw [hs_eq, hpk] at hpeq_fst
+      simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing] at hk_ge hpeq_fst ⊢
+      omega
+    have hpval : p.2 = cookC2Bits.getD j false := congrArg Prod.snd heq_p.symm
+    exact Prod.ext hpk (hpval.trans (congrArg (cookC2Bits.getD · false) hj_eq))
+
 /-- The CTS tape for `w` and `cts_min_word readSlot (w.getD readSlot false)` agree on the
     30-step read cone of `readSlot`. -/
 theorem cts_to_rule110_tape_cone_eq_min_word (w : List Bool) (readSlot idx : ℕ) (k : ℕ)
@@ -91,23 +160,22 @@ theorem cts_to_rule110_tape_cone_eq_min_word (w : List Bool) (readSlot idx : ℕ
     cts_to_rule110_tape_eq_overrides, cts_to_rule110_tape_eq_overrides]
   simp only [ctsTapeWithOverrides, ctsBaselineTape_eq_cookEther]
   set bit := w.getD readSlot false
-  -- Case: bit = false. Neither word has a glider at readSlot.
-  -- All cells from w are outside the cone (since readSlot is inactive, and other slots' cells
-  -- are outside by spacing). Both sides = cookEther k.
   by_cases hb : bit = true
-  · -- bit = true: readSlot is active in w.
-    -- Sub-case: k is in [c2SimOrigin readSlot, c2SimOrigin readSlot + 5] → glider cell present
-    -- Sub-case: k is outside → no cell reaches k
-    by_cases hk_in : c2SimOrigin readSlot ≤ k ∧ k < c2SimOrigin readSlot + 6
+  · by_cases hk_in : c2SimOrigin readSlot ≤ k ∧ k < c2SimOrigin readSlot + 6
     · -- k is inside the readSlot glider. Both encodings give the same C2 glider value at k.
-      -- PROOF SKETCH: The cells at k in both lists come from slot readSlot's C2 glider
-      -- (spacing ensures no other slot reaches k). Both encodings have w[readSlot] = true = bit,
-      -- so the C2 glider is present in both, at the same position, with the same bits.
-      -- Hence both overrideCells values equal cookC2Bits.getD (k - c2SimOrigin readSlot) false.
-      -- Full formalization requires showing the C2 glider cell membership in both lists.
-      sorry
+      set v := cookC2Bits.getD (k - c2SimOrigin readSlot) false
+      have hlhs : overrideCells cookEther (cts_word_to_cells w 0) k = v :=
+        overrideCells_singleton_at cookEther _ k v
+          (cts_word_cell_at_readSlot_mem w readSlot k hb hk_in.1 hk_in.2)
+          (fun p hp hpk => cts_word_cell_unique_at w readSlot k hk_in.1 hk_in.2 p hp hpk)
+      have hrhs : overrideCells cookEther (cts_word_to_cells (cts_min_word readSlot bit) 0) k = v :=
+        overrideCells_singleton_at cookEther _ k v
+          (cts_word_cell_at_readSlot_mem (cts_min_word readSlot bit) readSlot k
+            (by rw [cts_min_word_getD]; exact hb) hk_in.1 hk_in.2)
+          (fun p hp hpk =>
+            cts_word_cell_unique_at (cts_min_word readSlot bit) readSlot k hk_in.1 hk_in.2 p hp hpk)
+      rw [hlhs, hrhs]
     · -- k is outside [c2SimOrigin readSlot, c2SimOrigin readSlot + 5].
-      -- No cell from any active slot of w (or min_word) reaches k.
       have hno_k : ¬ (c2SimOrigin readSlot ≤ k ∧ k < c2SimOrigin readSlot + 6) := hk_in
       have hlhs : overrideCells cookEther (cts_word_to_cells w 0) k = cookEther k := by
         apply cts_tape_no_cell_at_k w readSlot k hk_lo hk_hi
@@ -121,26 +189,20 @@ theorem cts_to_rule110_tape_cone_eq_min_word (w : List Bool) (readSlot idx : ℕ
   · -- bit = false.
     have hbf : bit = false := by
       rcases Bool.eq_false_or_eq_true bit with hf | ht
-      · exact absurd hf hb  -- hf : bit = true (inl) → contradicts hb
-      · exact ht  -- ht : bit = false
+      · exact absurd hf hb
+      · exact ht
     have hno_w : overrideCells cookEther (cts_word_to_cells w 0) k = cookEther k := by
       apply cts_tape_no_cell_at_k w readSlot k hk_lo hk_hi
       intro _ _ hs_bit hs_eq _
       rw [hs_eq] at hs_bit
-      -- bit = w.getD readSlot false = false, but hs_bit says it's true
       simp only [bit, hbf] at hs_bit
       exact absurd hs_bit (by decide)
     have hno_min : overrideCells cookEther (cts_word_to_cells (cts_min_word readSlot bit) 0) k = cookEther k := by
-      -- cts_min_word readSlot false = replicate readSlot false ++ [false]
-      -- cts_word_to_cells of this is empty (no true bits)
       apply overrideCells_eq_base_at
       intro p hp _
       obtain ⟨s, hs_lt, hs_bit, _, _⟩ := cts_word_cell_slot_range hp
       rw [hbf] at hs_bit
-      -- cts_min_word readSlot false = replicate readSlot false ++ [false]
-      -- All its getD values are false
       simp only [cts_min_word] at hs_bit
-      -- All bits in replicate readSlot false ++ [false] are false
       have hall : (List.replicate readSlot false ++ [false]).getD s false = false := by
         rcases Nat.lt_or_ge s readSlot with hlt | hge
         · rw [List.getD_append (l := List.replicate readSlot false) (l' := [false])
