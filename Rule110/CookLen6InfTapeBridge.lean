@@ -55,4 +55,48 @@ theorem len6True_origin_run_eq_inf_390 :
   · simp [cts_slot_origin, cts_tape_origin, cts_glider_spacing]
   · simp [c2SimBound, cts_slot_origin, cts_tape_origin, cts_glider_spacing]
 
+theorem len6True_phased_init_eq_list_embed (k : ℕ) (hk : k < c2SimBound) :
+    cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word k =
+      listToInfTape len6TruePhasedSupportInit k := by
+  rw [listToInfTape_lt len6TruePhasedSupportInit (by rw [len6TruePhasedSupportInit_length]; exact hk)]
+  unfold len6TruePhasedSupportInit cts_to_rule110_tape_phased_with_support_idx
+  simp [List.getElem_map, List.getElem_range]
+
+@[simp] theorem len6PostAppendantPhasedSupportInit_length :
+    len6PostAppendantPhasedSupportInit.length = c2SimBound := by
+  simp [len6PostAppendantPhasedSupportInit, List.length_map, List.length_range]
+
+theorem len6Post_phased_target_eq_list_embed (k : ℕ) (hk : k < c2SimBound) :
+    cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_appendant k =
+      listToInfTape len6PostAppendantPhasedSupportInit k := by
+  rw [listToInfTape_lt len6PostAppendantPhasedSupportInit
+    (by rw [len6PostAppendantPhasedSupportInit_length]; exact hk)]
+  unfold len6PostAppendantPhasedSupportInit cts_to_rule110_tape_phased_with_support_idx
+  simp [List.getElem_map, List.getElem_range]
+
+theorem len6True_phased_init_eq_list_on_origin_window (slot : ℕ) (hslot : slot < 6) (j : ℕ)
+    (hj_lo : c2SimOrigin slot - 390 ≤ j) (hj_hi : j ≤ c2SimOrigin slot + 390) :
+    cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word j =
+      listToInfTape len6TruePhasedSupportInit j :=
+  len6True_phased_init_eq_list_embed j (by
+    simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing, c2SimBound] at hj_lo hj_hi ⊢; omega)
+
+theorem len6True_run_eq_inf_390_at_slot (slot : ℕ) (_hslot : slot < 6) :
+    listToInfTape (c2SimRun 390 len6TruePhasedSupportInit) (c2SimOrigin slot) =
+      infRule110Steps 390 (listToInfTape len6TruePhasedSupportInit) (c2SimOrigin slot) := by
+  apply len6TruePhasedSupport_run_eq_inf_at 390 (c2SimOrigin slot)
+  · simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing]; omega
+  · simp [c2SimBound, c2SimOrigin, cts_tape_origin, cts_glider_spacing, len6TruePhasedSupportInit_length]
+    omega
+
+theorem len6_origin_inf_steps_agree_init (slot : ℕ) (hslot : slot < 6) :
+    infRule110Steps 390
+        (cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word)
+        (c2SimOrigin slot) =
+      infRule110Steps 390 (listToInfTape len6TruePhasedSupportInit) (c2SimOrigin slot) := by
+  apply infRule110Steps_agree_Icc
+  · simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing]; omega
+  · intro j hj_lo hj_hi
+    exact len6True_phased_init_eq_list_on_origin_window slot hslot j hj_lo hj_hi
+
 end Rule110

@@ -30,5 +30,6 @@ import Rule110.CookLen6BlockStepSim
 import Rule110.CookUniversalityScaffold
 import Rule110.CookC3PrimeDecodeSim
 import Rule110.CookC2VerifyLen5
+import Rule110.CookLen6DataConesOrigin
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

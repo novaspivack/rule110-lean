@@ -1,4 +1,5 @@
 import Rule110.CookStage3CollisionModel
+import Rule110.CookLen6DataConesOrigin
 import Rule110.CTStoRule110
 import Rule110.TMtoCTS
 
@@ -15,6 +16,16 @@ namespace Rule110
 theorem cook_standard_empty_data_cones_all (n : ℕ) :
     CookCtsEvalSimAtDataCones cook_standard_empty_cts n [] 0 :=
   cook_standard_empty_cts_data_cones n
+
+/-- L=6 minimal appendant: C3′′ origin readback at n=1 without axiom. -/
+theorem cook_len6_data_cones_origin_one :
+    CookCtsEvalSimAtDataConesOrigin cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
+  cook_cts_eval_sim_at_data_cones_origin_len6_one
+
+/-- Standard empty-appendant CTS: C3′′ holds at all step counts (vacuous). -/
+theorem cook_standard_empty_data_cones_origin_all (n : ℕ) :
+    CookCtsEvalSimAtDataConesOrigin cook_standard_empty_cts n [] 0 :=
+  cook_standard_empty_cts_data_cones_origin n
 
 /-- Stage 1 far-field ether drift is discharged (`cook_cts_step_sim_ax`). -/
 theorem cook_stage1_step_sim (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) (i : ℕ)

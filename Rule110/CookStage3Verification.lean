@@ -9,6 +9,7 @@ import Rule110.CookStage3CollisionModel
 import Rule110.CookConstructionCollisionCerts
 import Rule110.CookLen6BlockStepSim
 import Rule110.CookC3PrimeDecodeSim
+import Rule110.CookLen6DataConesOrigin
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -258,6 +259,46 @@ theorem len6_dynamic_block_step_negative :
 theorem len6_one_step_glider_decode_negative :
     len6OneStepGliderDecodeOk = false :=
   len6_one_step_glider_decode_not_ok
+
+theorem len6_one_step_origin_cell_positive :
+    len6OneStepOriginCellOk = true :=
+  len6_one_step_origin_cell_ok
+
+theorem len6_one_step_phased_post_decode_positive :
+    len6OneStepPhasedPostDecodeOk = true :=
+  len6_one_step_phased_post_decode_ok
+
+theorem len6_first_block_30_origin_positive :
+    len6FirstBlock30OriginOk = true :=
+  len6_first_block_30_origin_ok
+
+theorem cook_cts_eval_sim_at_data_cones_origin_len6_one_witness :
+    CookCtsEvalSimAtDataConesOrigin cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
+  cook_cts_eval_sim_at_data_cones_origin_len6_one
+
+theorem cook_cts_eval_sim_at_data_cones_origin_zero_witness (cts : CyclicTagSystem) (w₀ : List Bool)
+    (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataConesOrigin cts 0 w₀ idx₀ :=
+  cook_cts_eval_sim_at_data_cones_origin_zero cts w₀ idx₀
+
+theorem cook_cts_eval_sim_at_data_cones_origin_empty_input_witness (cts : CyclicTagSystem) (n : ℕ)
+    (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataConesOrigin cts n [] idx₀ :=
+  cook_cts_eval_sim_at_data_cones_origin_empty_input cts n idx₀
+
+theorem cook_standard_empty_cts_data_cones_origin_witness (n : ℕ) :
+    CookCtsEvalSimAtDataConesOrigin cook_standard_empty_cts n [] 0 :=
+  cook_standard_empty_cts_data_cones_origin n
+
+theorem cook_cts_eval_sim_at_data_cones_origin_universal (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀ :=
+  cook_cts_eval_sim_at_data_cones_origin cts n w₀ idx₀
+
+theorem CookCtsEvalSimAtDataCones_implies_origin_witness (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ) (h : CookCtsEvalSimAtDataCones cts n w₀ idx₀) :
+    CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀ :=
+  CookCtsEvalSimAtDataCones_implies_origin cts n w₀ idx₀ h
 
 /-- List sim at slot origin after 390 steps matches InfTape stepping (L=6, idx encoding). -/
 theorem len6_true_origin_list_sim_eq_inf_390 :
