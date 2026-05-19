@@ -46,5 +46,6 @@ import Rule110.CookStage3C3PrimeOperationalChain
 import Rule110.CookC2VerifySupportLen5
 import Rule110.CookC2VerifySupportLen6
 import Rule110.CookC2VerifySupportLen7
+import Rule110.CookC2SupportConeDisjoint
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

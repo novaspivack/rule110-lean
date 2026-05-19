@@ -105,4 +105,23 @@ theorem cook_bool_identity_tm_compiles_step_witness :
     TMCompilesStep tmBoolIdentityStep cookBoolIdentityTMComp :=
   cook_bool_identity_tm_compiles_step
 
+theorem cook_count_down_simulates_step_witness (s s' : Fin 3)
+    (h : tmCountDownStep s = some s') :
+    ∃ m,
+      let (w, idx) := cookCountDownTMComp.enc s
+      let (w', idx') := cookCountDownTMComp.sys.cts_steps m w idx
+      cookCountDownTMComp.dec (w', idx') = s' :=
+  cook_count_down_simulates_step s s' h
+
+theorem cook_count_down_tm_compiles_step_witness :
+    TMCompilesStep tmCountDownStep cookCountDownTMComp :=
+  cook_count_down_tm_compiles_step
+
+theorem cook_stage4_tm_compiles_step_bundle_witness :
+    TMCompilesStep tmIdentityStep trivialIdentityTMComp ∧
+      TMCompilesStep tmBoolIdentityStep cookBoolIdentityTMComp ∧
+        TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp ∧
+          TMCompilesStep tmCountDownStep cookCountDownTMComp :=
+  cook_stage4_tm_compiles_step_bundle
+
 end Rule110
