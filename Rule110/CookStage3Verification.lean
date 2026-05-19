@@ -2,6 +2,7 @@ import Rule110.CyclicTagSystem
 import Rule110.CTStoRule110
 import Rule110.CookCollisionWitnesses
 import Rule110.CookEmptyAppendantSim
+import Rule110.CookLen6AppendantSim
 import Rule110.Ether
 import Rule110.InfTape
 
@@ -16,7 +17,7 @@ namespace Rule110
 
 @[simp] theorem cook_total_M_zero (cts : CyclicTagSystem) :
     cook_total_M cts 0 = 0 := by
-  simp [cook_total_M]
+  simp [cook_total_M, cook_total_M_from]
 
 /-- **Stage 3 base case (n = 0):** zero CTS steps = zero Rule 110 steps. -/
 theorem cook_cts_eval_sim_zero (cts : CyclicTagSystem) (w₀ : List Bool) :
@@ -139,9 +140,39 @@ theorem cook_cts_eval_sim_empty_one_step_char (cts : CyclicTagSystem)
         cook_total_M_one_empty_appendant cts hzero]
     exact h
 
+theorem cook_cts_eval_sim_len6_one_step_char
+    (hstep : CookCtsEvalSim cook_min_len6_cts 1 (w₀ := cook_min_len6_true_word)) :
+    gliders_to_tape_phased (cts_word_to_placements_phased_with_support cook_min_len6_appendant) =
+      infRule110Steps 390
+        (cts_to_rule110_tape_phased_with_support cook_min_len6_cts cook_min_len6_true_word) := by
+  rw [CookCtsEvalSim] at hstep
+  rw [cts_eval_one_true_len6, cook_total_M_one_len6] at hstep
+  exact hstep
+
+theorem cook_cts_eval_sim_len6_one_step_char_iff :
+    CookCtsEvalSim cook_min_len6_cts 1 (w₀ := cook_min_len6_true_word) ↔
+      gliders_to_tape_phased (cts_word_to_placements_phased_with_support cook_min_len6_appendant) =
+        infRule110Steps 390
+          (cts_to_rule110_tape_phased_with_support cook_min_len6_cts cook_min_len6_true_word) := by
+  constructor
+  · exact cook_cts_eval_sim_len6_one_step_char
+  · intro h
+    rw [CookCtsEvalSim, cts_eval_one_true_len6, cook_total_M_one_len6]
+    exact h
+
 /-- **Negative witness (Stage 3):** bounded 30-step list simulation does not fix slot-0 cone. -/
 theorem empty_phased_support_slot0_cone_not_fixed_30 :
     emptyPhasedSupportConeFixed30 = false :=
   empty_phased_support_cone_not_fixed_30
+
+/-- Init-cone agreement between list embed and InfTape empty phased-with-support encoding. -/
+theorem empty_phased_support_init_read_cone_agrees :
+    emptyPhasedSupportInitReadConeOk = true :=
+  empty_phased_support_init_read_cone_ok
+
+/-- **Negative witness (Stage 3 L=6):** 390-step bounded sim does not match post-appendant encoding. -/
+theorem len6_one_step_data_cones_negative :
+    len6OneStepSimDataConesOk = false :=
+  len6_one_step_data_cones_not_ok
 
 end Rule110

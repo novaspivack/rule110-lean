@@ -126,13 +126,13 @@ theorem cook_total_M_succ (cts : CyclicTagSystem) (n : ℕ) :
     cook_total_M cts (n + 1) =
       cook_total_M cts n +
         cook_M_for_appendant_len (cts.appendants.getD (n % cts.cycleLen) []).length := by
-  unfold cook_total_M
-  simp only [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
+  unfold cook_total_M cook_total_M_from
+  simp only [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil, Nat.zero_add]
 
 theorem cook_total_M_one (cts : CyclicTagSystem) :
     cook_total_M cts 1 =
       cook_M_for_appendant_len (cts.appendants.getD (0 % cts.cycleLen) []).length := by
-  simp [cook_total_M]
+  simp [cook_total_M, cook_total_M_from]
 
 /-! ## Phased support spacing (Stage 3 scaffolding) -/
 

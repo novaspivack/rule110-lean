@@ -1,4 +1,5 @@
 import Rule110.CookC2BoundedSim
+import Rule110.CookC2InfTapeBridge
 import Rule110.CTStoRule110
 
 set_option maxRecDepth 100000 in
@@ -28,6 +29,18 @@ def emptyPhasedSupportConeEqInit (n : ℕ) : Bool :=
 
 def emptyPhasedSupportConeFixed30 : Bool :=
   emptyPhasedSupportConeEqInit 30
+
+/-- Init agreement: bounded list embed matches InfTape phased-with-support empty encoding
+    on the slot-0 read cone. -/
+def emptyPhasedSupportInitReadConeOk : Bool :=
+  (List.range 61).all fun d =>
+    let k := emptySlot0ConeLo + d
+    decide (listToInfTape emptyPhasedSupportInit k =
+      cts_to_rule110_tape_phased_with_support (CyclicTagSystem.mk []) [] k)
+
+theorem empty_phased_support_init_read_cone_ok :
+    emptyPhasedSupportInitReadConeOk = true := by
+  native_decide
 
 /-- **Negative witness:** 30 bounded list steps do **not** preserve the slot-0 read cone
     for phased-with-support empty encoding (`c2SimBound = 2500` window). -/

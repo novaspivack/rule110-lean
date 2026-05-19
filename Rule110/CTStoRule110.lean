@@ -279,6 +279,11 @@ def cts_word_to_placements_phased_with_support (w : List Bool) : List GliderPlac
 def cts_to_rule110_tape_phased_with_support (_cts : CyclicTagSystem) (w : List Bool) : InfTape :=
   gliders_to_tape_phased (cts_word_to_placements_phased_with_support w)
 
+/-- Appendant-index hook for phased-with-support encoding (leader variant per appendant TBD). -/
+def cts_to_rule110_tape_phased_with_support_idx (_cts : CyclicTagSystem) (_idx : ℕ)
+    (w : List Bool) : InfTape :=
+  gliders_to_tape_phased (cts_word_to_placements_phased_with_support w)
+
 theorem cts_support_placements_length : cts_support_placements.length = 2 := rfl
 
 theorem cts_leader_placement_ends_after (i : ℕ) (hi : i < cts_leader_origin) :
@@ -475,14 +480,42 @@ theorem cook_M_empty : cook_M_for_appendant_len 0 = 30 := rfl
 theorem cook_M_nonempty (L : ℕ) (hL : 0 < L) : cook_M_for_appendant_len L = 30 * (2 * L + 1) := by
   simp [cook_M_for_appendant_len, Nat.pos_iff_ne_zero.mp hL]
 
+/-- Total M for `n` CTS steps starting at appendant index `idx₀`. -/
+def cook_total_M_from (cts : CyclicTagSystem) (n idx₀ : ℕ) : ℕ :=
+  (List.range n).foldl (fun acc k =>
+    acc + cook_M_for_appendant_len
+      (cts.appendants.getD ((idx₀ + k) % cts.cycleLen) []).length) 0
+
 /-- Total M for n CTS steps (sum of per-appendant M values, cycling through appendants). -/
 def cook_total_M (cts : CyclicTagSystem) (n : ℕ) : ℕ :=
-  (List.range n).foldl (fun acc k =>
-    acc + cook_M_for_appendant_len (cts.appendants.getD (k % cts.cycleLen) []).length) 0
+  cook_total_M_from cts n 0
 
 theorem cook_standard_empty_M_one :
     cook_total_M cook_standard_empty_cts 1 = 30 := by
-  simp [cook_total_M, cook_standard_empty_cts, cook_M_empty]
+  simp [cook_total_M, cook_total_M_from, cook_standard_empty_cts, cook_M_empty]
+
+/-- Minimal L=6 appendant (Cook §1.4 nonempty block, M = 390 per step). -/
+def cook_min_len6_appendant : List Bool := List.replicate 6 false
+
+def cook_min_len6_cts : CyclicTagSystem :=
+  { appendants := [cook_min_len6_appendant] }
+
+def cook_min_len6_true_word : List Bool := [true]
+
+theorem cook_min_len6_cts_cycleLen : cook_min_len6_cts.cycleLen = 1 := rfl
+
+theorem cook_min_len6_appendant_len : cook_min_len6_appendant.length = 6 := rfl
+
+theorem cook_M_len6 : cook_M_for_appendant_len 6 = 390 := by native_decide
+
+theorem cook_total_M_one_len6 :
+    cook_total_M cook_min_len6_cts 1 = 390 := by
+  simp [cook_total_M, cook_total_M_from, cook_min_len6_cts, cook_min_len6_appendant, cook_M_len6]
+
+theorem cts_eval_one_true_len6 :
+    cook_min_len6_cts.cts_eval 1 cook_min_len6_true_word = cook_min_len6_appendant := by
+  simp [CyclicTagSystem.cts_eval_succ, CyclicTagSystem.cts_step, cook_min_len6_cts,
+    cook_min_len6_appendant, cook_min_len6_true_word]
 
 /-! ## Stage 1: far-field ether drift (discharges `cook_cts_step_sim_ax`) -/
 

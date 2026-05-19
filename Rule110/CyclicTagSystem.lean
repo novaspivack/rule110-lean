@@ -44,6 +44,17 @@ def cts_steps (cts : CyclicTagSystem) : ℕ → List Bool → ℕ → List Bool 
 def cts_eval (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) : List Bool :=
   (cts_steps cts n w₀ 0).1
 
+/-- `n` CTS steps from `(w₀, idx₀)`; exposes appendant index for Stage 3 encoding hooks. -/
+def cts_eval_with_idx (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ := 0) :
+    List Bool × ℕ :=
+  cts_steps cts n w₀ idx₀
+
+@[simp] theorem cts_eval_with_idx_fst_zero (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) :
+    (cts.cts_eval_with_idx n w₀ 0).1 = cts.cts_eval n w₀ := rfl
+
+@[simp] theorem cts_eval_with_idx_zero (cts : CyclicTagSystem) (w₀ : List Bool) (idx₀ : ℕ) :
+    cts.cts_eval_with_idx 0 w₀ idx₀ = (w₀, idx₀) := rfl
+
 def cts_halts (cts : CyclicTagSystem) (w₀ : List Bool) : Prop :=
   ∃ n : ℕ, cts.cts_eval n w₀ = []
 
