@@ -8,6 +8,7 @@ import Rule110.Gliders
 import Rule110.TMtoCTS
 import Rule110.CookTMCompilation
 import Rule110.CookFinTM2Compilation
+import Rule110.CookFinTM2ConsumeHead
 import Rule110.CookTM2Bridge
 import Rule110.CookStage4Verification
 import Rule110.CTStoRule110
@@ -33,6 +34,7 @@ import Rule110.CookStage3CollisionModel
 import Rule110.CookConstructionCollisionCerts
 import Rule110.CookMValuesVerification
 import Rule110.CookUniversalityChain
+import Rule110.CookUniversalityTop
 import Rule110.CookMValuesWitness
 import Rule110.CookLen6BlockStepSim
 import Rule110.CookUniversalityScaffold

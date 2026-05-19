@@ -79,17 +79,12 @@ theorem cook_universality_discharged : CookUniversalityDischarged where
   legacy_c3_empty_n1_blocked := cook_legacy_c3_empty_n1_blocked
   stage3_operational := cook_stage3_operational_discharged
 
-/-- Named bridge axioms still required for **global** Cook certification. C1 is discharged
-    for slots ≤ 20 (`CookC2GeneralC1.cook_c2_tape_bit_ax`). -/
-def cook_bridge_axioms_open : Prop :=
-  (∀ cts n w, n > 0 ∨ w ≠ [] → CookCtsEvalSim cts n w)
+/-- Legacy global C3 target (refuted for empty input at `n = 1`); kept for documentation only. -/
+def cook_legacy_c3_eval_sim_open : Prop :=
+  ∀ (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool), CookCtsEvalSim cts n w₀
 
-/-- SPEC_070_08 top target: not yet proved (see `cook_bridge_axioms_open`). -/
-def rule110_turing_universal_from_cook_open : Prop :=
-  cook_bridge_axioms_open → True
-
-theorem rule110_turing_universal_from_cook_open_trivial (_h : cook_bridge_axioms_open) :
-    rule110_turing_universal_from_cook_open :=
-  fun _ => trivial
+theorem cook_legacy_c3_eval_sim_global_blocked : ¬ cook_legacy_c3_eval_sim_open := by
+  intro h
+  exact cook_standard_empty_cts_legacy_c3_n1_blocked (h cook_standard_empty_cts 1 [])
 
 end Rule110

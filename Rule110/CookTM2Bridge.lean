@@ -89,4 +89,10 @@ theorem cook_idComputer_fin_tm2_compiles : CookFinTM2Compiles (idComputer Bool) 
   obtain ⟨comp, h⟩ := idComputer_fin_tm2_compiles_witness
   exact ⟨comp, h⟩
 
+/-- Consume-head `Fin 2` scaffold and Mathlib `FinTM2` anchor (see `CookFinTM2ConsumeHead`). -/
+theorem cook_stage4_consume_head_bundle :
+    TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp ∧
+      CookFinTM2Compiles (idComputer Bool) :=
+  ⟨cook_consume_head_tm_compiles_step, cook_idComputer_fin_tm2_compiles⟩
+
 end Rule110
