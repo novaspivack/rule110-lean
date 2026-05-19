@@ -51,8 +51,10 @@ theorem cook_phased_support_placements_witness :
     cts_support_placements.length = 2 ∧
     cts_ossifier_placement.cook_width = 6 ∧
     cts_leader_placement.cook_width = cts_leader_cook_width ∧
-    cts_leader_k_glider.bits.length = 338 :=
-  ⟨cts_support_placements_length, rfl, rfl, cts_leader_k_glider_block_length⟩
+    cts_leader_k_glider.bits.length = 338 ∧
+    (cts_support_placements_for_idx cook_min_len6_cts 0).length = 3 :=
+  ⟨cts_support_placements_length, rfl, rfl, cts_leader_k_glider_block_length,
+    cts_support_placements_for_idx_len6⟩
 
 theorem cook_leader_k_block_row0_witness :
     cookKBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
@@ -69,6 +71,12 @@ theorem cook_i_block_row0_differs_witness :
 theorem cook_j_block_row0_differs_witness :
     cookJBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
   leader_j_block_row0_differs
+
+theorem cook_h_block_row0_length_witness : cookHBlockRow0.length = 236 := cookHBlockRow0_length
+
+theorem cook_h_block_row0_differs_witness :
+    cookHBlockRow0.getD 1 false ≠ cookEther (300 + 1) :=
+  leader_h_block_row0_differs
 
 theorem cook_leader_k_cell_outside_slot_cone_witness (slot : ℕ) (hslot : slot ≤ 20) {i : ℕ} {b : Bool}
     (h : (i, b) ∈ cts_leader_k_glider.toCells) :

@@ -90,6 +90,12 @@ theorem cts_steps_succ (cts : CyclicTagSystem) (n : ℕ) (w : List Bool) (idx : 
       cts_steps cts n w₁ idx₁ :=
   rfl
 
+theorem cts_eval_with_idx_succ (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
+    cts.cts_eval_with_idx (n + 1) w₀ idx₀ =
+      let (w₁, idx₁) := cts.cts_step idx₀ w₀
+      cts.cts_eval_with_idx n w₁ idx₁ := by
+  simp only [cts_eval_with_idx, cts_steps_succ]
+
 @[simp] theorem cts_eval_zero (cts : CyclicTagSystem) (w₀ : List Bool) :
     cts.cts_eval 0 w₀ = w₀ := by
   simp [cts_eval]

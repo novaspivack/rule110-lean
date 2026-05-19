@@ -20,9 +20,9 @@ Block structure (Cook 2008, Figures 1 and 2):
 Per-appendant block decomposition (right-side periodic sequence):
   Each Y symbol in an appendant -> "II"  (two I-blocks, both 30 lines each)
   Each N symbol in an appendant -> "IJ"  (one I, one J, both 30 lines each)
-  The very first I in each non-empty appendant is replaced with "KM"
-  (K = raw leader, M = modified first component).  This swaps one I (30)
-  for two blocks K + M (60), adding 30 lines per non-empty appendant.
+  The very first I in each non-empty appendant is replaced with "KH"
+  (K = raw leader, H = modified first component).  This swaps one I (30)
+  for two blocks K + H (60), adding 30 lines per non-empty appendant.
   An empty appendant gets a single L-block (raw short leader, 30 lines).
 
   -> non-empty appendant of length L symbols  ->  (2L + 1) blocks  ->  30(2L+1) lines

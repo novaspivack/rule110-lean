@@ -42,4 +42,9 @@ def cookJBlockRow0 : List Bool :=
 
 theorem cookJBlockRow0_length : cookJBlockRow0.length = 252 := by native_decide
 
+def cookHBlockRow0 : List Bool :=
+  [true, false, false, false, false, false, true, true, false, false, false, false, false, true, false, false, false, true, true, false, false, true, false, false, false, true, false, false, false, true, true, false, false, true, true, true, true, false, true, true, false, false, true, false, false, false, false, false, true, true, true, false, true, true, false, false, true, false, false, false, true, true, true, false, true, false, false, false, false, true, true, true, false, true, true, false, false, true, false, false, false, false, false, true, true, true, false, true, true, false, false, true, false, false, false, false, false, true, false, true, true, false, false, false, false, true, true, false, true, true, false, false, true, false, false, false, false, false, true, true, true, true, false, true, true, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, true, true, false, true, true, false, false, true, false, false, false, false, false, true, true, true, false, true, true, false, false, true, false, false, false, true, false, false, true, false, false, false, true, false, true, false, false, false, true, true, false, false, true, false, false, false, false, false, true, true, true, false, true, true, false, false, true, false, false, false, false, false, true, true, true, false, true, true, false, false, true, false, false, false, false, false, false, true, true, true, true, false, false, true, false, false, false, true, true, false, false, true, false, false, false, false]
+
+theorem cookHBlockRow0_length : cookHBlockRow0.length = 236 := by native_decide
+
 end Rule110

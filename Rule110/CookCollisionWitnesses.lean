@@ -2,6 +2,7 @@ import Rule110.CTStoRule110
 import Rule110.Gliders
 import Rule110.LeaderGlider
 import Rule110.OssifierGlider
+import Mathlib.Tactic.Linarith
 
 /-!
 # Cook collision spacing witnesses (Stage 2 → 3 scaffolding)
@@ -208,6 +209,21 @@ theorem cts_phased_support_outside_slot_cone (slot : ℕ) (hslot : slot ≤ 20) 
       cts_glider_spacing] at hk_origin hk_hi hhi ⊢
     omega
 
+private theorem cts_leader_support_origin_ge (cts : CyclicTagSystem) (idx : ℕ)
+    {g : GliderPlacement} (hg : g ∈ cts_leader_support_for_idx cts idx) :
+    cts_leader_origin ≤ g.origin := by
+  unfold cts_leader_support_for_idx at hg
+  split_ifs at hg with hlen
+  · have heq : g = cts_leader_placement := List.mem_singleton.mp hg
+    rw [heq]
+    simp [cts_leader_placement, cts_leader_origin]
+  · rcases List.mem_cons.mp hg with heq | hg
+    · rw [heq]
+      simp [cts_leader_k_placement, cts_leader_origin]
+    · have heq' : g = cts_leader_h_placement := List.mem_singleton.mp hg
+      rw [heq']
+      simp [cts_leader_h_placement, cts_leader_h_origin, cts_leader_origin, cookKBlockRow0_length]
+
 /-- Idx-selected support placements are outside the slot read cone (slots ≤ 20). -/
 theorem cts_phased_support_outside_slot_cone_for_idx (cts : CyclicTagSystem) (idx : ℕ)
     (slot : ℕ) (hslot : slot ≤ 20) (k : ℕ)
@@ -215,7 +231,7 @@ theorem cts_phased_support_outside_slot_cone_for_idx (cts : CyclicTagSystem) (id
     ∀ g ∈ cts_support_placements_for_idx cts idx,
       ¬ (g.origin ≤ k ∧ k - g.origin < g.bits.length) := by
   intro g hg
-  simp only [cts_support_placements_for_idx, List.mem_cons, List.mem_nil_iff, or_false] at hg
+  simp only [cts_support_placements_for_idx, List.mem_cons] at hg
   rcases hg with rfl | hg
   · intro ⟨_hk_origin, hk_in⟩
     have h506 : cts_ossifier_origin + 6 ≤ k := by
@@ -227,13 +243,12 @@ theorem cts_phased_support_outside_slot_cone_for_idx (cts : CyclicTagSystem) (id
       simp [cts_ossifier_placement, cts_ossifier_origin, cookOssifierPatchBits_length] at hk_in ⊢
       omega
     exact (Nat.not_lt.mpr h506) hk506
-  · subst hg
-    intro ⟨hk_origin, _⟩
+  · intro ⟨hk_origin, _hk_in⟩
+    have hge := cts_leader_support_origin_ge cts idx hg
     have hhi := cts_slot_cone_hi_le slot hslot
-    have h8000 : cts_leader_origin ≤ k := by
-      dsimp [cts_leader_placement_for_idx] at hk_origin
-      split_ifs at hk_origin <;> exact hk_origin
-    simp [cts_leader_origin, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at h8000 hk_hi hhi
+    have hk8000 : cts_leader_origin ≤ k := Nat.le_trans hge hk_origin
+    have hk1870 : k ≤ cts_slot_origin slot + 30 := hk_hi
+    simp [cts_leader_origin, cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hk8000 hk1870
     linarith
 
 /-- Empty-word phased-with-support encoding is +6 ether on data-region slot cones. -/

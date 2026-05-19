@@ -56,4 +56,13 @@ theorem TMCTSCompilation.eval_word_zero {Cfg : Type} {tmStep : Cfg → Option Cf
     comp.eval_word c 0 = (comp.enc c).1 := by
   simp [TMCTSCompilation.eval_word, TMCTSCompilation.eval_with_idx_zero]
 
+/-- One CTS microstep matches `cts_eval_with_idx` on the encoded configuration. -/
+theorem TMCTSCompilation.eval_with_idx_succ {Cfg : Type} {tmStep : Cfg → Option Cfg}
+    (comp : TMCTSCompilation tmStep) (c : Cfg) (m : ℕ) :
+    comp.eval_with_idx c (m + 1) =
+      let (w, idx) := comp.enc c
+      let (w₁, idx₁) := comp.sys.cts_step idx w
+      comp.sys.cts_eval_with_idx m w₁ idx₁ := by
+  simp [TMCTSCompilation.eval_with_idx, cts_eval_with_idx_succ]
+
 end Rule110

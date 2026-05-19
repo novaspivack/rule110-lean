@@ -90,6 +90,9 @@ def leaderBlockPhase : ℕ := 7
 /-- Spatial origin for the raw leader (empty-appendant case). -/
 def cts_leader_origin : ℕ := 8000
 
+/-- H-block origin immediately after K-block on the tape (Cook first-I → K,H). -/
+def cts_leader_h_origin : ℕ := cts_leader_origin + cookKBlockRow0.length
+
 /-- Ē-type leader glider config using the full L-block row 0 template. -/
 def cts_leader_glider : GliderConfig :=
   { species := CookGliderRef.named CookNamedGlider.Ebar
@@ -129,5 +132,18 @@ theorem leader_i_block_row0_differs :
 /-- J-block row 0 overrides pure ether within the patch (KM decomposition). -/
 theorem leader_j_block_row0_differs :
     cookJBlockRow0.getD 1 false ≠ cookEther (leaderSimOrigin + 1) := by native_decide
+
+/-- H-block row 0 overrides pure ether within the patch (K,H first-I replacement). -/
+def cts_leader_h_glider : GliderConfig :=
+  { species := CookGliderRef.named CookNamedGlider.Ebar
+    origin  := cts_leader_h_origin
+    phase   := ⟨leaderKBlockPhase, by decide⟩
+    bits    := cookHBlockRow0 }
+
+theorem cts_leader_h_glider_bits_length :
+    cts_leader_h_glider.bits.length = cookHBlockRow0.length := rfl
+
+theorem leader_h_block_row0_differs :
+    cookHBlockRow0.getD 1 false ≠ cookEther (leaderSimOrigin + 1) := by native_decide
 
 end Rule110

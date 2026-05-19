@@ -269,9 +269,13 @@ def cts_ossifier_placement : GliderPlacement :=
 def cts_leader_placement : GliderPlacement :=
   { origin := cts_leader_origin, cook_width := cts_leader_cook_width, bits := cookLBlockRow0 }
 
-/-- K-block raw leader (nonempty appendant case, Cook §1.4 KM replacement). -/
+/-- K-block raw leader (nonempty appendant case, Cook §1.4 first-I → K,H replacement). -/
 def cts_leader_k_placement : GliderPlacement :=
   { origin := cts_leader_origin, cook_width := cts_leader_cook_width, bits := cookKBlockRow0 }
+
+/-- H-block follows K on the tape (replaces first I in nonempty appendant block stack). -/
+def cts_leader_h_placement : GliderPlacement :=
+  { origin := cts_leader_h_origin, cook_width := cts_leader_cook_width, bits := cookHBlockRow0 }
 
 /-- Leader block for appendant index `idx` (L-block empty; K-block nonempty). -/
 def cts_leader_placement_for_idx (cts : CyclicTagSystem) (idx : ℕ) : GliderPlacement :=
@@ -280,11 +284,18 @@ def cts_leader_placement_for_idx (cts : CyclicTagSystem) (idx : ℕ) : GliderPla
   else
     cts_leader_k_placement
 
+/-- Right-side leader support: L alone (empty appendant) or K then H (nonempty). -/
+def cts_leader_support_for_idx (cts : CyclicTagSystem) (idx : ℕ) : List GliderPlacement :=
+  if (cts.appendants.getD (idx % cts.cycleLen) []).length = 0 then
+    [cts_leader_placement]
+  else
+    [cts_leader_k_placement, cts_leader_h_placement]
+
 def cts_support_placements : List GliderPlacement :=
   [cts_ossifier_placement, cts_leader_placement]
 
 def cts_support_placements_for_idx (cts : CyclicTagSystem) (idx : ℕ) : List GliderPlacement :=
-  [cts_ossifier_placement, cts_leader_placement_for_idx cts idx]
+  cts_ossifier_placement :: cts_leader_support_for_idx cts idx
 
 /-- Phase-correct data placements with left ossifier and right leader (sorted by origin). -/
 def cts_word_to_placements_phased_with_support (w : List Bool) : List GliderPlacement :=
@@ -305,7 +316,7 @@ def cts_to_rule110_tape_phased_with_support_idx (cts : CyclicTagSystem) (idx : �
 
 theorem cts_support_placements_for_idx_empty_zero :
     cts_support_placements_for_idx (CyclicTagSystem.mk [[]]) 0 = cts_support_placements := by
-  simp [cts_support_placements_for_idx, cts_support_placements, cts_leader_placement_for_idx]
+  simp [cts_support_placements_for_idx, cts_leader_support_for_idx, cts_support_placements]
 
 theorem cts_word_to_placements_phased_with_support_idx_empty_zero
     (w : List Bool) :
@@ -331,6 +342,15 @@ theorem cts_leader_k_placement_ends_after (i : ℕ) (hi : i < cts_leader_origin)
   have h8338 : 8338 ≤ i := by
     dsimp [cts_leader_k_placement, cts_leader_origin] at hle
     simpa [cookKBlockRow0_length] using hle
+  simp [cts_leader_origin] at hi
+  linarith
+
+theorem cts_leader_h_placement_ends_after (i : ℕ) (hi : i < cts_leader_origin) :
+    ¬ (cts_leader_h_placement.origin + cts_leader_h_placement.bits.length ≤ i) := by
+  intro hle
+  have h8574 : 8574 ≤ i := by
+    dsimp [cts_leader_h_placement, cts_leader_h_origin, cts_leader_origin] at hle ⊢
+    simpa [cookKBlockRow0_length, cookHBlockRow0_length] using hle
   simp [cts_leader_origin] at hi
   linarith
 
@@ -555,6 +575,11 @@ def cook_min_len6_true_word : List Bool := [true]
 theorem cook_min_len6_cts_cycleLen : cook_min_len6_cts.cycleLen = 1 := rfl
 
 theorem cook_min_len6_appendant_len : cook_min_len6_appendant.length = 6 := rfl
+
+theorem cts_support_placements_for_idx_len6 :
+    (cts_support_placements_for_idx cook_min_len6_cts 0).length = 3 := by
+  simp [cts_support_placements_for_idx, cts_leader_support_for_idx, cook_min_len6_cts,
+    cook_min_len6_appendant, cook_min_len6_appendant_len]
 
 theorem cook_M_len6 : cook_M_for_appendant_len 6 = 390 := by native_decide
 

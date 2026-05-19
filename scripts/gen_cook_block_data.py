@@ -61,6 +61,11 @@ def main() -> None:
         "",
         "theorem cookJBlockRow0_length : cookJBlockRow0.length = 252 := by native_decide",
         "",
+        "def cookHBlockRow0 : List Bool :=",
+        f"  [{bool_list(data['H']['rows'][0])}]",
+        "",
+        "theorem cookHBlockRow0_length : cookHBlockRow0.length = 236 := by native_decide",
+        "",
         "end Rule110",
         "",
     ]
