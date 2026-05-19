@@ -4,6 +4,7 @@ import Mathlib.Data.List.GetD
 import Mathlib.Tactic.IntervalCases
 
 import Rule110.CookC2BoundedSim
+import Rule110.CookC2VerifyLen6
 import Rule110.CTStoRule110
 import Rule110.InfTape
 
@@ -294,7 +295,8 @@ theorem cook_c2_tape_read_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hsl
       interval_cases n <;> native_decide
 
 /-- **Cook Collision C1 (bounded general words, list sim).** InfTape:
-    `cook_c2_tape_bit_inf_nat` (multi-glider, L ≤ 5); min-word: `cook_c2_tape_bit_min_word`. -/
+    `cook_c2_tape_bit_inf_nat` (multi-glider, L ≤ 5); min-word: `cook_c2_tape_bit_min_word`;
+    L = 6: `cook_c2_tape_bit_inf_nat_len6`. -/
 theorem cook_c2_tape_bit_list (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen) (hslot : slot < L)
     (hn : n < 2^L) :
     c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false :=
@@ -391,5 +393,15 @@ theorem cook_c2_tape_bit_ax_partial (L slot n : ℕ) (hL : L ≤ c2VerifyMaxLen)
         (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
       (natToWord L n).getD slot false :=
   cook_c2_tape_bit_inf_nat L slot n hL hslot hn idx
+
+/-- **Stage 1b (list sim, L ≤ 6):** isolated L=6 cert extends the L ≤ 5 family. -/
+theorem cook_c2_tape_bit_list_upto6 (L slot n : ℕ) (hL : L ≤ 6) (hslot : slot < L) (hn : n < 2^L) :
+    c2SimReadAt slot (natToWord L n) = (natToWord L n).getD slot false := by
+  by_cases h5 : L ≤ c2VerifyMaxLen
+  · exact cook_c2_tape_read_list L slot n h5 hslot hn
+  · have hL6 : L = 6 := by
+      simp [c2VerifyMaxLen] at h5 hL ⊢; omega
+    subst hL6
+    exact c2_len6_word_read_ok slot n hslot hn
 
 end Rule110
