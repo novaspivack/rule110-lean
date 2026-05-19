@@ -217,6 +217,22 @@ theorem cook_total_M_one (cts : CyclicTagSystem) :
       cook_M_for_appendant_len (cts.appendants.getD (0 % cts.cycleLen) []).length := by
   simp [cook_total_M, cook_total_M_from]
 
+theorem cook_total_M_succ_empty_appendant (cts : CyclicTagSystem) (n : ℕ)
+    (h : ∀ k, k < cts.cycleLen → (cts.appendants.getD k []).length = 0) :
+    cook_total_M cts (n + 1) = cook_total_M cts n + 30 := by
+  rw [cook_total_M_succ]
+  have hlen : (cts.appendants.getD (n % cts.cycleLen) []).length = 0 := by
+    by_cases hk : cts.cycleLen = 0
+    · cases cts with | mk appendants
+      cases appendants with
+      | nil => simp
+      | cons _ _ => simp [CyclicTagSystem.cycleLen] at hk
+    · exact h _ (Nat.mod_lt _ (Nat.pos_of_ne_zero hk))
+  have hM : cook_M_for_appendant_len (cts.appendants.getD (n % cts.cycleLen) []).length = 30 := by
+    simp only [cook_M_for_appendant_len, hlen]
+    split <;> decide
+  rw [hM]
+
 theorem cook_total_M_from_succ (cts : CyclicTagSystem) (n idx₀ : ℕ) :
     cook_total_M_from cts (n + 1) idx₀ =
       cook_total_M_from cts n idx₀ +

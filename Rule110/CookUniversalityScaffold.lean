@@ -6,6 +6,7 @@ import Rule110.CookStage3Len6Refinement
 import Rule110.CookTMCompilation
 import Rule110.CookTM2Bridge
 import Rule110.CookUniversalityChain
+import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookMValuesVerification
 
 /-!
@@ -113,5 +114,8 @@ theorem cook_empty_cts_stage3_partial (n : ℕ) :
 /-- Documented partial discharge bundle (see `CookUniversalityChain`). -/
 theorem cook_universality_discharged_witness : CookUniversalityDischarged :=
   cook_universality_discharged
+
+theorem cook_empty_appendant_c3prime_discharged_witness : CookEmptyAppendantC3PrimeDischarged :=
+  cook_empty_appendant_c3prime_discharged
 
 end Rule110

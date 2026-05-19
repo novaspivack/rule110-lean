@@ -126,4 +126,15 @@ abbrev cook_collision_cert_acceptor_table := kind4_kh_leader_true_slot0_not_fixe
 
 abbrev cook_collision_cert_acceptor_raw_leader := kind5_raw_k_leader_slot0_not_fixed_30
 
+/-- All five Neary–Woods collision kinds have finite-window negative witnesses. -/
+theorem cook_collision_all_five_kinds_certified :
+    collisionSimConeFixed kind1OssifierC2Init 30 0 = false ∧
+      collisionSimConeFixed kind2EmptySupportInit 30 0 = false ∧
+        collisionSimConeFixed (collisionSimInit kind3Slot19Placements) 30 19 = false ∧
+          collisionSimConeFixed (collisionSimInit kind4KHLeaderTruePlacements) 30 0 = false ∧
+            collisionSimConeFixed (collisionSimInit kind5RawKLeaderPlacements) 30 0 = false :=
+  ⟨kind1_ossifier_c2_slot0_cone_not_fixed_30, kind2_empty_support_slot0_cone_not_fixed_30,
+    kind3_slot19_cone_not_fixed_30, kind4_kh_leader_true_slot0_not_fixed_30,
+    kind5_raw_k_leader_slot0_not_fixed_30⟩
+
 end Rule110

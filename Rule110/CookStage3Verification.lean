@@ -13,6 +13,7 @@ import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
 import Rule110.CookStage3Len6Refinement
+import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -52,22 +53,6 @@ theorem cook_total_M_from_succ_witness (cts : CyclicTagSystem) (n idx₀ : ℕ) 
       cook_total_M_from cts n idx₀ +
         cook_M_for_appendant_len (cts.appendants.getD ((idx₀ + n) % cts.cycleLen) []).length :=
   cook_total_M_from_succ cts n idx₀
-
-theorem cook_total_M_succ_empty_appendant (cts : CyclicTagSystem) (n : ℕ)
-    (h : ∀ k, k < cts.cycleLen → (cts.appendants.getD k []).length = 0) :
-    cook_total_M cts (n + 1) = cook_total_M cts n + 30 := by
-  rw [cook_total_M_succ]
-  have hlen : (cts.appendants.getD (n % cts.cycleLen) []).length = 0 := by
-    by_cases hk : cts.cycleLen = 0
-    · cases cts with | mk appendants
-      cases appendants with
-      | nil => simp
-      | cons _ _ => simp [CyclicTagSystem.cycleLen] at hk
-    · exact h _ (Nat.mod_lt _ (Nat.pos_of_ne_zero hk))
-  have hM : cook_M_for_appendant_len (cts.appendants.getD (n % cts.cycleLen) []).length = 30 := by
-    simp only [cook_M_for_appendant_len, hlen]
-    split <;> decide
-  rw [hM]
 
 theorem cook_cts_eval_one_empty (cts : CyclicTagSystem) :
     cts.cts_eval 1 [] = [] :=
@@ -151,16 +136,9 @@ theorem cook_cts_eval_sim_empty_one_step_char (cts : CyclicTagSystem)
     CookCtsEvalSim cts 1 (w₀ := []) ↔
       gliders_to_tape_phased (cts_word_to_placements_phased_with_support []) =
         infRule110Steps 30 (cts_to_rule110_tape_phased_with_support cts []) := by
-  constructor
-  · intro h
-    rw [CookCtsEvalSim] at h
-    rw [cook_cts_eval_one_empty cts, cts_word_to_placements_phased_with_support_nil,
-        cook_total_M_one_empty_appendant cts hzero] at h
-    exact h
-  · intro h
-    rw [CookCtsEvalSim, cook_cts_eval_one_empty cts, cts_word_to_placements_phased_with_support_nil,
-        cook_total_M_one_empty_appendant cts hzero]
-    exact h
+  rw [cook_cts_eval_sim_empty_one_step_iff_support_fixed cts hzero]
+  simp [CookCtsSupportPlacementsFixed, cts_to_rule110_tape_phased_with_support,
+    cts_word_to_placements_phased_with_support_nil]
 
 theorem cook_cts_eval_sim_len6_one_step_char
     (hstep : CookCtsEvalSim cook_min_len6_cts 1 (w₀ := cook_min_len6_true_word)) :
@@ -339,7 +317,18 @@ theorem len6_true_origin_list_sim_eq_inf_390 :
 theorem emptyPhasedSupport_origin_list_sim_eq_phased_inf_30 :
     listToInfTape (c2SimRun 30 emptyPhasedSupportInit) (cts_slot_origin 0) =
       infRule110Steps 30 (cts_to_rule110_tape_phased_with_support (CyclicTagSystem.mk []) [])
-        (cts_slot_origin 0) := by
-  rw [emptyPhasedSupport_origin_run_eq_inf_30, emptyPhasedSupport_origin_inf_steps_agree]
+        (cts_slot_origin 0) :=
+  cook_empty_appendant_origin_list_inf_30
+
+theorem cook_empty_appendant_c3prime_discharged_witness : CookEmptyAppendantC3PrimeDischarged :=
+  cook_empty_appendant_c3prime_discharged
+
+theorem cook_collision_all_five_kinds_witness :
+    collisionSimConeFixed kind1OssifierC2Init 30 0 = false ∧
+      collisionSimConeFixed kind2EmptySupportInit 30 0 = false ∧
+        collisionSimConeFixed (collisionSimInit kind3Slot19Placements) 30 19 = false ∧
+          collisionSimConeFixed (collisionSimInit kind4KHLeaderTruePlacements) 30 0 = false ∧
+            collisionSimConeFixed (collisionSimInit kind5RawKLeaderPlacements) 30 0 = false :=
+  cook_collision_all_five_kinds_certified
 
 end Rule110
