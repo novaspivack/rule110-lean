@@ -33,5 +33,6 @@ import Rule110.CookC2VerifyLen5
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
+import Rule110.CookStage3Len6Refinement
 
 /-! Umbrella module for the `Rule110` Lean library (Cook pipeline infrastructure). -/

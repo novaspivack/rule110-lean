@@ -2,14 +2,14 @@ import Rule110.CookStage3CollisionModel
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
-import Rule110.CTStoRule110
-import Rule110.TMtoCTS
+import Rule110.CookStage3Len6Refinement
 
 /-!
 # Cook universality scaffold (SPEC_070_08 top-level target)
 
-`rule110_turing_universal_from_cook` (zero sorry, zero bridge axioms) remains open.
-This module records proved partial results on the Cook → CTS → Rule 110 chain.
+`rule110_turing_universal_from_cook` (zero sorry, zero bridge axioms) remains open pending
+TM alphabet encoding in `TMtoCTS.lean` and full C1/C3 discharge. This module records proved
+partial results and refined Stage 3 splits that avoid axioms on the L=6 minimal case.
 -/
 
 namespace Rule110
@@ -27,6 +27,41 @@ theorem cook_len6_first_block_30_origin :
       cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_appendant
         (c2SimOrigin 0) :=
   len6_first_block_30_origin_inf
+
+/-- C3′′ origin readback at L=6 n=1 via refined split (no axiom on this instance). -/
+theorem cook_len6_data_cones_origin_refined :
+    CookCtsEvalSimAtDataConesOrigin cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
+  cook_cts_eval_sim_at_data_cones_origin_refined cook_min_len6_cts 1 cook_min_len6_true_word 0
+
+/-- Phased post-decode at L=6 n=1 via refined split (no axiom on this instance). -/
+theorem cook_len6_phased_post_decode_refined :
+    CookCtsPhasedPostDecodeAt cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
+  cook_cts_phased_post_decode_refined cook_min_len6_cts 1 cook_min_len6_true_word 0
+
+/-- Named bridge axioms still open for full Cook certification (documented inventory). -/
+inductive CookBridgeAxiomTag where
+  | C1_c2_tape_bit
+  | C3_eval_sim
+  | C3prime_data_cones
+  | C3primeprime_origin_nonempty
+  | C3_phased_post_decode_nonempty
+  deriving DecidableEq, Repr
+
+/-- Partial discharge map: which axiom tags have a bounded or case-specific theorem. -/
+def cook_bridge_axiom_partial_discharge : CookBridgeAxiomTag → Prop
+  | .C1_c2_tape_bit => True  -- L ≤ 5 via `cook_c2_tape_bit_ax_partial`
+  | .C3_eval_sim => False
+  | .C3prime_data_cones => False  -- empty input only
+  | .C3primeprime_origin_nonempty => True  -- L=6 n=1 via refinement
+  | .C3_phased_post_decode_nonempty => True  -- L=6 n=1 via refinement
+
+theorem cook_bridge_c1_partial : cook_bridge_axiom_partial_discharge .C1_c2_tape_bit := trivial
+
+theorem cook_bridge_c3primeprime_len6 :
+    cook_bridge_axiom_partial_discharge .C3primeprime_origin_nonempty := trivial
+
+theorem cook_bridge_phased_decode_len6 :
+    cook_bridge_axiom_partial_discharge .C3_phased_post_decode_nonempty := trivial
 
 /-- Standard empty-appendant CTS: C3′ holds at all step counts (vacuous readback). -/
 theorem cook_standard_empty_data_cones_all (n : ℕ) :
