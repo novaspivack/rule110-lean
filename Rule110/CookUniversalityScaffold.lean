@@ -3,6 +3,7 @@ import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6FirstBlock30
 import Rule110.CookStage3Len6Refinement
+import Rule110.CookTMCompilation
 
 /-!
 # Cook universality scaffold (SPEC_070_08 top-level target)
@@ -83,5 +84,13 @@ theorem cook_stage1_step_sim (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
     (L : ℕ) (M : ℕ) (hi : cts_word_far_boundary w.length + M ≤ i) :
     infRule110Steps M (cts_to_rule110_tape cts idx w) i = cookEther (i + 4 * M) :=
   cook_cts_step_sim_ax cts idx w i L M hi
+
+/-- Stage 4 scaffold: trivial identity TM satisfies `simulates_step`. -/
+theorem cook_tm_identity_simulates_step (c c' : Unit) (h : tmIdentityStep c = some c') :
+    ∃ m,
+      let (w, idx) := trivialIdentityTMComp.enc c
+      let (w', idx') := trivialIdentityTMComp.sys.cts_steps m w idx
+      trivialIdentityTMComp.dec (w', idx') = c' :=
+  trivial_identity_tm_simulates_step c c' h
 
 end Rule110

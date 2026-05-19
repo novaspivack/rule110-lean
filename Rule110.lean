@@ -6,6 +6,7 @@ import Rule110.CookGliderCatalog
 import Rule110.CookCollisionTaxonomy
 import Rule110.Gliders
 import Rule110.TMtoCTS
+import Rule110.CookTMCompilation
 import Rule110.CTStoRule110
 import Rule110.CookGliderVerification
 import Rule110.CookC2BoundedSim
