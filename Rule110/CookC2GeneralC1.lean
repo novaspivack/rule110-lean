@@ -100,53 +100,11 @@ theorem cts_to_rule110_tape_cone_eq_min_word (w : List Bool) (readSlot idx : ℕ
     -- Sub-case: k is outside → no cell reaches k
     by_cases hk_in : c2SimOrigin readSlot ≤ k ∧ k < c2SimOrigin readSlot + 6
     · -- k is inside the readSlot glider. Both encodings give the same C2 glider value at k.
-      -- Both cell lists have exactly one cell at k (from readSlot's C2 glider), with same value.
-      -- All other cells in either list are NOT at k (spacing argument).
-      -- Strategy:
-      -- 1. Show that all cells in cts_word_to_cells w 0 that are at k have the same value v.
-      -- 2. Show overrideCells cookEther cells k = v when all cells at k have value v.
-      --    (Proved by: strip non-k cells using overrideCells_cons_index_ne, then read k cell.)
-      -- 3. Same for cts_word_to_cells (cts_min_word readSlot bit) 0.
-      -- 4. v is the same in both (same C2 glider pattern).
-      --
-      -- Simplification: use overrideCells_base_eq_at on the complement cells.
-      -- The cell at k in BOTH lists: (k, cookC2Bits.getD (k - c2SimOrigin readSlot) false).
-      -- We can prove: overrideCells cookEther cells k = v by:
-      --   (a) Strip all cells ≠ k using overrideCells_cons_index_ne.
-      --   (b) The only remaining cells at k all have value v.
-      --   (c) overrideCells cookEther [(k, v)] k = v.
-      --
-      -- Let me add an auxiliary lemma at the top of the proof, then use it here.
-      -- Helper: if all cells at k have the same value v, then overrideCells base cells k = v
-      -- when cells contains at least one cell at k.
-      -- Proved by induction with overrideCells_cons_index_ne.
-      --
-      -- Since this requires a new inductive lemma, let me instead use the following shortcut:
-      -- Since (1) the only cell at k in cts_word_to_cells w 0 has value v, and
-      --       (2) the only cell at k in cts_word_to_cells (cts_min_word readSlot bit) 0 has the same v,
-      --       (3) all other cells are not at k,
-      -- we can prove: overrideCells cookEther cells k = v using overrideCells_base_eq_at
-      -- applied to ALL cells except the k cell, followed by reading the k cell.
-      -- The k cell override: overrideCells base [(k, v)] k = v.
-      -- This is base_eq_at after stripping, then cons application.
-      --
-      -- Let's just prove both sides equal the same value v and be done.
-      -- v = cookC2Bits.getD (k - c2SimOrigin readSlot) false
-      --
-      -- Actually let me use: since ALL non-readSlot cells are NOT at k (spacing),
-      -- overrideCells of both lists at k equals overrideCells of [readSlot's cells] at k.
-      -- And readSlot's cells are identical in both encodings (same GliderConfig bit pattern).
-      -- Therefore both sides are equal.
-      --
-      -- This is provable using overrideCells_base_eq_at:
-      -- overrideCells cookEther (other_cells ++ readSlot_cells) k
-      --   = overrideCells (overrideCells cookEther other_cells) readSlot_cells k
-      --   = overrideCells cookEther readSlot_cells k  [since other_cells don't touch k]
-      -- Both sides have the same readSlot_cells → equal.
-      --
-      -- The hardest part is splitting the list and showing readSlot_cells is identical.
-      -- For now, let me use `sorry` for this sub-case and note that it's provable.
-      -- The overall theorem structure is correct and all other cases are proved.
+      -- PROOF SKETCH: The cells at k in both lists come from slot readSlot's C2 glider
+      -- (spacing ensures no other slot reaches k). Both encodings have w[readSlot] = true = bit,
+      -- so the C2 glider is present in both, at the same position, with the same bits.
+      -- Hence both overrideCells values equal cookC2Bits.getD (k - c2SimOrigin readSlot) false.
+      -- Full formalization requires showing the C2 glider cell membership in both lists.
       sorry
     · -- k is outside [c2SimOrigin readSlot, c2SimOrigin readSlot + 5].
       -- No cell from any active slot of w (or min_word) reaches k.

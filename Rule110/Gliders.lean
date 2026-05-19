@@ -87,6 +87,52 @@ theorem overrideCells_eq_base_at (base : InfTape) (cells : List (ℕ × Bool)) (
     rw [overrideCells_cons_index_ne base i k b ps h.1]
     exact ih h.2
 
+/-- When all cells at position `kk` in `cells` have value `vv` and at least one exists,
+    `overrideCells base cells kk = vv`. -/
+theorem overrideCells_singleton_at (base : InfTape) (cells : List (ℕ × Bool)) (kk : ℕ) (vv : Bool)
+    (hmem : (kk, vv) ∈ cells)
+    (huniq : ∀ p ∈ cells, p.1 = kk → p = (kk, vv)) :
+    overrideCells base cells kk = vv := by
+  revert base hmem huniq
+  induction cells with
+  | nil => intro _ hmem _; exact absurd hmem (by simp)
+  | cons p ps ih =>
+    intro base hmem huniq
+    rcases p with ⟨pi, pv⟩
+    by_cases hpi : pi = kk
+    · have hpv : pv = vv := by
+        have hmem_head : (pi, pv) ∈ (pi, pv) :: ps :=
+          List.mem_cons.mpr (Or.inl rfl)
+        have h := huniq (pi, pv) hmem_head hpi
+        rw [hpi] at h; exact congrArg Prod.snd h
+      rw [show pi = kk from hpi, show pv = vv from hpv, overrideCells_cons]
+      -- Goal: overrideCells (fun j => if j = kk then vv else base j) ps kk = vv
+      -- Apply ih with new base = (fun j => if j = kk then vv else base j)
+      -- Need: (kk, vv) ∈ ps OR ps has no cell at kk (base' kk = vv directly)
+      by_cases hps : ∃ q ∈ ps, q.1 = kk
+      · obtain ⟨q, hq_mem, hq_kk⟩ := hps
+        have hq_eq : q = (kk, vv) := huniq q (List.mem_cons_of_mem _ hq_mem) hq_kk
+        apply ih (base := fun j => if j = kk then vv else base j)
+        · rwa [← hq_eq]
+        · intro r hr_mem hr_kk
+          exact huniq r (List.mem_cons_of_mem _ hr_mem) hr_kk
+      · push_neg at hps
+        rw [overrideCells_eq_base_at _ ps kk (by
+          intro q hqmem hqne
+          exact hps q hqmem hqne)]
+        simp
+    · rw [overrideCells_cons_index_ne _ pi kk pv ps hpi]
+      apply ih
+      · simp only [List.mem_cons] at hmem
+        rcases hmem with heq | h
+        · -- heq : (pi, pv) = (kk, vv), but hpi : pi ≠ kk → contradiction
+          have := congrArg Prod.fst heq
+          simp at this
+          exact absurd this.symm hpi
+        · exact h
+      · intro q hqmem hqkk
+        exact huniq q (List.mem_cons_of_mem _ hqmem) hqkk
+
 /-- If every write lies strictly outside `[lo, hi]`, the overlay agrees with `base` on that interval. -/
 theorem overrideCells_eq_base_on_Icc (base : InfTape) (cells : List (ℕ × Bool)) (lo hi : ℕ)
     (hdisj : ∀ p ∈ cells, p.1 < lo ∨ hi < p.1) :
