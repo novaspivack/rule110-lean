@@ -1,5 +1,6 @@
 import Rule110.CookC2BoundedSim
 import Rule110.CookC2InfTapeBridge
+import Rule110.CookC2VerifySupportLen5
 import Rule110.CTStoRule110
 
 /-!
@@ -81,6 +82,10 @@ theorem cook_c2_tape_bit_ax_partial_upto7_witness (L slot n : ℕ) (idx : ℕ) (
         (cts_to_rule110_tape (CyclicTagSystem.mk []) idx (natToWord L n))) =
       (natToWord L n).getD slot false :=
   cook_c2_tape_bit_ax_partial_upto7 L slot n hL hslot hn idx
+
+theorem c2_support_len5_word_read_witness (slot n : ℕ) (hslot : slot < 5) (hn : n < 2 ^ 5) :
+    c2SimReadAtWithOssifier slot (natToWord 5 n) = (natToWord 5 n).getD slot false :=
+  c2_support_len5_word_read slot n hslot hn
 
 theorem c2_len6_all_init_read_cones_ok_witness :
     c2Len6AllInitReadConesOk = true :=

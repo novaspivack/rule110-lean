@@ -52,6 +52,14 @@ theorem cook_bool_identity_tm_compiles_step :
     TMCompilesStep tmBoolIdentityStep cookBoolIdentityTMComp :=
   cookBoolIdentityTMComp.tm_compiles_step
 
+/-- All three Stage 4 scaffolds satisfy `TMCompilesStep`. -/
+theorem cook_stage4_tm_compiles_step_bundle :
+    TMCompilesStep tmIdentityStep trivialIdentityTMComp ∧
+      TMCompilesStep tmBoolIdentityStep cookBoolIdentityTMComp ∧
+        TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp :=
+  ⟨trivial_identity_tm_compiles_step, cook_bool_identity_tm_compiles_step,
+    cook_consume_head_tm_compiles_step⟩
+
 /-- Stage 4: Mathlib TM2 identity anchor **and** Cook CTS scaffolds (identity + consume-head). -/
 theorem cook_stage4_triple_scaffold :
     Nonempty FinTM2 ∧
