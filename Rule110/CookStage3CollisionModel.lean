@@ -122,6 +122,50 @@ theorem cook_cts_eval_sim_at_data_cones_empty_input (cts : CyclicTagSystem) (n :
   cook_cts_eval_sim_at_data_cones_of_empty_post_word cts n [] idx₀
     (CyclicTagSystem.cts_eval_with_idx_empty cts n idx₀)
 
+/-- After `M` Rule 110 steps, phased post-decode (`tape_has_glider_at` with post-step
+    placement phase) matches each data slot. Positive at L=6 n=1 (Round 02 #15). -/
+def CookCtsPhasedPostDecodeAt (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
+    Prop :=
+  let (w, idx) := cts.cts_eval_with_idx n w₀ idx₀
+  let M := cook_total_M_from cts n idx₀
+  let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
+  let ps := cts_word_to_placements_phased_with_support_idx cts idx w
+  ∀ slot, slot < w.length →
+    tape_has_glider_at (infRule110Steps M init) slot (accumPhaseAt ps (cts_slot_origin slot)) =
+      w.getD slot false
+
+/-- **Vacuous discharge (phased decode):** empty post-word. -/
+theorem cook_cts_phased_post_decode_of_empty_post_word (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ)
+    (hw : (cts.cts_eval_with_idx n w₀ idx₀).1 = []) :
+    CookCtsPhasedPostDecodeAt cts n w₀ idx₀ := by
+  intro slot hslot
+  have hlen : (cts.cts_steps n w₀ idx₀).1.length = 0 := by
+    rw [← CyclicTagSystem.cts_eval_with_idx, hw, List.length_nil]
+  have hpos : slot < 0 := by rw [hlen] at hslot; exact hslot
+  exact (Nat.not_lt_zero slot hpos).elim
+
+theorem cook_cts_phased_post_decode_empty_input (cts : CyclicTagSystem) (n : ℕ) (idx₀ : ℕ) :
+    CookCtsPhasedPostDecodeAt cts n [] idx₀ :=
+  cook_cts_phased_post_decode_of_empty_post_word cts n [] idx₀
+    (CyclicTagSystem.cts_eval_with_idx_empty cts n idx₀)
+
+/-- **Cook Collision Axiom (phased post-decode):** nonempty post-word cases.
+    L=6 n=1 discharged in `CookLen6PhasedPostDecode`. -/
+axiom cook_cts_phased_post_decode_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ)
+    (hdata : 0 < (cts.cts_eval_with_idx n w₀ idx₀).1.length) :
+    CookCtsPhasedPostDecodeAt cts n w₀ idx₀
+
+theorem cook_cts_phased_post_decode (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsPhasedPostDecodeAt cts n w₀ idx₀ := by
+  by_cases hw : (cts.cts_eval_with_idx n w₀ idx₀).1 = []
+  · exact cook_cts_phased_post_decode_of_empty_post_word cts n w₀ idx₀ hw
+  · have hpos : 0 < (cts.cts_eval_with_idx n w₀ idx₀).1.length := by
+      cases w : (cts.cts_eval_with_idx n w₀ idx₀).1 with
+      | nil => contradiction
+      | cons _ _ => simp
+    exact cook_cts_phased_post_decode_ax cts n w₀ idx₀ hpos
+
 /-- **Cook Collision Axiom C3′′ (origin-cell readback):** required only when post-step word
     has data slots. L=6 n=1 is discharged in `CookLen6DataConesOrigin`. -/
 axiom cook_cts_eval_sim_data_cones_origin_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool)

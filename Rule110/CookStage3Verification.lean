@@ -10,6 +10,7 @@ import Rule110.CookConstructionCollisionCerts
 import Rule110.CookLen6BlockStepSim
 import Rule110.CookC3PrimeDecodeSim
 import Rule110.CookLen6DataConesOrigin
+import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookPhasedSupportInfTapeBridge
 import Rule110.Ether
 import Rule110.InfTape
@@ -275,6 +276,19 @@ theorem len6_first_block_30_origin_positive :
 theorem cook_cts_eval_sim_at_data_cones_origin_len6_one_witness :
     CookCtsEvalSimAtDataConesOrigin cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
   cook_cts_eval_sim_at_data_cones_origin_len6_one
+
+theorem len6_phased_post_decode_inf_one_witness (slot : ℕ) (hslot : slot < 6) :
+    let ps := cts_word_to_placements_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_appendant
+    tape_has_glider_at
+        (infRule110Steps 390
+          (cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word))
+        slot (accumPhaseAt ps (c2SimOrigin slot)) =
+      cook_min_len6_appendant.getD slot false :=
+  len6_phased_post_decode_inf_one slot hslot
+
+theorem cook_cts_phased_post_decode_len6_one_witness :
+    CookCtsPhasedPostDecodeAt cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
+  cook_cts_phased_post_decode_len6_one
 
 theorem cook_cts_eval_sim_at_data_cones_origin_zero_witness (cts : CyclicTagSystem) (w₀ : List Bool)
     (idx₀ : ℕ) :

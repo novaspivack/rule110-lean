@@ -24,7 +24,7 @@ theorem len6TruePhasedSupport_run_eq_inf_at (n k : ℕ)
   rw [← len6TruePhasedSupportInit_length] at hk
   exact c2SimRun_eq_infRule110Steps_at len6TruePhasedSupportInit n k hn_k hk
 
-private theorem len6TrueInitReadConeOk_get (d : ℕ) (hd : d < 61) :
+theorem len6TrueInitReadConeOk_get (d : ℕ) (hd : d < 61) :
     listToInfTape len6TruePhasedSupportInit (len6Slot0ConeLo + d) =
       cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word
         (len6Slot0ConeLo + d) := by

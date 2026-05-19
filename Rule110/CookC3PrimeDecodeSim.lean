@@ -21,6 +21,18 @@ def listPhasedGliderAt (ps : List GliderPlacement) (tape : List Bool) (slot : �
   let origin := c2SimOrigin slot
   tape.getD origin false ≠ phaseEther origin (accumPhaseAt ps origin)
 
+theorem listPhasedGliderAt_eq_tape_has_glider_at (ps : List GliderPlacement) (l : List Bool)
+    (slot : ℕ) (hlen : c2SimOrigin slot < l.length) :
+    listPhasedGliderAt ps l slot =
+      tape_has_glider_at (listToInfTape l) slot (accumPhaseAt ps (c2SimOrigin slot)) := by
+  have hlen' : 1000 + slot * 42 < l.length := by
+    simpa [c2SimOrigin, cts_tape_origin, cts_glider_spacing] using hlen
+  unfold listPhasedGliderAt tape_has_glider_at listToInfTape
+  simp only [c2SimOrigin, cts_tape_origin, cts_glider_spacing, phaseEther, dif_pos hlen']
+  have hget : l.getD (1000 + slot * 42) false = l[1000 + slot * 42] :=
+    @List.getD_eq_getElem Bool l false (1000 + slot * 42) hlen'
+  simp [hget, List.getElem?_eq_getElem hlen']
+
 def len6OneStepGliderDecodeOk : Bool :=
   let init := len6TruePhasedSupportInit
   let fin := c2SimRun 390 init

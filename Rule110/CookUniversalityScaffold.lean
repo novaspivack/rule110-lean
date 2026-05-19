@@ -1,5 +1,6 @@
 import Rule110.CookStage3CollisionModel
 import Rule110.CookLen6DataConesOrigin
+import Rule110.CookLen6PhasedPostDecode
 import Rule110.CTStoRule110
 import Rule110.TMtoCTS
 
@@ -11,6 +12,11 @@ This module records proved partial results on the Cook → CTS → Rule 110 chai
 -/
 
 namespace Rule110
+
+/-- L=6 minimal appendant: phased post-decode at n=1 without axiom. -/
+theorem cook_len6_phased_post_decode_one :
+    CookCtsPhasedPostDecodeAt cook_min_len6_cts 1 cook_min_len6_true_word 0 :=
+  cook_cts_phased_post_decode_len6_one
 
 /-- Standard empty-appendant CTS: C3′ holds at all step counts (vacuous readback). -/
 theorem cook_standard_empty_data_cones_all (n : ℕ) :
