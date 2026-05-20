@@ -21,7 +21,7 @@ open Turing
 
 /-! ## Minimal open bridge axioms (operational C3 path) -/
 
-/-- Nonempty post-word cases for C3′′ origin readback (see `cook_cts_eval_sim_data_cones_origin_ax`). -/
+/-- Nonempty post-word cases for C3′′ origin readback (leaf obligations in `CookStage3Induction`). -/
 def cook_bridge_c3primeprime_open : Prop :=
   ∀ (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ),
     0 < (cts.cts_eval_with_idx n w₀ idx₀).1.length →
@@ -52,7 +52,7 @@ structure CookOperationalStage3 where
       CookCtsPhasedPostDecodeAt cts n w₀ idx₀
 
 theorem cook_operational_stage3_default : CookOperationalStage3 where
-  data_cones_origin := cook_cts_eval_sim_at_data_cones_origin
+  data_cones_origin := cook_cts_eval_sim_data_cones_origin
   phased_post_decode := cook_cts_phased_post_decode
 
 theorem cook_operational_stage3_of_bridge (h : cook_bridge_axioms_open) : CookOperationalStage3 where
