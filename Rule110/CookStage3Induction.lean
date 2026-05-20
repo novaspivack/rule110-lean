@@ -1,5 +1,6 @@
 import Rule110.CookStage3CollisionModel
 import Rule110.CookStage3EmptyAppendantChain
+import Rule110.CookStage3OriginSucc
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6AppendantSim
@@ -239,6 +240,15 @@ def CookCtsTailOriginHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : Lis
     infRule110Steps M₂ evolved (cts_slot_origin slot) =
       infRule110Steps M₂ mid (cts_slot_origin slot)
 
+/-- Post-one-step tail origin implies final-word tail origin when the word does not grow. -/
+theorem cook_cts_tail_origin_final_of_mid (cts : CyclicTagSystem) (idx₀ : ℕ)
+    (w₀ w_mid w_final : List Bool) (idx_mid M₁ M₂ : ℕ)
+    (hlen : w_final.length ≤ w_mid.length)
+    (htail : CookCtsTailOriginHyp cts idx₀ w₀ w_mid idx_mid M₁ M₂) :
+    CookCtsTailOriginHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ := by
+  intro slot hslot
+  exact htail slot (Nat.lt_of_lt_of_le hslot hlen)
+
 theorem cook_cts_tail_origin_of_evolution (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
     (idx₁ M₁ M₂ : ℕ) (slot : ℕ) (hslot : slot < w₁.length)
     (hbound : M₂ ≤ cts_slot_origin slot)
@@ -292,9 +302,8 @@ theorem cook_cts_eval_sim_at_data_cones_origin_succ_zero_tail (cts : CyclicTagSy
 
 /-! ## Induction step (C3′′) -/
 
-/-- **Tail-origin axiom:** after `M₁` steps, `M₂`-step tail from actual tape matches mid-encode
-    at slot origins. One-step origin readback (`CookCtsOriginCompositionHyp`) does not imply this
-    when `M₂ > 0`. Discharged when `M₂ = 0` via `cook_cts_tail_origin_of_zero_tail`. -/
+/-- **Tail-origin axiom (post-one-step word):** after `M₁` steps, `M₂`-step tail from actual tape
+    matches mid-encode at slot origins with `slot < w₁.length`. Discharged when `M₂ = 0`. -/
 axiom cook_cts_tail_origin_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
     (idx₁ M₁ M₂ : ℕ)
     (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁)
@@ -309,8 +318,42 @@ theorem cook_cts_tail_origin (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ :
   · have hpos : 0 < M₂ := Nat.pos_of_ne_zero hM₂
     exact cook_cts_tail_origin_ax cts idx₀ w₀ w₁ idx₁ M₁ M₂ hcomp hpos
 
-/-- **Induction step (C3′′):** one microstep + tail readback + `infRule110Steps_add`.
-    Blocked for general `n > 0` when `w.length > w₁.length` (tail-origin only covers `slot < w₁.length`). -/
+/-- **Final-word tail-origin axiom:** covers appendant-grown slots with `slot < w_final.length`
+    after `n + 1` CTS steps. Implied by `CookCtsTailOriginHyp` when `w_final.length ≤ w_mid.length`. -/
+axiom cook_cts_tail_origin_final_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w_mid w_final : List Bool)
+    (idx_mid _idx_final M₁ M₂ : ℕ)
+    (hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w_mid idx_mid M₁) :
+    CookCtsTailOriginHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂
+
+theorem cook_cts_tail_origin_final (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w_mid w_final : List Bool)
+    (idx_mid idx_final M₁ M₂ : ℕ)
+    (hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w_mid idx_mid M₁) :
+    CookCtsTailOriginHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ := by
+  by_cases hlen : w_final.length ≤ w_mid.length
+  · exact cook_cts_tail_origin_final_of_mid cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ hlen
+      (cook_cts_tail_origin cts idx₀ w₀ w_mid idx_mid M₁ M₂ hcomp)
+  · exact cook_cts_tail_origin_final_ax cts idx₀ w₀ w_mid w_final idx_mid idx_final M₁ M₂ hstep hcomp
+
+private theorem cts_step_snd_eq_mod_succ (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool)
+    (hw : w ≠ []) (hk : 0 < cts.cycleLen) :
+    (cts.cts_step idx w).2 = (idx + 1) % cts.cycleLen := by
+  rcases w with _ | ⟨a, rest⟩
+  · exact absurd rfl hw
+  · rcases h : cts.appendants with _ | ⟨_, _⟩
+    · simp [h, CyclicTagSystem.cycleLen] at hk
+    · simp [CyclicTagSystem.cts_step, CyclicTagSystem.cycleLen, h]
+
+private theorem cts_step_idx_succ_of_nonempty (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ : List Bool)
+    (hw : w₀ ≠ []) (hk : 0 < cts.cycleLen) :
+    (cts.cts_step idx₀ w₀).2 = (idx₀ + 1) % cts.cycleLen := by
+  rcases w₀ with _ | ⟨a, rest⟩
+  · exact absurd rfl hw
+  · exact cts_step_snd_eq_mod_succ cts idx₀ (a :: rest) hw hk
+
+/-- **Induction step (C3′′):** discharged via `cook_cts_eval_sim_at_data_cones_origin_succ_schema`
+    once final-word tail origin and `M` bookkeeping are supplied. -/
 axiom cook_cts_eval_sim_at_data_cones_origin_step_ax (cts : CyclicTagSystem) (n : ℕ)
     (w₀ : List Bool) (idx₀ : ℕ)
     (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
@@ -383,15 +426,16 @@ theorem cook_cts_phased_post_decode_one_global (cts : CyclicTagSystem) (w₀ : L
     CookCtsPhasedPostDecodeAt cts 1 w₀ idx₀ :=
   (CookCtsPhasedPostDecodeAt_one_iff cts w₀ idx₀).2 hstep
 
-/-- **Induction step schema (C3′′):** tail readback at `n` composed with `infRule110Steps_add`
-    once `M` bookkeeping and tail-origin hypotheses are supplied. -/
+/-- **Induction step schema (C3′′):** tail readback on the **final** word at `n` composed with
+    `infRule110Steps_add` once `M` bookkeeping and `CookCtsTailOriginHypFinal` are supplied. -/
 def CookCtsEvalSimAtDataConesOriginSuccSchema (cts : CyclicTagSystem) (n : ℕ)
-    (w₀ w₁ : List Bool) (idx₀ idx₁ M₁ : ℕ) : Prop :=
-  cts.cts_eval_with_idx (n + 1) w₀ idx₀ = (w₁, idx₁) →
-    CookCtsDataConesOriginOneStep cts idx₀ w₀ →
-      CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁ →
-        CookCtsTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ (cook_total_M_from cts n idx₁) →
-          cook_total_M_from cts (n + 1) idx₀ = M₁ + cook_total_M_from cts n idx₁ →
+    (w₀ w_mid w_final : List Bool) (idx₀ idx_mid idx_final M₁ : ℕ) : Prop :=
+  cts.cts_eval_with_idx (n + 1) w₀ idx₀ = (w_final, idx_final) →
+    cts.cts_step idx₀ w₀ = (w_mid, idx_mid) →
+      CookCtsEvalSimAtDataConesOrigin cts n w_mid idx_mid →
+        CookCtsTailOriginHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁
+          (cook_total_M_from cts n idx_mid) →
+          cook_total_M_from cts (n + 1) idx₀ = M₁ + cook_total_M_from cts n idx_mid →
             CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀
 
 /-! ## Status bundle -/
