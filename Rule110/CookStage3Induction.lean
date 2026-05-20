@@ -290,12 +290,7 @@ theorem cook_cts_eval_sim_at_data_cones_origin_succ_zero_tail (cts : CyclicTagSy
     CookCtsEvalSimAtDataConesOrigin cts 1 w₀ idx₀ :=
   cook_cts_eval_sim_at_data_cones_origin_one cts w₀ idx₀ hstep
 
-/-- **Induction step (C3′′):** one microstep + tail readback composed via `infRule110Steps_add`.
-    Discharged when `M₂ = 0`; when `M₂ > 0` requires `CookCtsTailOriginHyp` (see `cook_cts_tail_origin_ax`). -/
-axiom cook_cts_eval_sim_at_data_cones_origin_step_ax (cts : CyclicTagSystem) (n : ℕ)
-    (w₀ : List Bool) (idx₀ : ℕ)
-    (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
-    CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀
+/-! ## Induction step (C3′′) -/
 
 /-- **Tail-origin axiom:** after `M₁` steps, `M₂`-step tail from actual tape matches mid-encode
     at slot origins. One-step origin readback (`CookCtsOriginCompositionHyp`) does not imply this
@@ -313,6 +308,19 @@ theorem cook_cts_tail_origin (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ :
   · exact cook_cts_tail_origin_of_zero_tail cts idx₀ idx₁ M₁ M₂ w₀ w₁ hM₂ hcomp
   · have hpos : 0 < M₂ := Nat.pos_of_ne_zero hM₂
     exact cook_cts_tail_origin_ax cts idx₀ w₀ w₁ idx₁ M₁ M₂ hcomp hpos
+
+/-- **Induction step (C3′′):** one microstep + tail readback + `infRule110Steps_add`.
+    Blocked for general `n > 0` when `w.length > w₁.length` (tail-origin only covers `slot < w₁.length`). -/
+axiom cook_cts_eval_sim_at_data_cones_origin_step_ax (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ)
+    (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
+    CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀
+
+theorem cook_cts_eval_sim_at_data_cones_origin_step (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ)
+    (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
+    CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀ :=
+  cook_cts_eval_sim_at_data_cones_origin_step_ax cts n w₀ idx₀ ih
 
 /-- **Tail Icc axiom:** full cone agreement (implies `CookCtsTailOriginHyp` when `M₂ ≤ origin`). -/
 axiom cook_cts_tail_evolution_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
@@ -336,7 +344,7 @@ theorem cook_cts_eval_sim_at_data_cones_origin_ind (cts : CyclicTagSystem) :
   induction n generalizing w₀ idx₀ with
   | zero => exact cook_cts_eval_sim_at_data_cones_origin_zero cts w₀ idx₀
   | succ n ih =>
-    exact cook_cts_eval_sim_at_data_cones_origin_step_ax cts n w₀ idx₀ ih
+    exact cook_cts_eval_sim_at_data_cones_origin_step cts n w₀ idx₀ ih
 
 /-- Global C3′′ from induction (one-step + tail evolution; no separate global axiom). -/
 theorem cook_cts_eval_sim_data_cones_origin (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool)
