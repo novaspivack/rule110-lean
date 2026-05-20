@@ -1,8 +1,18 @@
 # rule110-lean
 
+**Author:** Nova Spivack — [novaspivack.com](https://www.novaspivack.com)  
+**Repository:** [github.com/novaspivack/rule110-lean](https://github.com/novaspivack/rule110-lean)
+
 A Lean 4 formalization of Matthew Cook's proof that **Rule 110 is computationally universal** — specifically, the construction that embeds cyclic tag systems (and through them, arbitrary Turing machines) into the glider dynamics of Rule 110 on an infinite tape.
 
-The library is self-contained and has no UGP-specific content. It is designed to be reusable by anyone working with Rule 110, cellular automaton universality, or Lean formalizations of computational models.
+The library is self-contained and designed to be reusable by anyone working with Rule 110, cellular automaton universality, or Lean formalizations of computational models.
+
+### How to cite
+
+```
+Nova Spivack. rule110-lean: A Lean 4 formalization of Cook's Rule 110 universality theorem.
+GitHub repository. https://github.com/novaspivack/rule110-lean (2026).
+```
 
 ## Background
 
