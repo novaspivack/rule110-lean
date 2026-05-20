@@ -47,6 +47,9 @@ import Rule110.CookLen6FirstBlock30
 import Rule110.CookStage3Len6Refinement
 import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookStage3C3PrimeOperationalChain
+import Rule110.CookLen6TailEvolution
+import Rule110.CookLen6TailOrigin
+import Rule110.CookCollisionOneStepCatalog
 import Rule110.CookStage3Induction
 import Rule110.CookC2VerifySupportLen5
 import Rule110.CookC2VerifySupportLen6

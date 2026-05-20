@@ -48,7 +48,19 @@ theorem cook_cts_tail_icc_cell_in_read_cone (slot M₂ j : ℕ)
         _ = cook_cts_slot_cone_cell slot (j + 30 - cts_slot_origin slot) := by
           simp [cook_cts_slot_cone_cell, cts_slot_origin, cts_tape_origin, cts_glider_spacing]
 
-/-! ## Tail origin on the final evaluated word -/
+/-! ## Tail origin hypotheses -/
+
+/-- After `M₁` steps, `M₂`-step tail evolution from the actual tape matches tail evolution
+    from the ideal mid-encode at each slot origin. Required for multi-step C3′′ via
+    `infRule110Steps_add`. -/
+def CookCtsTailOriginHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) : Prop :=
+  let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
+  let mid := cts_to_rule110_tape_phased_with_support_idx cts idx₁ w₁
+  let evolved := infRule110Steps M₁ init
+  ∀ slot, slot < w₁.length →
+    infRule110Steps M₂ evolved (cts_slot_origin slot) =
+      infRule110Steps M₂ mid (cts_slot_origin slot)
 
 /-- After `M₁` steps, `M₂`-step tail from the actual tape matches mid-encode at every slot
     origin in the **final** `(n+1)`-step CTS word (not merely the one-step post-word). -/

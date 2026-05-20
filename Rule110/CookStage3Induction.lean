@@ -6,6 +6,8 @@ import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6AppendantSim
 import Rule110.CookLen6TailEvolution
+import Rule110.CookLen6TailOrigin
+import Rule110.CookCollisionOneStepCatalog
 import Rule110.CookCollisionWitnesses
 import Rule110.CyclicTagSystem
 import Rule110.InfTape
@@ -230,18 +232,6 @@ def CookCtsTailEvolutionHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : 
       ∀ j, cts_slot_origin slot - M₂ ≤ j → j ≤ cts_slot_origin slot + M₂ →
         evolved j = mid j
 
-/-- After `M₁` steps, `M₂`-step tail evolution from the actual tape matches tail evolution
-    from the ideal mid-encode at each slot origin. This is exactly what multi-step C3′′
-    induction requires (via `infRule110Steps_add`). -/
-def CookCtsTailOriginHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
-    (idx₁ M₁ M₂ : ℕ) : Prop :=
-  let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
-  let mid := cts_to_rule110_tape_phased_with_support_idx cts idx₁ w₁
-  let evolved := infRule110Steps M₁ init
-  ∀ slot, slot < w₁.length →
-    infRule110Steps M₂ evolved (cts_slot_origin slot) =
-      infRule110Steps M₂ mid (cts_slot_origin slot)
-
 /-- Post-one-step tail origin implies final-word tail origin when the word does not grow. -/
 theorem cook_cts_tail_origin_final_of_mid (cts : CyclicTagSystem) (idx₀ : ℕ)
     (w₀ w_mid w_final : List Bool) (idx_mid M₁ M₂ : ℕ)
@@ -312,13 +302,21 @@ axiom cook_cts_tail_origin_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ 
     (hpos : 0 < M₂) :
     CookCtsTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂
 
+def cook_is_len6_tail_origin_M390_M30 (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) : Prop :=
+  cts = cook_min_len6_cts ∧ idx₀ = 0 ∧ w₀ = cook_min_len6_true_word ∧
+    w₁ = cook_min_len6_appendant ∧ idx₁ = 1 ∧ M₁ = 390 ∧ M₂ = 30
+
 theorem cook_cts_tail_origin (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
     (idx₁ M₁ M₂ : ℕ) (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁) :
     CookCtsTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂ := by
   by_cases hM₂ : M₂ = 0
   · exact cook_cts_tail_origin_of_zero_tail cts idx₀ idx₁ M₁ M₂ w₀ w₁ hM₂ hcomp
   · have hpos : 0 < M₂ := Nat.pos_of_ne_zero hM₂
-    exact cook_cts_tail_origin_ax cts idx₀ w₀ w₁ idx₁ M₁ M₂ hcomp hpos
+    by_cases hlen6 : cook_is_len6_tail_origin_M390_M30 cts idx₀ w₀ w₁ idx₁ M₁ M₂
+    · rcases hlen6 with ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+      exact cook_cts_tail_origin_len6_M390_M30
+    · exact cook_cts_tail_origin_ax cts idx₀ w₀ w₁ idx₁ M₁ M₂ hcomp hpos
 
 /-- **Final-word tail-origin axiom:** covers appendant-grown slots with `slot < w_final.length`
     after `n + 1` CTS steps. Implied by `CookCtsTailOriginHyp` when `w_final.length ≤ w_mid.length`. -/

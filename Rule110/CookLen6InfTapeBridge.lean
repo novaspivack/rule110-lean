@@ -104,6 +104,13 @@ theorem len6True_phased_init_eq_list_embed (k : ℕ) (hk : k < c2SimBound) :
     len6PostAppendantPhasedSupportInit.length = c2SimBound := by
   simp [len6PostAppendantPhasedSupportInit, List.length_map, List.length_range]
 
+theorem len6PostPhasedSupport_run_eq_inf_at (n k : ℕ)
+    (hn_k : n ≤ k) (hk : k + n < c2SimBound) :
+    listToInfTape (c2SimRun n len6PostAppendantPhasedSupportInit) k =
+      infRule110Steps n (listToInfTape len6PostAppendantPhasedSupportInit) k := by
+  rw [← len6PostAppendantPhasedSupportInit_length] at hk
+  exact c2SimRun_eq_infRule110Steps_at len6PostAppendantPhasedSupportInit n k hn_k hk
+
 theorem len6Post_phased_target_eq_list_embed (k : ℕ) (hk : k < c2SimBound) :
     cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_appendant k =
       listToInfTape len6PostAppendantPhasedSupportInit k := by
@@ -143,5 +150,17 @@ theorem len6_origin_inf_eq_list_fin (slot : ℕ) (hslot : slot < 6) :
         (c2SimOrigin slot) =
       listToInfTape (c2SimRun 390 len6TruePhasedSupportInit) (c2SimOrigin slot) :=
   (len6_origin_inf_steps_agree_init slot hslot).trans (len6True_run_eq_inf_390_at_slot slot hslot).symm
+
+/-- Slot-origin evolved-side tail bridge (`390 + 30` on phased init).
+
+Proved modulo `len6_true_run420_inf_origin_slot` (420-step list↔InfTape micro-bridge). List
+certificates `len6_tail420_origin_ok` and `len6_tail420_compose_origin_ok` establish list-side
+composition; phased init agrees with list init on the 30-step dependency window. -/
+axiom len6_evolved_inf30_eq_list420_at_slot (slot : ℕ) (hslot : slot < 6) :
+    infRule110Steps 30
+        (infRule110Steps 390
+          (cts_to_rule110_tape_phased_with_support_idx cook_min_len6_cts 0 cook_min_len6_true_word))
+        (c2SimOrigin slot) =
+      listToInfTape (c2SimRun 420 len6TruePhasedSupportInit) (c2SimOrigin slot)
 
 end Rule110
