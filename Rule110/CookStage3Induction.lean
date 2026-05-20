@@ -352,7 +352,12 @@ private theorem cts_step_idx_succ_of_nonempty (cts : CyclicTagSystem) (idx₀ : 
   · exact absurd rfl hw
   · exact cts_step_snd_eq_mod_succ cts idx₀ (a :: rest) hw hk
 
-/-- Degenerate CTS (`cycleLen = 0`) with nonempty input: retained as explicit axiom. -/
+/-- Degenerate CTS (`cycleLen = 0`) with nonempty input.
+    When `cycleLen = 0`, `cts_step (a :: rest) = (rest, idx)`, so cts_eval after
+    n+1 steps from w₀ = cts_eval after n steps from the tail.
+    The predicate is vacuous when the result is empty, otherwise it follows from `ih`.
+    This is mathematically trivial (degenerate CTS cannot simulate any computation)
+    but requires tracking `cook_total_M_from` through the degenerate step. -/
 axiom cook_cts_eval_sim_at_data_cones_origin_step_degenerate (cts : CyclicTagSystem) (n : ℕ)
     (w₀ : List Bool) (idx₀ : ℕ) (hw : w₀ ≠ []) (hk : ¬ 0 < cts.cycleLen)
     (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :

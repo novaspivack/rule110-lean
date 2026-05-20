@@ -7,9 +7,11 @@ import Rule110.CookStage3OriginSucc
 # L=6 tail-origin discharge (`M₁ = 390`, `M₂ = 30`)
 
 List certificates in `CookLen6TailEvolution` plus InfTape bridges discharge
-`CookCtsTailOriginHyp` for the minimal L=6 input. The evolved-side InfTape bridge is one
-open micro-lemma (`len6_evolved_inf30_eq_list420_at_slot`); mid-side and list composition
-are proved here.
+`CookCtsTailOriginHyp` for the minimal L=6 input (chunked `390 + 30`, no monolithic `n = 420` bridge).
+
+The list compose certificate `len6Tail420ComposeOriginOk` is discharged by `native_decide`;
+the InfTape evolved-side lift `len6_evolved_inf30_eq_list420_at_slot` remains axiomatized pending
+a low-heartbeat `n = 390` list↔InfTape bridge on the 30-step read cone.
 -/
 
 namespace Rule110
@@ -47,8 +49,7 @@ private theorem len6_mid_inf30_eq_list_at_slot (slot : ℕ) (hslot : slot < 6) :
         (c2SimOrigin slot) =
       listToInfTape (c2SimRun 30 len6PostAppendantPhasedSupportInit) (c2SimOrigin slot) := by
   have hle : 30 ≤ c2SimOrigin slot := by
-    simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing]
-    omega
+    simp [c2SimOrigin, cts_tape_origin, cts_glider_spacing]; omega
   have hk : c2SimOrigin slot + 30 < c2SimBound := by
     simp [c2SimBound, c2SimOrigin, cts_tape_origin, cts_glider_spacing]; omega
   have hagree :
@@ -57,8 +58,7 @@ private theorem len6_mid_inf30_eq_list_at_slot (slot : ℕ) (hslot : slot < 6) :
           listToInfTape len6PostAppendantPhasedSupportInit j := by
     intro j _hj_lo _hj_hi
     have hj : j < c2SimBound := by
-      simp [c2SimBound, c2SimOrigin, cts_tape_origin, cts_glider_spacing] at *
-      omega
+      simp [c2SimBound, c2SimOrigin, cts_tape_origin, cts_glider_spacing] at *; omega
     exact len6Post_phased_target_eq_list_embed j hj
   have hfin := infRule110Steps_agree_Icc hle hagree
   have hrun := len6PostPhasedSupport_run_eq_inf_at 30 (c2SimOrigin slot) hle hk
@@ -69,8 +69,7 @@ theorem cook_cts_tail_origin_len6_M390_M30 :
     CookCtsTailOriginHyp cook_min_len6_cts 0 cook_min_len6_true_word cook_min_len6_appendant 1 390 30 := by
   intro slot hslot
   have hslot6 : slot < 6 := by
-    simp [cook_min_len6_appendant_len] at hslot
-    exact hslot
+    simp [cook_min_len6_appendant_len] at hslot; exact hslot
   simp only [CookCtsTailOriginHyp, c2SimOrigin, cts_slot_origin, cts_tape_origin, cts_glider_spacing]
   exact (len6_evolved_inf30_eq_list420_at_slot slot hslot6).trans <|
     (len6_list420_eq_list30_mid slot hslot6).trans (len6_mid_inf30_eq_list_at_slot slot hslot6).symm

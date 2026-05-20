@@ -78,10 +78,20 @@ theorem len6_tail420_origin_ok : len6Tail420OriginOk = true := by
 def len6Tail420ComposeOriginOk : Bool :=
   (List.range 6).all fun slot =>
     decide ((c2SimRun 420 len6TruePhasedSupportInit).getD (c2SimOrigin slot) false =
-      (c2SimRun 30 (c2SimRun 390 len6TruePhasedSupportInit)).getD (c2SimOrigin slot) false)
+      (c2SimRun 30 len6TailEvolvedList).getD (c2SimOrigin slot) false)
 
 theorem len6_tail420_compose_origin_ok : len6Tail420ComposeOriginOk = true := by
   native_decide
+
+theorem len6_tail420_compose_evolved_get (slot : ℕ) (hslot : slot < 6) :
+    (c2SimRun 420 len6TruePhasedSupportInit).getD (c2SimOrigin slot) false =
+      (c2SimRun 30 len6TailEvolvedList).getD (c2SimOrigin slot) false := by
+  have hall : ((List.range 6).all fun slot =>
+      decide ((c2SimRun 420 len6TruePhasedSupportInit).getD (c2SimOrigin slot) false =
+        (c2SimRun 30 len6TailEvolvedList).getD (c2SimOrigin slot) false)) = true := by
+    simpa [len6Tail420ComposeOriginOk] using len6_tail420_compose_origin_ok
+  have hdec := (List.all_eq_true.mp hall) slot (List.mem_range.mpr hslot)
+  exact (decide_eq_true_iff).1 hdec
 
 @[simp] theorem len6TailEvolvedList_length :
     len6TailEvolvedList.length = len6TruePhasedSupportInit.length :=

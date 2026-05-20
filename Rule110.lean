@@ -48,6 +48,8 @@ import Rule110.CookStage3Len6Refinement
 import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookStage3C3PrimeOperationalChain
 import Rule110.CookLen6TailEvolution
+import Rule110.CookLen6FastInfCert
+import Rule110.CookLen6Evolved390Literal
 import Rule110.CookLen6TailOrigin
 import Rule110.CookCollisionOneStepCatalog
 import Rule110.CookStage3Induction
