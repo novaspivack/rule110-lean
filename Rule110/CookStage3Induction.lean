@@ -5,6 +5,7 @@ import Rule110.CookStage3TailFinal
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6AppendantSim
+import Rule110.CookLen6TailEvolution
 import Rule110.CookCollisionWitnesses
 import Rule110.CyclicTagSystem
 import Rule110.InfTape
@@ -353,18 +354,55 @@ private theorem cts_step_idx_succ_of_nonempty (cts : CyclicTagSystem) (idx₀ : 
   · exact absurd rfl hw
   · exact cts_step_snd_eq_mod_succ cts idx₀ (a :: rest) hw hk
 
-/-- **Induction step (C3′′):** discharged via `cook_cts_eval_sim_at_data_cones_origin_succ_schema`
-    once final-word tail origin and `M` bookkeeping are supplied. -/
-axiom cook_cts_eval_sim_at_data_cones_origin_step_ax (cts : CyclicTagSystem) (n : ℕ)
-    (w₀ : List Bool) (idx₀ : ℕ)
+/-- Degenerate CTS (`cycleLen = 0`) with nonempty input: retained as explicit axiom. -/
+axiom cook_cts_eval_sim_at_data_cones_origin_step_degenerate (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ) (hw : w₀ ≠ []) (hk : ¬ 0 < cts.cycleLen)
     (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
     CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀
 
+private theorem cook_cts_eval_sim_at_data_cones_origin_step_nonempty
+    (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ)
+    (hw : w₀ ≠ []) (hk : 0 < cts.cycleLen)
+    (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
+    CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀ := by
+  set w_final := (cts.cts_eval_with_idx (n + 1) w₀ idx₀).1 with hwf
+  set idx_final := (cts.cts_eval_with_idx (n + 1) w₀ idx₀).2 with hif
+  set w_mid := (cts.cts_step idx₀ w₀).1 with hwm
+  set idx_mid := (cts.cts_step idx₀ w₀).2 with him
+  set M₁ := cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length with hM₁
+  have heval : cts.cts_eval_with_idx (n + 1) w₀ idx₀ = (w_final, idx_final) := by
+    simp [hwf, hif]
+  have hmid : cts.cts_step idx₀ w₀ = (w_mid, idx_mid) := by
+    simp [hwm, him]
+  have hidx : idx_mid = (idx₀ + 1) % cts.cycleLen :=
+    cts_step_idx_succ_of_nonempty cts idx₀ w₀ hw hk
+  have hMsplit :
+      cook_total_M_from cts (n + 1) idx₀ = M₁ + cook_total_M_from cts n idx_mid := by
+    rw [hM₁]
+    exact cook_total_M_from_microstep_split cts n idx₀ idx_mid hidx
+  have hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀ :=
+    cook_cts_data_cones_origin_one_step cts idx₀ w₀
+  have hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w_mid idx_mid M₁ :=
+    (cook_cts_origin_composition_from_one_step cts idx₀ w₀).1 hstep
+  have htail : CookCtsTailOriginHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁
+      (cook_total_M_from cts n idx_mid) :=
+    cook_cts_tail_origin_final cts idx₀ w₀ w_mid w_final idx_mid idx_final M₁
+      (cook_total_M_from cts n idx_mid) hstep hcomp
+  exact cook_cts_eval_sim_at_data_cones_origin_succ_schema cts n w₀ w_mid w_final idx₀ idx_mid
+    idx_final M₁ heval hmid (ih w_mid idx_mid) htail hMsplit
+
+/-- **Induction step (C3′′):** `set`-binding composition via proved succ schema + tail-final. -/
 theorem cook_cts_eval_sim_at_data_cones_origin_step (cts : CyclicTagSystem) (n : ℕ)
     (w₀ : List Bool) (idx₀ : ℕ)
     (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
-    CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀ :=
-  cook_cts_eval_sim_at_data_cones_origin_step_ax cts n w₀ idx₀ ih
+    CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀ := by
+  by_cases hw : w₀ = []
+  · subst hw
+    apply cook_cts_eval_sim_at_data_cones_origin_of_empty_post_word cts (n + 1) [] idx₀
+    exact CyclicTagSystem.cts_eval_with_idx_empty cts (n + 1) idx₀
+  · by_cases hk : 0 < cts.cycleLen
+    · exact cook_cts_eval_sim_at_data_cones_origin_step_nonempty cts n w₀ idx₀ hw hk ih
+    · exact cook_cts_eval_sim_at_data_cones_origin_step_degenerate cts n w₀ idx₀ hw hk ih
 
 /-- **Tail Icc axiom:** full cone agreement (implies `CookCtsTailOriginHyp` when `M₂ ≤ origin`). -/
 axiom cook_cts_tail_evolution_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
@@ -499,6 +537,8 @@ structure CookStage3InductionDischarged where
   len6_one_step_origin : CookCtsDataConesOriginOneStep cook_min_len6_cts 0 cook_min_len6_true_word
   len6_one_step_phased : CookCtsPhasedPostDecodeOneStep cook_min_len6_cts 0 cook_min_len6_true_word
   len6_one_step_cones_blocked : len6OneStepSimDataConesOk = false
+  len6_tail_evolution_icc30_blocked : len6TailEvolutionIcc30Ok = false
+  len6_tail_evolution_origin_cert : len6TailEvolutionOriginOk = true
   len6_global_origin : CookCtsEvalSimAtDataConesOrigin cook_min_len6_cts 1 cook_min_len6_true_word 0
   len6_global_phased : CookCtsPhasedPostDecodeAt cook_min_len6_cts 1 cook_min_len6_true_word 0
   legacy_c3_empty_n1_blocked : ¬ CookCtsEvalSim cook_standard_empty_cts 1 []
@@ -511,6 +551,8 @@ theorem cook_stage3_induction_discharged : CookStage3InductionDischarged where
   len6_one_step_origin := cook_cts_data_cones_origin_one_step_len6_min
   len6_one_step_phased := cook_cts_phased_post_decode_one_step_len6_min
   len6_one_step_cones_blocked := cook_cts_data_cones_one_step_len6_min_blocked
+  len6_tail_evolution_icc30_blocked := len6_tail_evolution_icc30_not_ok
+  len6_tail_evolution_origin_cert := len6_tail_evolution_origin_ok
   len6_global_origin := cook_cts_eval_sim_at_data_cones_origin_len6_one
   len6_global_phased := cook_cts_phased_post_decode_len6_one
   legacy_c3_empty_n1_blocked := cook_standard_empty_cts_legacy_c3_n1_blocked
