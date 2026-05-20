@@ -1,9 +1,9 @@
 import Rule110.CookStage3CollisionModel
-import Rule110.CookStage3Len6Refinement
 import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6AppendantSim
+import Rule110.CookCollisionWitnesses
 import Rule110.CyclicTagSystem
 import Rule110.InfTape
 
@@ -196,8 +196,8 @@ theorem cook_cts_data_cones_one_step (cts : CyclicTagSystem) (idx₀ : ℕ) (w�
 
 /-! ## Inductive composition scaffold -/
 
-/-- Hypothesis for composing one CTS step with a tail simulation: after `M₁` steps the tape
-    agrees with the post-step encode on every slot origin needed for the tail check. -/
+/-- After `M₁` Rule 110 steps, slot-origin cells agree with the mid-encode on every slot
+    needed for a length-`w₁` post-step word. -/
 def CookCtsOriginCompositionHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
     (idx₁ M₁ : ℕ) : Prop :=
   let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
@@ -205,15 +205,197 @@ def CookCtsOriginCompositionHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w�
   ∀ slot, slot < w₁.length →
     infRule110Steps M₁ init (cts_slot_origin slot) = mid (cts_slot_origin slot)
 
+/-- One-step origin readback is exactly the composition hypothesis for the mid-encode after
+    the first CTS microstep. -/
+theorem cook_cts_origin_composition_from_one_step (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ : List Bool) :
+    let (w₁, idx₁) := cts.cts_step idx₀ w₀
+    let M₁ := cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length
+    CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁ ↔
+      CookCtsDataConesOriginOneStep cts idx₀ w₀ := by
+  simp [CookCtsOriginCompositionHyp, CookCtsDataConesOriginOneStep]
+
+/-- After `M₁` Rule 110 steps, evolved tape agrees with the mid-encode on every Icc cone
+    required for `M₂`-step tail evolution at each post-one-step slot origin. Stronger than
+    `CookCtsTailOriginHyp`; implies the origin version when `M₂ ≤ cts_slot_origin slot`. -/
+def CookCtsTailEvolutionHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) : Prop :=
+  let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
+  let mid := cts_to_rule110_tape_phased_with_support_idx cts idx₁ w₁
+  let evolved := infRule110Steps M₁ init
+  ∀ slot, slot < w₁.length →
+    M₂ ≤ cts_slot_origin slot →
+      ∀ j, cts_slot_origin slot - M₂ ≤ j → j ≤ cts_slot_origin slot + M₂ →
+        evolved j = mid j
+
+/-- After `M₁` steps, `M₂`-step tail evolution from the actual tape matches tail evolution
+    from the ideal mid-encode at each slot origin. This is exactly what multi-step C3′′
+    induction requires (via `infRule110Steps_add`). -/
+def CookCtsTailOriginHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) : Prop :=
+  let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
+  let mid := cts_to_rule110_tape_phased_with_support_idx cts idx₁ w₁
+  let evolved := infRule110Steps M₁ init
+  ∀ slot, slot < w₁.length →
+    infRule110Steps M₂ evolved (cts_slot_origin slot) =
+      infRule110Steps M₂ mid (cts_slot_origin slot)
+
+theorem cook_cts_tail_origin_of_evolution (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) (slot : ℕ) (hslot : slot < w₁.length)
+    (hbound : M₂ ≤ cts_slot_origin slot)
+    (htail : CookCtsTailEvolutionHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂) :
+    let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
+    let mid := cts_to_rule110_tape_phased_with_support_idx cts idx₁ w₁
+    let evolved := infRule110Steps M₁ init
+    infRule110Steps M₂ evolved (cts_slot_origin slot) =
+      infRule110Steps M₂ mid (cts_slot_origin slot) := by
+  apply infRule110Steps_agree_Icc hbound
+  intro j hj_lo hj_hi
+  exact htail slot hslot hbound j hj_lo hj_hi
+
+/-- Origin composition implies tail-origin agreement when the tail step count is zero. -/
+theorem cook_cts_tail_origin_of_zero_tail (cts : CyclicTagSystem) (idx₀ idx₁ M₁ M₂ : ℕ)
+    (w₀ w₁ : List Bool) (hM₂ : M₂ = 0)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁) :
+    CookCtsTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂ := by
+  intro slot hslot
+  rw [hM₂, infRule110Steps_zero]
+  exact hcomp slot hslot
+
+theorem cook_cts_tail_evolution_of_zero_tail (cts : CyclicTagSystem) (idx₀ idx₁ M₁ M₂ : ℕ)
+    (w₀ w₁ : List Bool) (hM₂ : M₂ = 0)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁) :
+    CookCtsTailEvolutionHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂ := by
+  intro slot hslot _ j hj_lo hj_hi
+  have hj : j = cts_slot_origin slot := by
+    simp [cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hj_lo hj_hi ⊢; omega
+  dsimp [CookCtsOriginCompositionHyp] at hcomp
+  rw [hj]
+  exact hcomp slot hslot
+
+theorem cook_total_M_from_one (cts : CyclicTagSystem) (idx₀ : ℕ) :
+    cook_total_M_from cts 1 idx₀ =
+      cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length := by
+  simp [cook_total_M_from, List.range_succ, List.foldl_cons, List.foldl_nil]
+
+/-- **M bookkeeping (microstep split):** first appendant `M` plus tail `M(n)` from post-step index. -/
+axiom cook_total_M_from_microstep_split (cts : CyclicTagSystem) (n idx₀ idx₁ : ℕ)
+    (hidx : idx₁ = (idx₀ + 1) % cts.cycleLen) :
+    cook_total_M_from cts (n + 1) idx₀ =
+      cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length +
+        cook_total_M_from cts n idx₁
+
+/-- **C3′′ at `n = 1`:** one CTS step suffices (zero tail). -/
+theorem CookCtsEvalSimAtDataConesOrigin_one_iff (cts : CyclicTagSystem) (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataConesOrigin cts 1 w₀ idx₀ ↔
+      CookCtsDataConesOriginOneStep cts idx₀ w₀ := by
+  simp [CookCtsEvalSimAtDataConesOrigin, CookCtsDataConesOriginOneStep, CyclicTagSystem.cts_eval_with_idx,
+    CyclicTagSystem.cts_steps, CyclicTagSystem.cts_steps_succ, CyclicTagSystem.cts_steps_zero,
+    cook_total_M_from, List.range_succ, List.foldl_cons, List.foldl_nil]
+
+theorem cook_cts_eval_sim_at_data_cones_origin_one (cts : CyclicTagSystem) (w₀ : List Bool) (idx₀ : ℕ)
+    (hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀) :
+    CookCtsEvalSimAtDataConesOrigin cts 1 w₀ idx₀ :=
+  (CookCtsEvalSimAtDataConesOrigin_one_iff cts w₀ idx₀).2 hstep
+
+/-- **Induction step (`n = 0` tail):** first microstep only; no tail composition required. -/
+theorem cook_cts_eval_sim_at_data_cones_origin_succ_zero_tail (cts : CyclicTagSystem) (w₀ : List Bool)
+    (idx₀ : ℕ) (hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀) :
+    CookCtsEvalSimAtDataConesOrigin cts 1 w₀ idx₀ :=
+  cook_cts_eval_sim_at_data_cones_origin_one cts w₀ idx₀ hstep
+
+/-- **Induction step (C3′′):** one microstep + tail readback composed via `infRule110Steps_add`.
+    Discharged when `M₂ = 0`; when `M₂ > 0` requires `CookCtsTailOriginHyp` (see `cook_cts_tail_origin_ax`). -/
+axiom cook_cts_eval_sim_at_data_cones_origin_step_ax (cts : CyclicTagSystem) (n : ℕ)
+    (w₀ : List Bool) (idx₀ : ℕ)
+    (ih : ∀ w₁ idx₁, CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁) :
+    CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀
+
+/-- **Tail-origin axiom:** after `M₁` steps, `M₂`-step tail from actual tape matches mid-encode
+    at slot origins. One-step origin readback (`CookCtsOriginCompositionHyp`) does not imply this
+    when `M₂ > 0`. Discharged when `M₂ = 0` via `cook_cts_tail_origin_of_zero_tail`. -/
+axiom cook_cts_tail_origin_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁)
+    (hpos : 0 < M₂) :
+    CookCtsTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂
+
+theorem cook_cts_tail_origin (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁) :
+    CookCtsTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂ := by
+  by_cases hM₂ : M₂ = 0
+  · exact cook_cts_tail_origin_of_zero_tail cts idx₀ idx₁ M₁ M₂ w₀ w₁ hM₂ hcomp
+  · have hpos : 0 < M₂ := Nat.pos_of_ne_zero hM₂
+    exact cook_cts_tail_origin_ax cts idx₀ w₀ w₁ idx₁ M₁ M₂ hcomp hpos
+
+/-- **Tail Icc axiom:** full cone agreement (implies `CookCtsTailOriginHyp` when `M₂ ≤ origin`). -/
+axiom cook_cts_tail_evolution_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁)
+    (hpos : 0 < M₂) :
+    CookCtsTailEvolutionHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂
+
+theorem cook_cts_tail_evolution (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁) :
+    CookCtsTailEvolutionHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂ := by
+  by_cases hM₂ : M₂ = 0
+  · exact cook_cts_tail_evolution_of_zero_tail cts idx₀ idx₁ M₁ M₂ w₀ w₁ hM₂ hcomp
+  · have hpos : 0 < M₂ := Nat.pos_of_ne_zero hM₂
+    exact cook_cts_tail_evolution_ax cts idx₀ w₀ w₁ idx₁ M₁ M₂ hcomp hpos
+
+/-- **Global C3′′ induction:** empty post-word, then `n + 1` from `n` via one-step + tail. -/
+theorem cook_cts_eval_sim_at_data_cones_origin_ind (cts : CyclicTagSystem) :
+    ∀ n w₀ idx₀, CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀ := by
+  intro n w₀ idx₀
+  induction n generalizing w₀ idx₀ with
+  | zero => exact cook_cts_eval_sim_at_data_cones_origin_zero cts w₀ idx₀
+  | succ n ih =>
+    exact cook_cts_eval_sim_at_data_cones_origin_step_ax cts n w₀ idx₀ ih
+
+/-- Global C3′′ from induction (one-step + tail evolution; no separate global axiom). -/
+theorem cook_cts_eval_sim_data_cones_origin (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool)
+    (idx₀ : ℕ) :
+    CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀ :=
+  cook_cts_eval_sim_at_data_cones_origin_ind cts n w₀ idx₀
+
+/-! ## Phased post-decode induction (parallel scaffold) -/
+
+/-- After `M₁` steps, `M₂`-step tail cell evolution at slot origins matches mid-encode.
+    Phased post-decode succession requires additional glider-presence lemmas beyond this. -/
+def CookCtsPhasedTailOriginHyp (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ) : Prop :=
+  let init := cts_to_rule110_tape_phased_with_support_idx cts idx₀ w₀
+  let mid := cts_to_rule110_tape_phased_with_support_idx cts idx₁ w₁
+  let evolved := infRule110Steps M₁ init
+  ∀ slot, slot < w₁.length →
+    infRule110Steps M₂ evolved (cts_slot_origin slot) =
+      infRule110Steps M₂ mid (cts_slot_origin slot)
+
+axiom cook_cts_phased_tail_origin_ax (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w₁ : List Bool)
+    (idx₁ M₁ M₂ : ℕ)
+    (hstep : CookCtsPhasedPostDecodeOneStep cts idx₀ w₀)
+    (hpos : 0 < M₂) :
+    CookCtsPhasedTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ M₂
+
+theorem CookCtsPhasedPostDecodeAt_one_iff (cts : CyclicTagSystem) (w₀ : List Bool) (idx₀ : ℕ) :
+    CookCtsPhasedPostDecodeAt cts 1 w₀ idx₀ ↔
+      CookCtsPhasedPostDecodeOneStep cts idx₀ w₀ := by
+  simp [CookCtsPhasedPostDecodeAt, CookCtsPhasedPostDecodeOneStep, CyclicTagSystem.cts_eval_with_idx,
+    CyclicTagSystem.cts_steps, CyclicTagSystem.cts_steps_succ, CyclicTagSystem.cts_steps_zero,
+    cook_total_M_from, List.range_succ, List.foldl_cons, List.foldl_nil]
+
+theorem cook_cts_phased_post_decode_one_global (cts : CyclicTagSystem) (w₀ : List Bool) (idx₀ : ℕ)
+    (hstep : CookCtsPhasedPostDecodeOneStep cts idx₀ w₀) :
+    CookCtsPhasedPostDecodeAt cts 1 w₀ idx₀ :=
+  (CookCtsPhasedPostDecodeAt_one_iff cts w₀ idx₀).2 hstep
+
 /-- **Induction step schema (C3′′):** tail readback at `n` composed with `infRule110Steps_add`
-    once `M` bookkeeping and cone-composition hypotheses are supplied. The composition gap
-    (actual post-one-step tape vs ideal mid-encode) remains open. -/
+    once `M` bookkeeping and tail-origin hypotheses are supplied. -/
 def CookCtsEvalSimAtDataConesOriginSuccSchema (cts : CyclicTagSystem) (n : ℕ)
     (w₀ w₁ : List Bool) (idx₀ idx₁ M₁ : ℕ) : Prop :=
   cts.cts_eval_with_idx (n + 1) w₀ idx₀ = (w₁, idx₁) →
     CookCtsDataConesOriginOneStep cts idx₀ w₀ →
       CookCtsEvalSimAtDataConesOrigin cts n w₁ idx₁ →
-        CookCtsOriginCompositionHyp cts idx₀ w₀ w₁ idx₁ M₁ →
+        CookCtsTailOriginHyp cts idx₀ w₀ w₁ idx₁ M₁ (cook_total_M_from cts n idx₁) →
           cook_total_M_from cts (n + 1) idx₀ = M₁ + cook_total_M_from cts n idx₁ →
             CookCtsEvalSimAtDataConesOrigin cts (n + 1) w₀ idx₀
 
@@ -226,6 +408,8 @@ structure CookStage3InductionDischarged where
       CookCtsPhasedPostDecodeAt cts n [] idx₀
   empty_input_cones : ∀ (cts : CyclicTagSystem) (n idx₀ : ℕ),
       CookCtsEvalSimAtDataCones cts n [] idx₀
+  global_origin_ind : ∀ (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ),
+      CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀
   len6_one_step_origin : CookCtsDataConesOriginOneStep cook_min_len6_cts 0 cook_min_len6_true_word
   len6_one_step_phased : CookCtsPhasedPostDecodeOneStep cook_min_len6_cts 0 cook_min_len6_true_word
   len6_one_step_cones_blocked : len6OneStepSimDataConesOk = false
@@ -237,6 +421,7 @@ theorem cook_stage3_induction_discharged : CookStage3InductionDischarged where
   empty_input_origin := cook_cts_eval_sim_at_data_cones_origin_empty_input_ind
   empty_input_phased := cook_cts_phased_post_decode_empty_input_ind
   empty_input_cones := cook_cts_eval_sim_at_data_cones_empty_input_ind
+  global_origin_ind := cook_cts_eval_sim_at_data_cones_origin_ind
   len6_one_step_origin := cook_cts_data_cones_origin_one_step_len6_min
   len6_one_step_phased := cook_cts_phased_post_decode_one_step_len6_min
   len6_one_step_cones_blocked := cook_cts_data_cones_one_step_len6_min_blocked

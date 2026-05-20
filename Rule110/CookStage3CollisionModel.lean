@@ -166,23 +166,8 @@ theorem cook_cts_phased_post_decode (cts : CyclicTagSystem) (n : ℕ) (w₀ : Li
       | cons _ _ => simp
     exact cook_cts_phased_post_decode_ax cts n w₀ idx₀ hpos
 
-/-- **Cook Collision Axiom C3′′ (origin-cell readback):** required only when post-step word
-    has data slots. L=6 n=1 is discharged in `CookLen6DataConesOrigin`. -/
-axiom cook_cts_eval_sim_data_cones_origin_ax (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool)
-    (idx₀ : ℕ) (hdata : 0 < (cts.cts_eval_with_idx n w₀ idx₀).1.length) :
-    CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀
-
-/-- Split C3′′: empty post-word is a theorem; nonempty post-word uses the axiom. -/
-theorem cook_cts_eval_sim_at_data_cones_origin (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool)
-    (idx₀ : ℕ) :
-    CookCtsEvalSimAtDataConesOrigin cts n w₀ idx₀ := by
-  by_cases hw : (cts.cts_eval_with_idx n w₀ idx₀).1 = []
-  · exact cook_cts_eval_sim_at_data_cones_origin_of_empty_post_word cts n w₀ idx₀ hw
-  · have hpos : 0 < (cts.cts_eval_with_idx n w₀ idx₀).1.length := by
-      cases w : (cts.cts_eval_with_idx n w₀ idx₀).1 with
-      | nil => contradiction
-      | cons _ _ => simp
-    exact cook_cts_eval_sim_data_cones_origin_ax cts n w₀ idx₀ hpos
+-- C3′′ (origin-cell readback) discharged globally via `CookStage3Induction.cook_cts_eval_sim_data_cones_origin`.
+-- L=6 n=1 also in `CookLen6DataConesOrigin`.
 
 /-- **Cook Collision Axiom C3′ (data-cone readback):** required only when post-step word
     has data slots (`w.length > 0`). Empty-word cases are discharged above. -/
