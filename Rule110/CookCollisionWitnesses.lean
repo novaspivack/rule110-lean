@@ -240,6 +240,51 @@ theorem cook_total_M_from_succ (cts : CyclicTagSystem) (n idx₀ : ℕ) :
   unfold cook_total_M_from
   simp only [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
 
+theorem cook_total_M_from_one (cts : CyclicTagSystem) (idx₀ : ℕ) :
+    cook_total_M_from cts 1 idx₀ =
+      cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length := by
+  simp [cook_total_M_from, List.range_succ, List.foldl_cons, List.foldl_nil]
+
+private theorem cook_total_M_appendant_index_shift (idx₀ idx₁ k L : ℕ)
+    (hidx : idx₁ = (idx₀ + 1) % L) :
+    (idx₀ + k + 1) % L = (idx₁ + k) % L := by
+  rcases L with _ | L
+  · simp [Nat.mod_zero] at hidx ⊢
+    omega
+  · have hsum : idx₀ + k + 1 = (idx₀ + 1) + k := by omega
+    simp [hsum, hidx, Nat.add_mod, Nat.one_mod, Nat.mod_mod, Nat.succ_pos]
+
+/-- First microstep `M` plus tail `M(n)` from post-step appendant index.
+    Index shift `(idx₀ + k + 1) % L = (idx₁ + k) % L` when `idx₁ = (idx₀ + 1) % L`. -/
+theorem cook_total_M_from_microstep_split (cts : CyclicTagSystem) (n idx₀ idx₁ : ℕ)
+    (hidx : idx₁ = (idx₀ + 1) % cts.cycleLen) :
+    cook_total_M_from cts (n + 1) idx₀ =
+      cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length +
+        cook_total_M_from cts n idx₁ := by
+  induction n generalizing idx₀ idx₁ with
+  | zero =>
+    simp [cook_total_M_from_one, cook_total_M_from_zero]
+  | succ n ih =>
+    have hshift := cook_total_M_appendant_index_shift idx₀ idx₁ n cts.cycleLen hidx
+    have hEq :
+        cook_total_M_from cts n idx₁ +
+            cook_M_for_appendant_len (cts.appendants.getD ((idx₀ + n + 1) % cts.cycleLen) []).length =
+          cook_total_M_from cts (n + 1) idx₁ := by
+      have hsucc := (cook_total_M_from_succ cts n idx₁).symm
+      rw [hshift.symm] at hsucc
+      exact hsucc
+    calc cook_total_M_from cts (n + 2) idx₀
+        = cook_total_M_from cts (n + 1) idx₀ +
+            cook_M_for_appendant_len (cts.appendants.getD ((idx₀ + n + 1) % cts.cycleLen) []).length := by
+          exact cook_total_M_from_succ cts (n + 1) idx₀
+        _ = cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length +
+              cook_total_M_from cts n idx₁ +
+              cook_M_for_appendant_len (cts.appendants.getD ((idx₀ + n + 1) % cts.cycleLen) []).length := by
+          rw [ih idx₀ idx₁ hidx]
+        _ = cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length +
+              cook_total_M_from cts (n + 1) idx₁ := by
+          rw [Nat.add_assoc, hEq]
+
 /-! ## Phased support spacing (Stage 3 scaffolding) -/
 
 theorem cts_ossifier_placement_end_le_tape_origin :

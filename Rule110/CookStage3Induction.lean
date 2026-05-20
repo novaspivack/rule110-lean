@@ -272,19 +272,6 @@ theorem cook_cts_tail_evolution_of_zero_tail (cts : CyclicTagSystem) (idx₀ idx
   rw [hj]
   exact hcomp slot hslot
 
-theorem cook_total_M_from_one (cts : CyclicTagSystem) (idx₀ : ℕ) :
-    cook_total_M_from cts 1 idx₀ =
-      cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length := by
-  simp [cook_total_M_from, List.range_succ, List.foldl_cons, List.foldl_nil]
-
-/-- **M bookkeeping (microstep split):** first appendant `M` plus tail `M(n)` from post-step index. -/
-axiom cook_total_M_from_microstep_split (cts : CyclicTagSystem) (n idx₀ idx₁ : ℕ)
-    (hidx : idx₁ = (idx₀ + 1) % cts.cycleLen) :
-    cook_total_M_from cts (n + 1) idx₀ =
-      cook_M_for_appendant_len (cts.appendants.getD (idx₀ % cts.cycleLen) []).length +
-        cook_total_M_from cts n idx₁
-
-/-- **C3′′ at `n = 1`:** one CTS step suffices (zero tail). -/
 theorem CookCtsEvalSimAtDataConesOrigin_one_iff (cts : CyclicTagSystem) (w₀ : List Bool) (idx₀ : ℕ) :
     CookCtsEvalSimAtDataConesOrigin cts 1 w₀ idx₀ ↔
       CookCtsDataConesOriginOneStep cts idx₀ w₀ := by
