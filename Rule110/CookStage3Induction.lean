@@ -1,6 +1,7 @@
 import Rule110.CookStage3CollisionModel
 import Rule110.CookStage3EmptyAppendantChain
 import Rule110.CookStage3OriginSucc
+import Rule110.CookStage3TailFinal
 import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 import Rule110.CookLen6AppendantSim
@@ -379,6 +380,52 @@ theorem cook_cts_tail_evolution (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w�
   · exact cook_cts_tail_evolution_of_zero_tail cts idx₀ idx₁ M₁ M₂ w₀ w₁ hM₂ hcomp
   · have hpos : 0 < M₂ := Nat.pos_of_ne_zero hM₂
     exact cook_cts_tail_evolution_ax cts idx₀ w₀ w₁ idx₁ M₁ M₂ hcomp hpos
+
+/-- Post-one-step tail evolution on `w_mid` slots implies final-word evolution when lengths agree. -/
+theorem cook_cts_tail_evolution_final_of_mid (cts : CyclicTagSystem) (idx₀ : ℕ)
+    (w₀ w_mid w_final : List Bool) (idx_mid M₁ M₂ : ℕ)
+    (hlen : w_final.length ≤ w_mid.length)
+    (htail : CookCtsTailEvolutionHyp cts idx₀ w₀ w_mid idx_mid M₁ M₂) :
+    CookCtsTailEvolutionHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ := by
+  intro slot hslot hbound j hj_lo hj_hi
+  have hslot' : slot < w_mid.length := Nat.lt_of_lt_of_le hslot hlen
+  exact htail slot hslot' hbound j hj_lo hj_hi
+
+axiom cook_cts_tail_evolution_final_ax (cts : CyclicTagSystem) (idx₀ : ℕ)
+    (w₀ w_mid w_final : List Bool) (idx_mid M₁ M₂ : ℕ)
+    (hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w_mid idx_mid M₁)
+    (hpos : 0 < M₂) :
+    CookCtsTailEvolutionHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂
+
+theorem cook_cts_tail_evolution_final (cts : CyclicTagSystem) (idx₀ : ℕ) (w₀ w_mid w_final : List Bool)
+    (idx_mid M₁ M₂ : ℕ) (hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w_mid idx_mid M₁) :
+    CookCtsTailEvolutionHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ := by
+  by_cases hlen : w_final.length ≤ w_mid.length
+  · exact cook_cts_tail_evolution_final_of_mid cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ hlen
+      (cook_cts_tail_evolution cts idx₀ w₀ w_mid idx_mid M₁ M₂ hcomp)
+  · by_cases hM₂ : M₂ = 0
+    · intro slot hslot _hbound j hj_lo hj_hi
+      have hj : j = cts_slot_origin slot := by
+        simp [cts_slot_origin, cts_tape_origin, cts_glider_spacing] at hj_lo hj_hi ⊢
+        omega
+      rw [hj]
+      have horig := (cook_cts_tail_origin_final cts idx₀ w₀ w_mid w_final idx_mid idx_mid M₁ 0 hstep hcomp) slot
+        hslot
+      rw [infRule110Steps_zero] at horig
+      exact horig
+    · exact cook_cts_tail_evolution_final_ax cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ hstep hcomp
+        (Nat.pos_of_ne_zero hM₂)
+
+theorem cook_cts_tail_origin_final_via_evolution (cts : CyclicTagSystem) (idx₀ : ℕ)
+    (w₀ w_mid w_final : List Bool) (idx_mid M₁ M₂ : ℕ)
+    (hbound : ∀ slot, slot < w_final.length → M₂ ≤ cts_slot_origin slot)
+    (hstep : CookCtsDataConesOriginOneStep cts idx₀ w₀)
+    (hcomp : CookCtsOriginCompositionHyp cts idx₀ w₀ w_mid idx_mid M₁) :
+    CookCtsTailOriginHypFinal cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ :=
+  cook_cts_tail_origin_final_of_evolution_all cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ hbound
+    (cook_cts_tail_evolution_final cts idx₀ w₀ w_mid w_final idx_mid M₁ M₂ hstep hcomp)
 
 /-- **Global C3′′ induction:** empty post-word, then `n + 1` from `n` via one-step + tail. -/
 theorem cook_cts_eval_sim_at_data_cones_origin_ind (cts : CyclicTagSystem) :
