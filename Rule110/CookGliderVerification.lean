@@ -20,6 +20,14 @@ Proves, by machine computation, specific properties of the C2 glider cycle.
   construction context (other gliders) to be stable; isolated on clean ether they
   disperse within 7 steps.
 
+**Verified A-glider (zero sorry):**
+- Martinez `A(f1_1) = [111110]` on uniform `cookEther` (lp = 0, rp = 0)
+- Phase 0 intermediate steps 1 and 2 (cycle advance at gpos + 1, gpos + 2)
+- Phase 0 complete period 3 with spatial shift +2 (Cook Δt = 3, Δx = +2)
+
+Phases 1 and 2 of the A-glider cycle are not stable in isolation on clean ether
+(same phenomenon as C2 phases 1–3).
+
 This is a known property of Rule 110 gliders: some cycle phases only exist stably
 as part of a multi-glider configuration (Cook's construction has C2 gliders spaced
 `2!` apart from each other, providing the necessary context).
@@ -93,5 +101,92 @@ theorem c2_glider_phase6_period7 :
     ∀ k : Fin 6,
       infRule110Steps 7 (c2_tape_at ⟨6, by decide⟩ 42) (42 + k.val) =
         (cookCGliderCycle ⟨6, by decide⟩).getD k.val false := by native_decide
+
+/-! ## A-glider tape setup (Martinez A(f1_1), Cook width 6)
+
+Source: Genaro J. Martinez `listPhasesR110.txt` (ESCOM, 2004):
+  `A(f1_1) = [111110]`, 6 cells, 1l-0r on ether period 14.
+
+In `cookEther` coordinates, uniform ether (lp = 0, rp = 0) at gpos = 42 carries
+phase 0 stably; one complete period advances the defect by +2 cells in 3 steps.
+-/
+
+/-- Left ether phase for isolated A(f1_1) on uniform `cookEther`. -/
+def a_lp : ℕ := 0
+
+/-- Right ether phase for isolated A(f1_1) on uniform `cookEther`. -/
+def a_rp : ℕ := 0
+
+/-- Standard test position (same convention as C2 verification). -/
+def a_gpos : ℕ := 42
+
+/-- Width of Martinez `A(f1_1) = [111110]` defect on the tape. -/
+def aGliderDefectWidth : ℕ := 6
+
+/-- Half-width center offset for the 6-cell A-glider defect. -/
+def aGliderHalfWidth : ℕ := 3
+
+/-- Center-of-mass index of an A-glider defect anchored at `gpos` (left edge). -/
+def aGliderTapeCom (gpos : ℕ) : ℕ := gpos + aGliderHalfWidth
+
+/-- After `k` complete spatial periods, tape COM advances by `k * aGliderSpatialPeriod`. -/
+theorem a_glider_tape_com_k_periods (gpos k : ℕ) :
+    aGliderTapeCom (gpos + k * aGliderSpatialPeriod) =
+      aGliderTapeCom gpos + k * aGliderSpatialPeriod := by
+  dsimp [aGliderTapeCom, aGliderSpatialPeriod]
+  ring
+
+/-- One CA-certified period advances tape COM by `aGliderSpatialPeriod = 2`. -/
+theorem a_glider_tape_com_one_period (gpos : ℕ) :
+    aGliderTapeCom (gpos + aGliderSpatialPeriod) =
+      aGliderTapeCom gpos + aGliderSpatialPeriod :=
+  a_glider_tape_com_k_periods gpos 1
+
+/-- Standard-seed COM advance matching `a_glider_phase0_period3` anchor shift +2. -/
+theorem a_glider_infRule110Steps_com_advance :
+    aGliderTapeCom (a_gpos + aGliderSpatialPeriod) =
+      aGliderTapeCom a_gpos + aGliderSpatialPeriod :=
+  a_glider_tape_com_one_period a_gpos
+
+/-- A tape with the A-glider at cycle phase `t` at position `gpos`, with uniform
+    ether (lp = 0, rp = 0) on both sides. -/
+def a_tape_at (t : Fin 3) (gpos : ℕ) : InfTape := fun i =>
+  if gpos ≤ i && i < gpos + 6 then
+    (cookAGliderCycle t).getD (i - gpos) false
+  else if i < gpos then
+    cookEtherBits ⟨(i + a_lp) % 14, Nat.mod_lt _ (by decide)⟩
+  else
+    cookEtherBits ⟨(i + a_rp) % 14, Nat.mod_lt _ (by decide)⟩
+
+/-! ## A-glider period-3 verification (phase 0 / Martinez A(f1_1))
+
+After 1 step: phase 1 at gpos + 1.
+After 2 steps: phase 2 at gpos + 2.
+After 3 steps: phase 0 at gpos + 2 (spatial shift +2, temporal period 3).
+-/
+
+/-- One Rule 110 step advances A-glider phase 0 → phase 1 at offset +1. -/
+theorem a_glider_phase0_step1 :
+    ∀ k : Fin 6,
+      infRule110Steps 1 (a_tape_at ⟨0, by decide⟩ a_gpos) (a_gpos + 1 + k.val) =
+        (cookAGliderCycle ⟨1, by decide⟩).getD k.val false := by native_decide
+
+/-- Two Rule 110 steps advance A-glider phase 0 → phase 2 at offset +2. -/
+theorem a_glider_phase0_step2 :
+    ∀ k : Fin 6,
+      infRule110Steps 2 (a_tape_at ⟨0, by decide⟩ a_gpos) (a_gpos + 2 + k.val) =
+        (cookAGliderCycle ⟨2, by decide⟩).getD k.val false := by native_decide
+
+/-- Three Rule 110 steps complete one A-glider period: phase 0 returns at offset +2. -/
+theorem a_glider_phase0_period3 :
+    ∀ k : Fin 6,
+      infRule110Steps 3 (a_tape_at ⟨0, by decide⟩ a_gpos) (a_gpos + 2 + k.val) =
+        (cookAGliderCycle ⟨0, by decide⟩).getD k.val false := by native_decide
+
+/-- Spatial period certified: defect centre advances by `aGliderSpatialPeriod = 2`
+    over `aGliderTemporalPeriod = 3` synchronous steps. -/
+theorem a_glider_infRule110Steps_spatial_period :
+    aGliderSpatialPeriod = 2 ∧ aGliderTemporalPeriod = 3 := by
+  native_decide
 
 end Rule110

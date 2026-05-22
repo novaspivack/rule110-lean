@@ -165,4 +165,56 @@ theorem cookC2Bits_length : cookC2Bits.length = 6 := by decide
 theorem cookC1Bits_length : cookC1Bits.length = 6 := by decide
 theorem cookC3Bits_length : cookC3Bits.length = 6 := by decide
 
+/-! ### Verified A-glider cell patterns (6 cells, period 3, Δx = +2 per period)
+
+Martinez–Genaro phase file `listPhasesR110.txt` (ESCOM, 2004):
+  `A(f1_1) = [111110]`, 6 cells, 1l-0r on ether `e(f1_1) = [11111000100110]`.
+
+In the `cookEther` coordinate system (`10011011111000`, period 14), phase `A(f1_1)`
+is `[111110]` on uniform ether (lp = 0, rp = 0). Only phase 0 is stable in isolation
+on clean ether (analogous to C-glider phases 0, 4, 5, 6 in the C2 verification).
+
+Three-step cycle (native_decide verified in `CookGliderVerification.lean`):
+
+| Phase | 6-cell pattern | Spatial offset after 1 step |
+|-------|----------------|----------------------------|
+| 0     | `111110`       | 0 (Martinez A(f1_1))      |
+| 1     | `000111`       | +1                         |
+| 2     | `011010`       | +2                         |
+
+After 3 Rule 110 steps the glider returns to phase 0 at spatial offset +2
+(Cook Figure 5: Δt = 3, Δx = +2, width 6).
+
+Cross-reference: Cook (2004) Figure 5 row A; Martinez `listPhasesR110.txt` A glider block.
+-/
+
+/-- The canonical 3-phase A-glider cycle (phase 0 through phase 2).
+    Each entry is the 6-cell bit pattern at that time step.
+    `false` = 0, `true` = 1.
+
+    Phase 0 matches Martinez `A(f1_1) = [111110]` (Cook width 6). -/
+def cookAGliderCycle : Fin 3 → List Bool
+  | ⟨0, _⟩ => [true,  true,  true,  true,  true,  false]  -- 111110
+  | ⟨1, _⟩ => [false, false, false, true,  true,  true ]  -- 000111
+  | ⟨2, _⟩ => [false, true,  true,  false, true,  false]  -- 011010
+
+/-- A-glider phase-0 bits (Martinez A(f1_1), Cook width 6). -/
+def cookAGliderBits : List Bool := cookAGliderCycle ⟨0, by decide⟩
+
+theorem cookAGliderBits_length : cookAGliderBits.length = 6 := by decide
+
+/-- Spatial shift per complete A-glider period (Cook Figure 5 / native_decide). -/
+def aGliderSpatialPeriod : ℕ := 2
+
+/-- Temporal period of the A-glider on clean ether (Cook Figure 5). -/
+def aGliderTemporalPeriod : ℕ := 3
+
+theorem aGliderSpatialPeriod_eq_cook_dx :
+    aGliderSpatialPeriod = (CookNamedGlider.periodTX .A).dx.natAbs := by
+  native_decide
+
+theorem aGliderTemporalPeriod_eq_cook_dt :
+    aGliderTemporalPeriod = (CookNamedGlider.periodTX .A).dt.natAbs := by
+  native_decide
+
 end Rule110
