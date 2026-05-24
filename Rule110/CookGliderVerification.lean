@@ -189,4 +189,109 @@ theorem a_glider_infRule110Steps_spatial_period :
     aGliderSpatialPeriod = 2 ∧ aGliderTemporalPeriod = 3 := by
   native_decide
 
+/-! ## A-glider `infRule110Steps` endpoint extraction (Rank 85c-AFCATAPEAUTO)
+
+Track defect left-edge anchor and COM after CA evolution. Phase 0 on uniform ether
+is stable in isolation; phases 1–2 are not (same as C2).
+-/
+
+/-- Phase-0 Martinez A(f1_1) defect occupies `[gpos, gpos + 6)`. -/
+def tapeHasAGliderPhase0At (tape : InfTape) (gpos : ℕ) : Prop :=
+  ∀ k : Fin aGliderDefectWidth,
+    tape (gpos + k.val) = (cookAGliderCycle ⟨0, by decide⟩).getD k.val false
+
+theorem tapeHasAGliderPhase0At_a_tape (gpos : ℕ) :
+    tapeHasAGliderPhase0At (a_tape_at ⟨0, by decide⟩ gpos) gpos := by
+  intro k
+  have hi : gpos ≤ gpos + k.val := Nat.le_add_right _ _
+  have hj : gpos + k.val < gpos + 6 := by
+    exact Nat.add_lt_add_left k.isLt gpos
+  simp only [tapeHasAGliderPhase0At, a_tape_at, aGliderDefectWidth, hi, hj, ↓reduceIte]
+  fin_cases k <;> simp [cookAGliderCycle]
+
+/-- `infRule110Steps` evolution certificate: after `Δt` steps from phase-0 tape at
+    `gpos₀`, phase 0 reappears at left-edge anchor `gpos`. -/
+structure AGliderInfEvolutionEndpoint (gpos₀ Δt gpos : ℕ) : Prop where
+  anchor_shift : gpos = gpos₀ + (Δt / aGliderTemporalPeriod) * aGliderSpatialPeriod
+  phase0_at_anchor :
+    tapeHasAGliderPhase0At (infRule110Steps Δt (a_tape_at ⟨0, by decide⟩ gpos₀)) gpos
+
+/-- COM index after certified anchor evolution. -/
+theorem a_glider_com_from_inf_evolution {gpos₀ Δt gpos : ℕ}
+    (h : AGliderInfEvolutionEndpoint gpos₀ Δt gpos) :
+    aGliderTapeCom gpos = aGliderTapeCom gpos₀ + (Δt / aGliderTemporalPeriod) * aGliderSpatialPeriod := by
+  dsimp [aGliderTapeCom]
+  rw [h.anchor_shift]
+  ring
+
+/-- Zero steps: anchor unchanged. -/
+theorem a_glider_inf_evolution_endpoint_zero (gpos₀ : ℕ) :
+    AGliderInfEvolutionEndpoint gpos₀ 0 gpos₀ where
+  anchor_shift := by
+    simp [aGliderTemporalPeriod, aGliderSpatialPeriod]
+  phase0_at_anchor := by
+    intro k
+    simp only [infRule110Steps_zero, tapeHasAGliderPhase0At]
+    exact tapeHasAGliderPhase0At_a_tape gpos₀ k
+
+/-- One CA period at the standard Martinez test anchor. -/
+theorem a_glider_inf_evolution_endpoint_one_period :
+    AGliderInfEvolutionEndpoint a_gpos aGliderTemporalPeriod (a_gpos + aGliderSpatialPeriod) where
+  anchor_shift := by
+    simp [aGliderTemporalPeriod, aGliderSpatialPeriod]
+  phase0_at_anchor := by
+    intro k
+    simpa [tapeHasAGliderPhase0At] using a_glider_phase0_period3 k
+
+/-- Two-period defect pattern certified directly by `native_decide`. -/
+theorem a_glider_phase0_two_periods :
+    ∀ k : Fin aGliderDefectWidth,
+      infRule110Steps (2 * aGliderTemporalPeriod) (a_tape_at ⟨0, by decide⟩ a_gpos)
+        (a_gpos + 2 * aGliderSpatialPeriod + k.val) =
+        (cookAGliderCycle ⟨0, by decide⟩).getD k.val false := by
+  native_decide
+
+/-- Two complete periods from the standard seed (direct `native_decide` certificate). -/
+theorem a_glider_inf_evolution_endpoint_two_periods :
+    AGliderInfEvolutionEndpoint a_gpos (2 * aGliderTemporalPeriod)
+      (a_gpos + 2 * aGliderSpatialPeriod) where
+  anchor_shift := by
+    simp [aGliderTemporalPeriod, aGliderSpatialPeriod]
+  phase0_at_anchor := by
+    intro k
+    simpa [tapeHasAGliderPhase0At] using a_glider_phase0_two_periods k
+
+/-- Standard-seed COM endpoint after `k` CA-certified periods (algebraic from evolution cert). -/
+theorem a_glider_inf_com_endpoint_from_evolution {gpos₀ Δt gpos k : ℕ}
+    (h : AGliderInfEvolutionEndpoint gpos₀ Δt gpos)
+    (hk : k = Δt / aGliderTemporalPeriod) :
+    aGliderTapeCom gpos = aGliderTapeCom gpos₀ + k * aGliderSpatialPeriod := by
+  have hcom := a_glider_com_from_inf_evolution h
+  calc aGliderTapeCom gpos
+      = aGliderTapeCom gpos₀ + (Δt / aGliderTemporalPeriod) * aGliderSpatialPeriod := hcom
+    _ = aGliderTapeCom gpos₀ + k * aGliderSpatialPeriod := by rw [hk]
+
+/-- Automatic endpoint extraction at standard seed for `k ≤ 2` complete periods. -/
+theorem a_glider_standard_seed_endpoint (k : ℕ) (hk : k ≤ 2) :
+    AGliderInfEvolutionEndpoint a_gpos (k * aGliderTemporalPeriod)
+      (a_gpos + k * aGliderSpatialPeriod) := by
+  match k with
+  | 0 => exact a_glider_inf_evolution_endpoint_zero a_gpos
+  | 1 => simpa [aGliderTemporalPeriod, aGliderSpatialPeriod, Nat.mul_one] using
+      a_glider_inf_evolution_endpoint_one_period
+  | 2 => simpa [aGliderTemporalPeriod, aGliderSpatialPeriod, Nat.mul_two] using
+      a_glider_inf_evolution_endpoint_two_periods
+  | k + 3 => exfalso; omega
+
+/-- Residual boundary: `k > 2` at standard seed requires iterated period composition
+    with evolving tape-agreement windows (not yet closed). Arbitrary initial tapes
+    beyond phase-0 on uniform ether remain open (phases 1–2 unstable in isolation). -/
+def aGliderInfEvolutionAutoScope : Prop :=
+  ∀ k : ℕ, k ≤ 2 →
+    AGliderInfEvolutionEndpoint a_gpos (k * aGliderTemporalPeriod)
+      (a_gpos + k * aGliderSpatialPeriod)
+
+theorem a_glider_inf_evolution_auto_scope : aGliderInfEvolutionAutoScope :=
+  a_glider_standard_seed_endpoint
+
 end Rule110
