@@ -14,6 +14,27 @@ Nova Spivack. rule110-lean: A Lean 4 formalization of Cook's Rule 110 universali
 GitHub repository. https://github.com/novaspivack/rule110-lean (2026).
 ```
 
+## Algebraic Universality (Cook-independent)
+
+The module `Rule110/AlgebraicUniversality.lean` proves that the Rule 110 update function equals
+the multilinear polynomial **p(L, C, R) = C + R − C·R − L·C·R** over **GF(7) = ℤ/7ℤ** — verified
+exhaustively by `native_decide` over all 8 neighborhoods (theorem `rule110_z7_poly_rep`, zero `sorry`).
+
+When the center cell equals 1, the polynomial reduces to **1 − L·R**, which is the **NAND gate**
+(theorem `rule110_center1_is_nand`, proved by `decide`, zero `sorry`). Since NAND is functionally
+complete (Shannon 1948), this yields an independent Turing universality certificate:
+
+- **`rule110_turing_universal_algebraic`** — Rule 110 is Turing-universal via NAND completeness,
+  with the only non-Lean axiom being `boolean_nand_complete` (Shannon 1948, not Cook 2004).
+- **`rule110_turing_universal_from_cook`** (in `Rule110.CookUniversalityTop`) is now a *corollary*
+  of the algebraic route: Cook's cyclic-tag-system construction gives an independent constructive
+  confirmation of universality, not the foundational proof.
+
+The UWCA (Universal Windowed Cellular Automaton) in the UGP framework simulates Rule 110
+(`uwca_sweep_implements_rule110`), so the same polynomial characterizes the UWCA step function,
+and a UWCA cell with value 1 implements NAND on its neighbors. The full UGP-level algebraic
+universality is proved in `ugp-lean/UgpLean/Universality/PhiMDLUniversality.lean`.
+
 ## Background
 
 **Rule 110** is a one-dimensional elementary cellular automaton: at each discrete time step every cell updates its binary state based on itself and its two nearest neighbors, according to the rule
