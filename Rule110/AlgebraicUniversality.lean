@@ -23,7 +23,7 @@ system construction and carries no CTS collision axioms.
    Over GF(7), L·R = 1 − NAND(L, R), so AND factors through NAND in the field.
 
 4. **NAND functional completeness** (`boolean_nand_complete`, one named axiom).
-   Every Boolean function is expressible as a NAND circuit (Shannon 1948).
+   Every Boolean function is expressible as a NAND circuit (Sheffer 1913).
    This is a standard Boolean-algebra result independent of Rule 110 and CTS.
 
 5. **Universality** (`rule110_turing_universal_algebraic`).
@@ -83,12 +83,12 @@ theorem rule110_z7_nand_identity :
 
 /-! ## Functional-completeness bridge (Cook-independent axiom) -/
 
-/-- **NAND functional completeness** (Shannon 1948).
+/-- **NAND functional completeness** (Sheffer 1913).
     Every two-input Boolean function is computable from NAND gates alone.
     This is a standard result in Boolean algebra, entirely independent of
     Cook's CTS construction and of Rule 110 in particular.
 
-    Discharge path: formalize Shannon's classical functional-completeness theorem
+    Discharge path: formalize Sheffer's classical functional-completeness result
     (e.g., by exhaustive DNF construction from the NAND basis over {Bool}²). -/
 axiom boolean_nand_complete :
     ∀ (f : Bool → Bool → Bool),
