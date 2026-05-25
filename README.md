@@ -22,10 +22,10 @@ exhaustively by `native_decide` over all 8 neighborhoods (theorem `rule110_z7_po
 
 When the center cell equals 1, the polynomial reduces to **1 − L·R**, which is the **NAND gate**
 (theorem `rule110_center1_is_nand`, proved by `decide`, zero `sorry`). Since NAND is functionally
-complete (Shannon 1948), this yields an independent Turing universality certificate:
+complete (Sheffer 1913), this yields an independent Turing universality certificate:
 
 - **`rule110_turing_universal_algebraic`** — Rule 110 is Turing-universal via NAND completeness,
-  with the only non-Lean axiom being `boolean_nand_complete` (Shannon 1948, not Cook 2004).
+  with the only non-Lean axiom being `boolean_nand_complete` (Sheffer 1913, not Cook 2004).
 - **`rule110_turing_universal_from_cook`** (in `Rule110.CookUniversalityTop`) is now a *corollary*
   of the algebraic route: Cook's cyclic-tag-system construction gives an independent constructive
   confirmation of universality, not the foundational proof.
