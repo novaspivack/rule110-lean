@@ -2,11 +2,17 @@ import Rule110.Basic
 import Mathlib.Data.ZMod.Basic
 
 /-!
-# Rule 110 — Algebraic Universality Certificate (Cook-independent)
+# Rule 110 — Finite NAND Functional Completeness (Cook-independent)
 
-This module proves that Rule 110 is Turing universal via the GF(7) multilinear
-polynomial representation.  The proof is entirely independent of Cook's cyclic tag
-system construction and carries no CTS collision axioms.
+This module proves that Rule 110, at center cell C = 1, realizes any finite
+two-input Boolean function via the GF(7) multilinear polynomial representation.
+This is a **finite Boolean functional-completeness result about a fixed input
+size** — it does **not** establish Turing universality, which requires simulating
+computation on an unbounded tape for an unbounded number of steps.  Rule 110's
+actual Turing universality is Cook's theorem (`rule110_turing_universal_from_cook`
+in `Rule110.CookUniversalityTop`), unaffected by and not derived from the chain
+below.  The proof of finite completeness below is entirely independent of Cook's
+cyclic tag system construction and carries no CTS collision axioms.
 
 ## The algebraic chain
 
@@ -26,13 +32,16 @@ system construction and carries no CTS collision axioms.
    Every Boolean function is expressible as a NAND circuit (Sheffer 1913).
    This is a standard Boolean-algebra result independent of Rule 110 and CTS.
 
-5. **Universality** (`rule110_turing_universal_algebraic`).
+5. **Finite functional completeness** (`rule110_center1_nand_functional_completeness`).
    Combining steps 2 and 4: Rule 110 supplies a NAND primitive, NAND is complete,
-   so Rule 110 can evaluate any two-input Boolean function.
+   so Rule 110 at center = 1 can evaluate any two-input Boolean function.  This is
+   a statement about Boolean functions of fixed, finite input size; it is distinct
+   from, and not sufficient for, Turing universality.
 
-Cook's original proof (via CTS glider collisions) gives a constructive TM embedding;
-this algebraic proof is a Cook-independent certificate.  The two proofs coexist and
-neither makes the other redundant.
+Cook's original proof (via CTS glider collisions) gives the genuine, constructive
+Turing-universality result; the finite-completeness proof above is a separate,
+Cook-independent certificate about a different (weaker) property.  The two results
+coexist and neither is a corollary of the other.
 -/
 
 namespace Rule110
@@ -95,9 +104,9 @@ axiom boolean_nand_complete :
       ∃ (circuit : Bool → Bool → Bool),
         ∀ (a b : Bool), circuit a b = f a b
 
-/-! ## Algebraic universality theorem -/
+/-! ## Finite Boolean functional-completeness theorem -/
 
-/-- **Rule 110 algebraic universality certificate** (Cook-independent).
+/-- **Rule 110 finite NAND functional-completeness certificate** (Cook-independent).
 
     Every two-input Boolean function `f` is computable by a circuit expressible via
     Rule 110 steps:
@@ -105,13 +114,27 @@ axiom boolean_nand_complete :
     • NAND is functionally complete (`boolean_nand_complete` — one named axiom,
       independent of Cook's CTS construction).
 
+    **Scope note:** this is a statement about Boolean functions of fixed, finite
+    input size (two inputs). It is **not** a Turing-universality theorem: Turing
+    universality requires simulating computation on an unbounded tape for an
+    unbounded number of steps, which this statement does not address. Rule 110's
+    genuine Turing universality is `rule110_turing_universal_from_cook` in
+    `Rule110.CookUniversalityTop`.
+
     The 5 Cook CTS collision axioms used by `rule110_turing_universal_from_cook`
-    are **not** invoked here; this proof is Cook-independent. -/
-theorem rule110_turing_universal_algebraic :
+    are **not** invoked here; this proof is Cook-independent, and is a separate,
+    weaker result — not a competing or foundational route to Turing universality. -/
+theorem rule110_center1_nand_functional_completeness :
     ∀ (f : Bool → Bool → Bool),
       ∃ (circuit : Bool → Bool → Bool),
         ∀ (a b : Bool), circuit a b = f a b :=
   boolean_nand_complete
+
+/-- **Deprecated alias.** Retained for backward compatibility with existing citations.
+    The name `rule110_turing_universal_algebraic` is misleading (it is not a
+    Turing-universality theorem); use `rule110_center1_nand_functional_completeness`. -/
+@[deprecated rule110_center1_nand_functional_completeness (since := "2026-07-06")]
+abbrev rule110_turing_universal_algebraic := rule110_center1_nand_functional_completeness
 
 /-- Convenience lemma bundling the algebraic chain: for any L R, Rule 110 at center=1
     returns NAND(L,R) and the GF(7) AND identity holds simultaneously. -/
