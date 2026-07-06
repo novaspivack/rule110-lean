@@ -14,7 +14,7 @@ Bounded `native_decide` witnesses for the five Neary–Woods collision kinds
 the list-simulation layer (`c2SimRun`) on a finite patch of the CTS encoding.
 
 These do **not** discharge Stage 3 alone; they supply the finite collision
-evidence required alongside `CookCtsEvalSimAtDataCones` (Round 02 diagnosis).
+evidence required alongside `CookCtsEvalSimAtDataCones`.
 -/
 
 namespace Rule110
@@ -55,7 +55,7 @@ theorem kind1_ossifier_c2_slot0_cone_not_fixed_30 :
 
 /-! ### Kind 2 — tape data passes moving data (`tape_passes_through_moving_or_invisible`) -/
 
-/-- Full phased-with-support empty word: slot-0 cone **not** fixed (Round 02 negative). -/
+/-- Full phased-with-support empty word: slot-0 cone **not** fixed (negative witness). -/
 def kind2EmptySupportInit : List Bool :=
   collisionSimInit (cts_word_to_placements_phased_with_support [])
 

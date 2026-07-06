@@ -5,7 +5,7 @@ import Rule110.Ether
 import Rule110.InfTape
 
 /-!
-# Glider references and finite tape overlays (Milestone 2 scaffolding)
+# Glider references and finite tape overlays
 
 Cook’s real glider grammar is **phase-parameterized** (`CookCollisionTaxonomy`): collisions depend on
 `CookUpPhase` / `CookOverPhase`, not merely on species labels.
@@ -16,7 +16,7 @@ This module introduces:
 * `overrideCells`, a simple utility writing finitely many cellular assignments on top of any base tape.
 
 Placing canonical Cook bit-patterns for each species — and proving collision lemmas against
-`infTapeStep` — is Milestone 2–3 work.
+`infTapeStep` — remains future work.
 
 ## Locality
 
@@ -160,7 +160,7 @@ theorem overrideCells_eq_base_on_Icc (base : InfTape) (cells : List (ℕ × Bool
 /-- Cook ether as an `InfTape`, convenient for glider-overlay experiments. -/
 abbrev etherTape : InfTape := cookEther
 
-/-! ## Glider configurations (Milestone 3)
+/-! ## Glider configurations
 
 A **`GliderConfig`** is a finite patch of cells to be overlaid on the ether background at a given
 spatial origin. It bundles:

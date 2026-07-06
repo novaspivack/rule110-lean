@@ -6,13 +6,20 @@ import Rule110.CookStage3C3PrimeOperationalChain
 import Rule110.CookStage3Induction
 
 /-!
-# Cook universality top theorem (SPEC_070_08)
+# Cook operational Stage 3 readback
 
 Chains **Stage 4** (`FinTM2` / scaffold TM → CTS) with **operational Stage 3** (C3′′ origin readback
 and phased post-decode on `InfTape`), not legacy global `CookCtsEvalSim` (refuted at empty `n = 1`).
 
 Global C3′′ and phased post-decode are theorems (`cook_cts_eval_sim_data_cones_origin`,
 `cook_cts_phased_post_decode`); their proofs still invoke leaf axioms in `CookStage3Induction`.
+
+**Scope note:** the theorems in this module certify that any *already-supplied*
+`TMCTSCompilation` witness satisfying `TMCompilesStep` yields CTS decode plus global C3′′ origin
+readback. They do not encode an explicit Turing-machine alphabet, a `Computable`-indexed
+encode/decode pair, or a claim that Rule 110 simulates arbitrary machines — that would require
+discharging Cook's TM → CTS compiler (`TMtoCTS.lean`, `CookTM2Bridge.lean`) in full generality,
+which remains open. None of the theorem names below assert Turing universality.
 -/
 
 namespace Rule110
@@ -42,8 +49,12 @@ theorem cook_bridge_axioms_open_iff_minimal :
       cook_bridge_c3primeprime_open ∧ cook_bridge_phased_decode_open :=
   Iff.rfl
 
-/-- Bridge obligations hold unconditionally (proved via global induction theorems). -/
-theorem cook_bridge_axioms_closed : cook_bridge_axioms_open :=
+/-- The `cook_bridge_axioms_open` **Prop is inhabited**: both bridge obligations hold, discharged
+    via the global induction theorems `cook_cts_eval_sim_data_cones_origin` and
+    `cook_cts_phased_post_decode`. "Satisfied" here refers to this `Prop` being proved, not to the
+    elimination of the underlying Cook §4 leaf axioms from the kernel — the proof terms invoked
+    still transitively depend on all five leaf axioms (see `#print axioms`). -/
+theorem cook_bridge_open_predicate_satisfied : cook_bridge_axioms_open :=
   ⟨fun _ _ _ _ _ => cook_cts_eval_sim_data_cones_origin _ _ _ _,
    fun _ _ _ _ _ => cook_cts_phased_post_decode _ _ _ _⟩
 
@@ -107,7 +118,7 @@ theorem cook_fintm2_step_rule110_origin_readback
 /-! ## Top target -/
 
 /-- Conditional form (for callers that assume bridge axioms explicitly). -/
-theorem rule110_turing_universal_from_cook_of_bridge
+theorem cook_operational_stage3_tm_microstep_readback_of_bridge
     (hbridge : cook_bridge_axioms_open) :
     CookOperationalStage3 ∧
       (∀ {Cfg : Type} {tmStep : Cfg → Option Cfg} (comp : TMCTSCompilation tmStep),
@@ -122,10 +133,20 @@ theorem rule110_turing_universal_from_cook_of_bridge
   intro Cfg tmStep comp hcomp c c' hstep
   exact cook_tm_step_rule110_origin_readback h3 hcomp hstep
 
-/-- **SPEC_070_08 top theorem (operational).** Every compiled TM microstep is matched by a CTS
-    trace whose Rule 110 evolution satisfies C3′′ origin readback. Legacy full-tape
-    `CookCtsEvalSim` is intentionally excluded (refuted on empty input at `n = 1`). -/
-theorem rule110_turing_universal_from_cook :
+/-- **Cook operational Stage 3 readback (top theorem).** Conditional operational certification
+    that any supplied `TMCTSCompilation` witness satisfying `TMCompilesStep` yields CTS decode
+    plus global C3′′ origin readback for every microstep of the compiled TM, modulo the five
+    Cook §4 leaf axioms in `CookStage3Induction` and the L=6 `native_decide` trust hooks they
+    rest on. Legacy full-tape `CookCtsEvalSim` is intentionally excluded (refuted on empty input
+    at `n = 1`).
+
+    **This theorem does not establish Turing universality.** Its statement contains no
+    `Computable`, no `FinTM2`-indexed encoding of arbitrary Turing machines, and no claim that
+    Rule 110 simulates arbitrary computation — it only connects an *already-supplied*
+    `TMCTSCompilation` witness to CTS decode and origin readback. A genuine Turing-universality
+    statement would additionally require discharging Cook's TM → CTS compiler for arbitrary
+    machines and eliminating the five leaf axioms; both remain open. -/
+theorem cook_operational_stage3_tm_microstep_readback :
     CookOperationalStage3 ∧
       (∀ {Cfg : Type} {tmStep : Cfg → Option Cfg} (comp : TMCTSCompilation tmStep),
         TMCompilesStep tmStep comp →
@@ -134,7 +155,7 @@ theorem rule110_turing_universal_from_cook :
               let (w₀, idx₀) := comp.enc c
               comp.dec (comp.sys.cts_eval_with_idx m w₀ idx₀) = c' ∧
                 CookCtsEvalSimAtDataConesOrigin comp.sys m w₀ idx₀) :=
-  rule110_turing_universal_from_cook_of_bridge cook_bridge_axioms_closed
+  cook_operational_stage3_tm_microstep_readback_of_bridge cook_bridge_open_predicate_satisfied
 
 /-! ## Discharged instances (no bridge axioms needed for these steps) -/
 
@@ -175,7 +196,7 @@ structure CookUniversalityTopStatus where
   induction_partial : CookStage3InductionDischarged
   fintm2_id : CookFinTM2Compiles (idComputer Bool)
   consume_head_fin2 : TMCompilesStep tmConsumeHeadStep cookConsumeHeadTMComp
-  bridge_closed : cook_bridge_axioms_open
+  bridge_open_predicate_satisfied : cook_bridge_axioms_open
   bridge_of_bridge : cook_bridge_axioms_open → CookOperationalStage3
 
 theorem cook_universality_top_status : CookUniversalityTopStatus where
@@ -184,7 +205,7 @@ theorem cook_universality_top_status : CookUniversalityTopStatus where
   induction_partial := cook_stage3_induction_discharged
   fintm2_id := cook_idComputer_fin_tm2_compiles
   consume_head_fin2 := consume_head_stage4_compiles
-  bridge_closed := cook_bridge_axioms_closed
+  bridge_open_predicate_satisfied := cook_bridge_open_predicate_satisfied
   bridge_of_bridge := cook_operational_stage3_of_bridge
 
 end Rule110

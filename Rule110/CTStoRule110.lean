@@ -10,13 +10,14 @@ import Rule110.OssifierGlider
 import Rule110.LeaderGlider
 
 /-!
-# Cyclic tag systems → Rule 110 tapes (Cook §4 — Milestone 3)
+# Cyclic tag systems → Rule 110 tapes (Cook §4)
 
 Full Cook encoding writes CTS symbols as trains of separated gliders riding on the ether background,
 then proves that **construction collisions** (Neary–Woods §2 checklist) realize `cts_step`.
 
 For now we expose only the canonical ether baseline and functorial combinators built from
-`overrideCells`; Milestone 3 replaces `ctsBaselineTape` with spatially-placed glider data.
+`overrideCells`; `gliders_to_tape_phased` below replaces `ctsBaselineTape` with spatially-placed
+glider data.
 
 Proved locality tools (still **not** Cook step simulation):
 
@@ -73,7 +74,7 @@ theorem ctsTapeWithOverrides_infRule110Steps_eq_shift_of_disjoint {cts : CyclicT
           infRule110Steps_agree_Icc hn hag
     _ = cookEther (i + 4 * n) := infRule110Steps_cookEther_shift hn
 
-/-! ## Two-phase ether infrastructure (Milestone 3 — Cook §4 phase-shift correctness)
+/-! ## Two-phase ether infrastructure (Cook §4 phase-shift correctness)
 
 Cook's C2 gliders each shift the ether background by **3 cells** (their Cook width).  A tape with `n`
 C2 gliders has:
@@ -83,7 +84,7 @@ C2 gliders has:
 * …
 * ether at phase `3*n` after the last glider
 
-The plain `overrideCells cookEther` approach (Milestone 3a) is correct only for the **ether far from
+The plain `overrideCells cookEther` approach is correct only for the **ether far from
 any glider** (where `cook_cts_step_sim_ax` still holds via cone locality).  For a complete tape
 encoding, `gliders_to_tape_phased` computes the accumulated phase shift at each position.
 
@@ -166,7 +167,7 @@ theorem gliders_to_tape_phased_nil :
   simp [cookEther, cookEtherBits]
 
 /-- If no placement contains position `i`, `List.findSome?` returns `none`. -/
-private theorem findSome_none_iff_all_none
+private theorem findSome_none_of_all_none
     (placements : List GliderPlacement) (i : ℕ)
     (hout : ∀ g ∈ placements, ¬ (g.origin ≤ i ∧ i - g.origin < g.bits.length)) :
     placements.findSome? (fun g =>
@@ -186,9 +187,9 @@ theorem gliders_to_tape_phased_outside
     (placements : List GliderPlacement) (i : ℕ)
     (hout : ∀ g ∈ placements, ¬ (g.origin ≤ i ∧ i - g.origin < g.bits.length)) :
     gliders_to_tape_phased placements i = phaseEther i (accumPhaseAt placements i) := by
-  simp only [gliders_to_tape_phased, findSome_none_iff_all_none placements i hout]
+  simp only [gliders_to_tape_phased, findSome_none_of_all_none placements i hout]
 
-/-! ## CTS word → glider list encoding (Milestone 3 — Cook §4)
+/-! ## CTS word → glider list encoding (Cook §4)
 
 Cook's §4 encoding represents a CTS word `w = b₀ b₁ … bₙ` and appendant index `idx` as a
 spatially-arranged train of gliders riding the ether background:
@@ -531,7 +532,7 @@ theorem cts_support_gliders_for_idx_nonempty (cts : CyclicTagSystem) (idx₀ : �
 
 theorem cts_support_gliders_length : cts_support_gliders.length = 2 := rfl
 
-/-! ## Tape → CTS word decode (Milestone 3 — round-trip for simulation)
+/-! ## Tape → CTS word decode (round-trip for simulation)
 
 `tape_to_gliders_bit` reads a single CTS bit from the tape at slot `k` by checking
 whether the tape value at position `cts_tape_origin + k * cts_glider_spacing` differs
@@ -572,7 +573,7 @@ theorem cts_empty_word_rule110_drift (n : ℕ) (cts : CyclicTagSystem) (i : ℕ)
   rw [cts_simulation_empty]
   exact infRule110Steps_cookEther_shift hi
 
-/-! ## Explicit Cook collision axioms (SPEC_069_C1R Milestone 3)
+/-! ## Explicit Cook collision axioms
 
 These axioms name the specific Rule 110 finite-witness claims that underlie
 `cts_step_simulated_in_rule110`.

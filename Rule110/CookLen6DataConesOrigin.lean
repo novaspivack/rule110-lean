@@ -8,7 +8,7 @@ set_option maxRecDepth 100000 in
 /-!
 # L=6 n=1 origin-cell C3′′ discharge (Stage 3)
 
-Approach #14 (Round 02): after 390 bounded list steps, slot-origin cells match the
+After 390 bounded list steps, slot-origin cells match the
 post-appendant phased encode. This module lifts that list witness to `InfTape`
 `CookCtsEvalSimAtDataConesOrigin` without the C3′′ axiom for this case.
 -/

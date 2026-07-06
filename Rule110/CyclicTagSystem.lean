@@ -2,7 +2,7 @@ import Mathlib.Data.List.Basic
 import Mathlib.Tactic.Linarith
 
 /-!
-# Cyclic tag systems (SPEC_069_C1R)
+# Cyclic tag systems
 -/
 
 namespace Rule110
@@ -143,10 +143,6 @@ theorem cts_eval_succ (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) :
       let (w₁, idx₁) := cts.cts_step 0 w₀
       (cts_steps cts n w₁ idx₁).1 :=
   rfl
-
-theorem cts_deterministic (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
-    ∀ p : List Bool × ℕ, p = cts.cts_step idx w → p = cts.cts_step idx w :=
-  fun _ hp => hp
 
 theorem cts_step_length_le (cts : CyclicTagSystem) (idx : ℕ) (w : List Bool) :
     (cts.cts_step idx w).1.length ≤ w.length + cts.totalAppendantChars := by

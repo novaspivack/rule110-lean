@@ -31,11 +31,15 @@ not sufficient for Turing universality:
   `boolean_nand_complete` (Sheffer 1913, not Cook 2004). (The former name
   `rule110_turing_universal_algebraic` is retained as a deprecated alias; it was misleading, since
   this is not a Turing-universality theorem.)
-- **`rule110_turing_universal_from_cook`** (in `Rule110.CookUniversalityTop`) remains the sole
-  load-bearing Turing-universality result for Rule 110: Cook's cyclic-tag-system construction gives
-  the genuine, constructive, unbounded-tape simulation of arbitrary Turing machines. It is not a
-  corollary of the finite-completeness certificate above, and the finite-completeness certificate is
-  not a corollary of it either — the two are independent results about different properties.
+- **`cook_operational_stage3_tm_microstep_readback`** (in `Rule110.CookUniversalityTop`) is the
+  library's operational partial certification toward Rule 110 Turing universality via Cook's
+  cyclic-tag-system construction: it shows that every microstep of an already-supplied
+  `TMCTSCompilation` witness is matched by a CTS trace whose Rule 110 evolution satisfies C3′′
+  origin readback, contingent on five named Cook §4 leaf axioms. It does not itself encode an
+  explicit Turing-machine alphabet or an unbounded-tape simulation of arbitrary machines — full
+  unconditional Turing universality remains open. It is not a corollary of the finite-completeness
+  certificate above, and the finite-completeness certificate is not a corollary of it either — the
+  two are independent results about different properties.
 
 The UWCA (Universal Windowed Cellular Automaton) in the UGP framework simulates Rule 110
 (`uwca_sweep_implements_rule110`), so the same polynomial characterizes the UWCA step function,
@@ -128,11 +132,13 @@ Patterns extracted by organic emergence (random initial conditions → long Rule
 | `Rule110.CookC2InfTapeBridge` | `listToInfTape`; decode alignment with `tape_has_glider_at` |
 | `Rule110.CookStage1Verification` | Stage 1 summary re-exports |
 
-## Current proof status (2026-05-20)
+## Current proof status
 
-### The top theorem
+### The operational top theorem
 
-`rule110_turing_universal_from_cook` (`Rule110.CookUniversalityTop`) is **proved** — it compiles in Lean 4 with zero `sorry`. The proof establishes that every compiled TM microstep is matched by a CTS trace whose Rule 110 evolution satisfies C3'' origin readback.
+`cook_operational_stage3_tm_microstep_readback` (`Rule110.CookUniversalityTop`) is **proved** — it compiles in Lean 4 with zero `sorry`. The theorem establishes that every microstep of an already-supplied `TMCTSCompilation` witness (satisfying `TMCompilesStep`) is matched by a CTS trace whose Rule 110 evolution satisfies C3'' origin readback, contingent on five named Cook bridge axioms below.
+
+**This is an operational partial result, not a Turing-universality theorem.** Its statement contains no `Computable`, no encoding of arbitrary Turing machines, and no claim that Rule 110 simulates arbitrary computation — it only connects a supplied compilation witness to CTS decode and origin readback. Full unconditional Turing universality via Cook's construction requires additionally discharging Cook's TM → CTS compiler for arbitrary machines (open in `TMtoCTS.lean` / `CookTM2Bridge.lean`) and eliminating the five bridge axioms below; both remain open.
 
 ```bash
 # Verify the top theorem and its axiom dependencies:
@@ -140,7 +146,7 @@ lake env lean /path/to/check.lean
 # Contents of check.lean:
 # import Rule110.CookUniversalityTop
 # open Rule110
-# #print axioms rule110_turing_universal_from_cook
+# #print axioms cook_operational_stage3_tm_microstep_readback
 ```
 
 Expected output (Cook bridge axioms only — standard Lean axioms `propext`, `Classical.choice`, `Quot.sound` are always present and not listed here):
@@ -174,7 +180,7 @@ These five axioms are **mathematical facts proved by Cook (2004)** in the paper 
 | Stage 3 L=6 tail | `cook_cts_tail_origin_len6_M390_M30` | Tail origin after 390+30 steps for L=6 (list cert + InfTape lift) |
 | Stage 4 identity TM | `cook_idComputer_fin_tm2_compiles` | Mathlib identity machine satisfies `CookFinTM2Compiles` |
 | Stage 4 scaffold bundle | `cook_stage4_tm_compiles_step_bundle` | Four TM scaffold steps satisfy `TMCompilesStep` |
-| Top theorem | `rule110_turing_universal_from_cook` | Conditional universality (contingent on 5 axioms above) |
+| Operational top theorem | `cook_operational_stage3_tm_microstep_readback` | Conditional operational microstep readback (contingent on 5 axioms above); not itself a Turing-universality statement |
 
 **What remains axiomatized (5 Cook bridge axioms):**
 
@@ -188,7 +194,7 @@ These five axioms are **mathematical facts proved by Cook (2004)** in the paper 
 
 ### Why the current proof is already valuable
 
-Even with these five axioms, `rule110_turing_universal_from_cook` represents a substantial machine-checked artifact:
+Even with these five axioms, `cook_operational_stage3_tm_microstep_readback` represents a substantial machine-checked artifact:
 
 - **All ether physics** is fully proved (period-14 background, shift lemma, Icc locality).
 - **C1 and C2** are fully discharged for the parameter families used in Cook's construction (arbitrary words at slots 0–20; far-field drift).
@@ -212,7 +218,7 @@ import Rule110.CookUniversalityTop   -- top theorem
 import Rule110.CookUniversalityChain -- discharged partial bundle
 ```
 
-The five Cook bridge axioms propagate to any downstream theorem that depends on `rule110_turing_universal_from_cook`. They are semantically equivalent to the assumption "Cook's §4 collision analysis is correct for arbitrary CTS configurations" — which is mathematically established in the literature.
+The five Cook bridge axioms propagate to any downstream theorem that depends on `cook_operational_stage3_tm_microstep_readback`. They are semantically equivalent to the assumption "Cook's §4 collision analysis is correct for arbitrary CTS configurations" — which is mathematically established in the literature.
 
 ## Toolchain
 

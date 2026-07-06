@@ -9,7 +9,7 @@ import Rule110.InfTape
 set_option maxRecDepth 4096 in
 
 /-!
-# Empty-appendant Stage 3 status chain (SPEC_070_08)
+# Empty-appendant Stage 3 status chain
 
 Records what is discharged vs. what remains for the standard empty CTS (`w₀ = []`).
 

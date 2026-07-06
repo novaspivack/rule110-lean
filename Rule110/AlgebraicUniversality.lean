@@ -9,10 +9,13 @@ two-input Boolean function via the GF(7) multilinear polynomial representation.
 This is a **finite Boolean functional-completeness result about a fixed input
 size** — it does **not** establish Turing universality, which requires simulating
 computation on an unbounded tape for an unbounded number of steps.  Rule 110's
-actual Turing universality is Cook's theorem (`rule110_turing_universal_from_cook`
-in `Rule110.CookUniversalityTop`), unaffected by and not derived from the chain
-below.  The proof of finite completeness below is entirely independent of Cook's
-cyclic tag system construction and carries no CTS collision axioms.
+partial, conditional operational certification toward Cook's theorem is
+`cook_operational_stage3_tm_microstep_readback` in `Rule110.CookUniversalityTop`
+(unaffected by and not derived from the chain below); full unconditional Turing
+universality via Cook's construction remains open pending discharge of Cook's
+TM → CTS compiler and elimination of the five bridge axioms.  The proof of
+finite completeness below is entirely independent of Cook's cyclic tag system
+construction and carries no CTS collision axioms.
 
 ## The algebraic chain
 
@@ -118,12 +121,14 @@ axiom boolean_nand_complete :
     input size (two inputs). It is **not** a Turing-universality theorem: Turing
     universality requires simulating computation on an unbounded tape for an
     unbounded number of steps, which this statement does not address. Rule 110's
-    genuine Turing universality is `rule110_turing_universal_from_cook` in
-    `Rule110.CookUniversalityTop`.
+    partial, conditional operational certification toward Turing universality is
+    `cook_operational_stage3_tm_microstep_readback` in `Rule110.CookUniversalityTop`;
+    full unconditional Turing universality via Cook's construction remains open.
 
-    The 5 Cook CTS collision axioms used by `rule110_turing_universal_from_cook`
-    are **not** invoked here; this proof is Cook-independent, and is a separate,
-    weaker result — not a competing or foundational route to Turing universality. -/
+    The 5 Cook CTS collision axioms used by
+    `cook_operational_stage3_tm_microstep_readback` are **not** invoked here; this
+    proof is Cook-independent, and is a separate, weaker result — not a competing
+    or foundational route to Turing universality. -/
 theorem rule110_center1_nand_functional_completeness :
     ∀ (f : Bool → Bool → Bool),
       ∃ (circuit : Bool → Bool → Bool),

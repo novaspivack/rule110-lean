@@ -10,11 +10,12 @@ import Rule110.CookC2SupportBareEquiv
 import Rule110.CookC2GeneralC1
 
 /-!
-# Cook universality pipeline chain (SPEC_070_08)
+# Cook universality pipeline chain
 
 Documents which stages are discharged as theorems vs. which still invoke named bridge axioms.
-Full `rule110_turing_universal_from_cook` remains open pending Cook FinTM2 encoding and
-global C3 / C1 discharge.
+`cook_operational_stage3_tm_microstep_readback` (`CookUniversalityTop.lean`) is proved
+conditionally on the five Cook §4 leaf bridge axioms. Full unconditional Turing universality
+remains open pending Cook FinTM2 encoding for arbitrary machines and global C3 / C1 discharge.
 -/
 
 namespace Rule110

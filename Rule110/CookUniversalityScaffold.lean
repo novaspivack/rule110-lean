@@ -11,11 +11,13 @@ import Rule110.CookStage3C3PrimeOperationalChain
 import Rule110.CookMValuesVerification
 
 /-!
-# Cook universality scaffold (SPEC_070_08 top-level target)
+# Cook universality scaffold
 
-`rule110_turing_universal_from_cook` (zero sorry, zero bridge axioms) remains open pending
-TM alphabet encoding in `TMtoCTS.lean` and full C1/C3 discharge. This module records proved
-partial results and refined Stage 3 splits that avoid axioms on the L=6 minimal case.
+`cook_operational_stage3_tm_microstep_readback` (`CookUniversalityTop.lean`) is proved (zero
+sorry, five Cook §4 leaf bridge axioms). Full unconditional Turing universality — an explicit TM
+alphabet encoding in `TMtoCTS.lean` together with elimination of the five leaf axioms — remains
+open. This module records proved partial results and refined Stage 3 splits that avoid axioms on
+the L=6 minimal case.
 -/
 
 namespace Rule110

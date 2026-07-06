@@ -7,7 +7,7 @@ import Rule110.CTStoRule110
 /-!
 # Stage 2 Cook glider verification (Ossifier / Leader)
 
-Re-exports key Stage 2 witnesses for the SPEC_070_08 pipeline.
+Re-exports key Stage 2 witnesses for the Cook universality pipeline.
 -/
 
 namespace Rule110

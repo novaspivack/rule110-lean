@@ -1,7 +1,7 @@
 import Rule110.CyclicTagSystem
 
 /-!
-# Turing machines → cyclic tag systems (Cook §2 — Milestone 4)
+# Turing machines → cyclic tag systems (Cook §2)
 
 The classical Cook reduction expands any TM configuration into a CTS word plus cycling appendant index,
 then proves that **micro-steps** of the CTS mirror TM transitions.
@@ -9,7 +9,7 @@ then proves that **micro-steps** of the CTS mirror TM transitions.
 Mathlib’s formal TM toolbox (`Mathlib.Computability.TuringMachine`, especially `Turing.TM2`) is the natural
 source model once we pin alphabet encodings.
 
-This milestone file records the **target correctness shape** without fixing Cook’s encoding witnesses yet.
+This file records the **target correctness shape** without fixing Cook’s encoding witnesses yet.
 -/
 
 namespace Rule110

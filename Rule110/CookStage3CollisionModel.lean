@@ -8,8 +8,9 @@ After 10 failed attempts on **static re-encoding** (`CookCtsEvalSimAt`: full `In
 equality against post-step placements), this module records the weaker **data-cone readback**
 target aligned with Cook §4 collision dynamics.
 
-Full tape equality implies data-cone agreement; the converse fails (Round 02 negative
-witnesses). Future discharge of Stage 3 should target `CookCtsEvalSimAtDataCones` plus
+Full tape equality implies data-cone agreement; the converse fails (see the negative
+witnesses in `CookConstructionCollisionCerts`). Future discharge of Stage 3 should target
+`CookCtsEvalSimAtDataCones` plus
 finite collision certificates (`CookConstructionCollisionKind`), not placement equality alone.
 -/
 
@@ -20,7 +21,8 @@ def cook_cts_slot_cone_cell (slot d : ℕ) : ℕ :=
   cts_slot_origin slot - 30 + d
 
 /-- After `M` Rule 110 steps, each data-slot **origin cell** matches the post-`n`-step CTS encode.
-    Weaker than `CookCtsEvalSimAtDataCones` (61-cell cones); positive at L=6 n=1 (Round 02 #14). -/
+    Weaker than `CookCtsEvalSimAtDataCones` (61-cell cones); positive at L=6 n=1
+    (`CookLen6DataConesOrigin`). -/
 def CookCtsEvalSimAtDataConesOrigin (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
     Prop :=
   let (w, idx) := cts.cts_eval_with_idx n w₀ idx₀
@@ -123,7 +125,8 @@ theorem cook_cts_eval_sim_at_data_cones_empty_input (cts : CyclicTagSystem) (n :
     (CyclicTagSystem.cts_eval_with_idx_empty cts n idx₀)
 
 /-- After `M` Rule 110 steps, phased post-decode (`tape_has_glider_at` with post-step
-    placement phase) matches each data slot. Positive at L=6 n=1 (Round 02 #15). -/
+    placement phase) matches each data slot. Positive at L=6 n=1
+    (`CookLen6PhasedPostDecode`). -/
 def CookCtsPhasedPostDecodeAt (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) :
     Prop :=
   let (w, idx) := cts.cts_eval_with_idx n w₀ idx₀

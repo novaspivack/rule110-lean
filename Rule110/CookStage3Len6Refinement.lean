@@ -4,7 +4,7 @@ import Rule110.CookLen6DataConesOrigin
 import Rule110.CookLen6PhasedPostDecode
 
 /-!
-# Stage 3 L=6 refined splits (SPEC_070_08)
+# Stage 3 L=6 refined splits
 
 Nonempty post-word discharge for the minimal L=6 appendant at `n = 1` is a **theorem**, not
 an axiom. Global C3′′ for other configurations is in `CookStage3Induction`.
@@ -13,7 +13,8 @@ This module re-exports split theorems that route those cases to the discharged p
 
 namespace Rule110
 
-/-- The minimal L=6 one-step configuration discharged in Round 02 (#14–#15). -/
+/-- The minimal L=6 one-step configuration discharged in `CookLen6DataConesOrigin` /
+    `CookLen6PhasedPostDecode`. -/
 def cook_is_min_len6_one_step (cts : CyclicTagSystem) (n : ℕ) (w₀ : List Bool) (idx₀ : ℕ) : Prop :=
   cts = cook_min_len6_cts ∧ n = 1 ∧ w₀ = cook_min_len6_true_word ∧ idx₀ = 0
 
